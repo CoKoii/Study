@@ -1,7 +1,5 @@
-let a: string = "Hello World";
+let a: unknown;
 
-const count = (x: number, y: number): number => {
-  return x + y;
-};
+let x: string;
 
-console.log(count(1, 2));
+x = a as string;
