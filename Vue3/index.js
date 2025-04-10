@@ -1,38 +1,32 @@
-// 收集副作用函数的桶
-const bucket = new Set();
-
-// 当前的副作用函数
+const backet = new Set();
 let activeEffect;
-
-// 注册副作用函数
-const effect = (fn) => {
+const registerEffect = (fn) => {
   activeEffect = fn;
   fn();
 };
+const data = { num: 0 };
 
-// 初始值
-const data = { text: "Hello Vue3!" };
-
-const obj = new Proxy(data, {
+const count = new Proxy(data, {
   get: (target, value) => {
     if (activeEffect) {
-      bucket.add(activeEffect);
+      backet.add(activeEffect);
     }
     return target[value];
   },
-  set: (target, key, value) => {
-    target[key] = value;
-    bucket.forEach((fn) => fn());
+  set: (target, value, newValue) => {
+    target[value] = newValue;
+    backet.forEach((fn) => {
+      fn();
+    });
     return true;
   },
 });
-
-effect(() => {
-  console.log("yeye");
-  document.body.innerText = obj.text;
+registerEffect(() => {
+  document.querySelector(".num").innerHTML = count.num;
 });
-
-setTimeout(() => {
-  // obj.text = "Vue is too difficult!";
-  obj.notExist = "not exist";
-}, 1000);
+document.querySelector(".add").onclick = () => {
+  count.num++;
+};
+document.querySelector(".sub").onclick = () => {
+  count.num--;
+};
