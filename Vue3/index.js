@@ -19,6 +19,18 @@ const track = (target, key) => {
   set.add(activeEffect);
 };
 
+const trigger = (target, key) => {
+  const map = bucket.get(target);
+  if (!map) return true;
+  const functions = map.get(key);
+  if (functions) {
+    functions.forEach((fn) => {
+      fn();
+    });
+  }
+  return true;
+};
+
 const number = { num: 0 };
 
 const count = new Proxy(number, {
@@ -28,15 +40,7 @@ const count = new Proxy(number, {
   },
   set: (target, key, value) => {
     target[key] = value;
-    const map = bucket.get(target);
-    if (!map) return true;
-    const functions = map.get(key);
-    if (functions) {
-      functions.forEach((fn) => {
-        fn();
-      });
-    }
-    return true;
+    trigger(target, key);
   },
 });
 

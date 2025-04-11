@@ -12,13 +12,9 @@ const number = { num: 0 };
 const track = (target, key) => {
   if (!acctiveEffect) return target[key];
   let map = bucket.get(target);
-  if (!map) {
-    bucket.set(target, (map = new Map()));
-  }
+  if (!map) bucket.set(target, (map = new Map()));
   let set = map.get(key);
-  if (!set) {
-    map.set(key, (set = new Set()));
-  }
+  if (!set) map.set(key, (set = new Set()));
   set.add(acctiveEffect);
 };
 
