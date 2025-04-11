@@ -1,26 +1,29 @@
 const bucket = new WeakMap();
 
-let acctiveEffect;
+let activeEffect;
 
 const registerEffect = (fn) => {
-  acctiveEffect = fn;
+  activeEffect = fn;
   fn();
+};
+const track = (target, key) => {
+  if (!activeEffect) return target[key];
+  let map = bucket.get(target);
+  if (!map) {
+    bucket.set(target, (map = new Map()));
+  }
+  let set = map.get(key);
+  if (!set) {
+    map.set(key, (set = new Set()));
+  }
+  set.add(activeEffect);
 };
 
 const number = { num: 0 };
 
 const count = new Proxy(number, {
   get: (target, key) => {
-    if (!acctiveEffect) return target[key];
-    let map = bucket.get(target);
-    if (!map) {
-      bucket.set(target, (map = new Map()));
-    }
-    let set = map.get(key);
-    if (!set) {
-      map.set(key, (set = new Set()));
-    }
-    set.add(acctiveEffect);
+    track(target, key);
     return target[key];
   },
   set: (target, key, value) => {
@@ -28,9 +31,12 @@ const count = new Proxy(number, {
     const map = bucket.get(target);
     if (!map) return true;
     const functions = map.get(key);
-    functions.forEach((fn) => {
-      fn();
-    });
+    if (functions) {
+      functions.forEach((fn) => {
+        fn();
+      });
+    }
+    return true;
   },
 });
 
