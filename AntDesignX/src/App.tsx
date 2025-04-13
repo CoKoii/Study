@@ -9,7 +9,7 @@ import {
   useXChat,
 } from "@ant-design/x";
 import { createStyles } from "antd-style";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   CloudUploadOutlined,
@@ -24,6 +24,12 @@ import {
   SmileOutlined,
 } from "@ant-design/icons";
 import { Badge, Button, type GetProp, Space } from "antd";
+
+// 导入DeepSeek服务
+import {
+  Message as DeepSeekMessage,
+  getDeepSeekResponse,
+} from "./services/deepseek";
 
 const renderTitle = (icon: React.ReactElement, title: string) => (
   <Space align="start">
@@ -217,10 +223,39 @@ const Independent: React.FC = () => {
     GetProp<typeof Attachments, "items">
   >([]);
 
+  // 添加会话历史记录状态
+  const [conversationHistory, setConversationHistory] = useState<
+    DeepSeekMessage[]
+  >([]);
+
   // ==================== Runtime ====================
   const [agent] = useXAgent({
-    request: async ({ message }, { onSuccess }) => {
-      onSuccess(`Mock success return. You said: ${message}`);
+    request: async ({ message }, { onSuccess, onError }) => {
+      try {
+        // 使用DeepSeek服务处理消息
+        const response = await getDeepSeekResponse(
+          message,
+          conversationHistory
+        );
+
+        // 更新会话历史记录
+        const userMessage: DeepSeekMessage = { role: "user", content: message };
+        const assistantMessage: DeepSeekMessage = {
+          role: "assistant",
+          content: response,
+        };
+        setConversationHistory((prev) => [
+          ...prev,
+          userMessage,
+          assistantMessage,
+        ]);
+
+        // 返回DeepSeek的响应
+        onSuccess(response);
+      } catch (error) {
+        console.error("DeepSeek服务错误:", error);
+        onError("抱歉，连接DeepSeek服务时出现错误");
+      }
     },
   });
 
@@ -231,6 +266,8 @@ const Independent: React.FC = () => {
   useEffect(() => {
     if (activeKey !== undefined) {
       setMessages([]);
+      // 切换会话时重置会话历史
+      setConversationHistory([]);
     }
   }, [activeKey, setMessages]);
 
