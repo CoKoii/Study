@@ -1,0 +1,13 @@
+.App {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+}
+
+.App .sider {
+  grid-column: span 4;
+  background-color: red;
+}
+.App .main {
+  grid-column: span 20;
+  background-color: blue;
+}
