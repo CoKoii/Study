@@ -89,7 +89,7 @@ const Demo = () => {
   );
 
   return (
-    <Flex style={{ width: "30vw", margin: "50px 0 15vh 0" }} align="end">
+    <Flex style={{ width: "30vw", margin: "50px 0 0 0" }} align="end">
       <AntXSender
         ref={senderRef}
         header={senderHeader}
