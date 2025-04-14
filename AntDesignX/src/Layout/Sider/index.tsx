@@ -1,7 +1,10 @@
+import Header from "./Header";
+import Nav from "./Nav";
 const Sider = () => {
   return (
     <div>
-      <h1>Sider</h1>
+      <Header />
+      <Nav />
     </div>
   );
 };
