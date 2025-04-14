@@ -20,7 +20,12 @@ import {
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 
-const Demo = () => {
+interface SenderProps {
+  onRequest?: (message: string) => void;
+  isRequesting?: boolean;
+}
+
+const Demo: React.FC<SenderProps> = ({ onRequest, isRequesting }) => {
   const { token } = theme.useToken();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<GetProp<AttachmentsProps, "items">>([]);
@@ -42,41 +47,35 @@ const Demo = () => {
         setLoading(false);
         setText("");
         setItems([]);
-        console.log("Send message successfully!");
       }, 2000);
-      return () => {
-        clearTimeout(timer);
-      };
+      return () => clearTimeout(timer);
     }
   }, [loading]);
 
-  const handleAttachmentClick = () => {
-    setOpen(!open);
+  const handleSubmit = () => {
+    if (!text.trim()) return;
+    onRequest?.(text);
+    setLoading(true);
   };
+
+  const handleAttachmentClick = () => setOpen(!open);
 
   const senderHeader = (
     <AntXSender.Header
       title="附件"
-      styles={{
-        content: {
-          padding: 0,
-        },
-      }}
+      styles={{ content: { padding: 0 } }}
       open={open}
       onOpenChange={setOpen}
       forceRender
     >
       <Attachments
         ref={attachmentsRef}
-        // Mock not real upload file
         beforeUpload={() => false}
         items={items}
         onChange={({ fileList }) => setItems(fileList)}
         placeholder={(type) =>
           type === "drop"
-            ? {
-                title: "拖拽文件至此处",
-              }
+            ? { title: "拖拽文件至此处" }
             : {
                 icon: <CloudUploadOutlined />,
                 title: "上传文件",
@@ -89,13 +88,13 @@ const Demo = () => {
   );
 
   return (
-    <Flex style={{ width: "30vw", margin: "50px 0 0 0" }} align="end">
+    <Flex style={{ width: "30vw", margin: "24px 0 0 0" }} align="end">
       <AntXSender
         ref={senderRef}
         header={senderHeader}
         value={text}
         onChange={setText}
-        loading={loading}
+        loading={isRequesting || loading}
         allowSpeech={true}
         autoSize={{ minRows: 2 }}
         submitType="enter"
@@ -106,12 +105,8 @@ const Demo = () => {
           }
           setOpen(true);
         }}
-        onSubmit={() => {
-          setLoading(true);
-        }}
-        onCancel={() => {
-          setLoading(false);
-        }}
+        onSubmit={handleSubmit}
+        onCancel={() => setLoading(false)}
         actions={false}
         footer={({ components }) => {
           const { SendButton, LoadingButton, SpeechButton } = components;
@@ -137,7 +132,7 @@ const Demo = () => {
                 <Divider type="vertical" />
                 <SpeechButton style={iconStyle} />
                 <Divider type="vertical" />
-                {loading ? (
+                {isRequesting || loading ? (
                   <LoadingButton type="default" />
                 ) : (
                   <SendButton type="primary" disabled={false} />
@@ -151,12 +146,10 @@ const Demo = () => {
   );
 };
 
-const Sender = () => {
-  return (
-    <App>
-      <Demo />
-    </App>
-  );
-};
+const Sender: React.FC<SenderProps> = (props) => (
+  <App>
+    <Demo {...props} />
+  </App>
+);
 
 export default Sender;

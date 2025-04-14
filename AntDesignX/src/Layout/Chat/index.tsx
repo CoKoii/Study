@@ -1,17 +1,11 @@
 import { type FC } from "react";
-import { useParams } from "react-router-dom";
-import { Bubble } from "@ant-design/x";
-import { Flex } from "antd";
+import { Bubble, useXAgent, useXChat } from "@ant-design/x";
+import { Flex, App } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import Sender from "../../components/Sender";
+import aiService from "../../services/ai";
+import { markdownRenderer } from "../../components/MarkdownMessage";
 import "./index.css";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: number;
-}
 
 const userAvatar: React.CSSProperties = {
   color: "#fff",
@@ -23,58 +17,60 @@ const assistantAvatar: React.CSSProperties = {
   backgroundColor: "#1677ff",
 };
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    role: "user",
-    content: "你好，请介绍一下你自己。",
-    timestamp: 1732204800000,
-  },
-  {
-    id: "2",
-    role: "assistant",
-    content:
-      "你好！我是基于 Ant Design 打造的智能助手，可以为你提供各种帮助。有什么我可以帮你的吗？",
-    timestamp: 1732204860000,
-  },
-  {
-    id: "3",
-    role: "user",
-    content: "你能做些什么呢？",
-    timestamp: 1732204920000,
-  },
-  {
-    id: "4",
-    role: "assistant",
-    content:
-      "我可以：\n1. 回答你的问题\n2. 帮助你解决编程问题\n3. 提供创意建议\n4. 协助文档撰写\n等等。你可以尝试问我任何问题！",
-    timestamp: 1732204980000,
-  },
-];
-
 const Chat: FC = () => {
-  const { id } = useParams();
-  console.log("Current chat id:", id);
+  const [agent] = useXAgent({
+    request: async ({ message }, { onSuccess, onUpdate, onError }) => {
+      if (!message) return;
+
+      try {
+        aiService.setApiKey(import.meta.env.VITE_DEEPSEEK_API_KEY);
+
+        await aiService.createChatCompletion(
+          {
+            messages: [{ role: "user", content: message }],
+            stream: true,
+          },
+          {
+            onUpdate: (content) => onUpdate(content),
+            onFinish: (content) => onSuccess(content),
+            onError: (error) => onError(error),
+          }
+        );
+      } catch (error) {
+        onError(error instanceof Error ? error : new Error("请求失败"));
+      }
+    },
+  });
+
+  const { onRequest, messages } = useXChat({
+    agent,
+    requestPlaceholder: "思考中...",
+    requestFallback: "抱歉，请求失败，请稍后重试。",
+  });
 
   return (
     <div className="chat-container">
       <div className="messages">
         <Flex gap="middle" vertical>
-          {mockMessages.map((message) => (
+          {messages.map(({ id, message, status }) => (
             <Bubble
-              key={message.id}
-              placement={message.role === "user" ? "end" : "start"}
-              content={message.content}
+              key={id}
+              placement={status === "local" ? "end" : "start"}
+              content={message}
               avatar={{
                 icon: <UserOutlined />,
-                style: message.role === "user" ? userAvatar : assistantAvatar,
+                style: status === "local" ? userAvatar : assistantAvatar,
               }}
+              messageRender={status !== "local" ? markdownRenderer : undefined}
+              typing={status === "loading"}
             />
           ))}
         </Flex>
       </div>
       <div className="chat-input">
-        <Sender />
+        <App>
+          <Sender onRequest={onRequest} isRequesting={agent.isRequesting()} />
+        </App>
       </div>
     </div>
   );
