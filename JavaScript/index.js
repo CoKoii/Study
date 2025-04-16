@@ -1,2 +1,2 @@
-const num = 1.2;
-console.log(parseInt(num));
+let js = "amazing";
+if (js === "amazing") alert("JavaScript is FUN!");
