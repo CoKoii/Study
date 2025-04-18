@@ -1,2 +1,1 @@
-let js = "amazing";
-if (js === "amazing") alert("JavaScript is FUN!");
+1 < 2 ? console.log(1) : console.log(2);
