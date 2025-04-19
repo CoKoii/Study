@@ -1,4 +1,4 @@
 "use strict";
 
-let a = false;
-let b = true;
+const array = [1, 2, 3];
+console.log(array.indexOf(3));
