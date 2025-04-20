@@ -6,9 +6,12 @@ const Person = {
   birthYear: 1991,
   job: "teacher",
   friends: ["Michael", "Peter", "Steven"],
+  sayhello: function () {
+    console.log(this);
+    console.log("hello,my name is " + this.name);
+  },
 };
 
-console.log(Person.name);
-console.log(Person["name"]);
-const nameKey = "Name";
-console.log(Person["last" + nameKey]);
+for (let i in Person) {
+  console.log(i);
+}
