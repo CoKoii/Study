@@ -1,6 +1,25 @@
-const error = (): never => {
-  throw new Error("This is an error");
+enum Direction {
+  Up,
+  Down,
+  Left,
+  Right,
+}
+
+const walk = (str: Direction) => {
+  switch (str) {
+    case Direction.Up:
+      console.log("Going up");
+      break;
+    case Direction.Down:
+      console.log("Going down");
+      break;
+    case Direction.Left:
+      console.log("Going left");
+      break;
+    case Direction.Right:
+      console.log("Going right");
+      break;
+  }
 };
-const error2 = (): never => {
-  error2();
-};
+
+walk(Direction.Up);
