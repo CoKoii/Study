@@ -1,5 +1,4 @@
-var Person = {
-    name: "John Doe",
-    age: 30,
+"use strict";
+const error = () => {
+    throw new Error("This is an error");
 };
-console.log(Person.nickname);

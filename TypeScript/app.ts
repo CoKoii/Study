@@ -1,5 +1,6 @@
-const Person = {
-  name: "John Doe",
-  age: 30,
+const error = (): never => {
+  throw new Error("This is an error");
 };
-console.log(Person.name);
+const error2 = (): never => {
+  error2();
+};
