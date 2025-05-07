@@ -34,7 +34,7 @@ const Layout = () => {
         <div className="header">
           <div className="menu">
             <MenuOutlined onClick={() => ToggleMenu()} />
-            <span>DeepSeek R1</span>
+            <span>DeepSeek</span>
           </div>
         </div>
         <div className="content">
