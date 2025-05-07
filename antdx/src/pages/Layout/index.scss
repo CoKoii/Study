@@ -25,6 +25,17 @@
     flex-direction: column;
     width: 100%;
     position: relative;
+    .welcome {
+      font-size: 25px;
+      font-weight: 700;
+      white-space: nowrap;
+      position: absolute;
+      padding-right: 300px;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
     .mask {
       visibility: hidden;
       opacity: 0;
@@ -55,6 +66,9 @@
   .right {
     flex: 1;
     width: 100%;
+    .welcome {
+      padding-right: 0 !important;
+    }
     .mask {
       visibility: visible !important;
       opacity: 1 !important;

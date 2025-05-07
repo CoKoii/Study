@@ -37,12 +37,8 @@ const Layout = () => {
             <span>DeepSeek</span>
           </div>
         </div>
-        <div className="content">
-          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Rem vel
-          quibusdam dolor culpa quod iure facere? Dolore quos saepe voluptates
-          similique, rem quasi magnam, pariatur dolorem, quidem deserunt dolorum
-          temporibus.
-        </div>
+        <div className="welcome">有什么可以帮忙的？</div>
+        {/* <div className="content">有什么可以帮忙的？</div> */}
       </main>
     </div>
   );

@@ -4,14 +4,15 @@ const { Title } = Typography;
 
 const Header = () => {
   return (
-    <div className="header" style={{ padding: "0px 0" }}>
-      <Title level={3}>Ant Design X</Title>
+    <div className="header">
+      <Title level={4}>Ant Design X</Title>
       <Button
-        size="large"
+        size="middle"
         type="primary"
         icon={<MessageOutlined />}
         style={{
-          margin: "24px 0 24px 0 ",
+          margin: "12px 0 12px 0 ",
+          width: "100%",
         }}
       >
         开启新对话
