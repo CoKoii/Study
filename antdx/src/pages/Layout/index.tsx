@@ -37,7 +37,12 @@ const Layout = () => {
             <span>DeepSeek</span>
           </div>
         </div>
-        <div className="welcome">有什么可以帮忙的？</div>
+        <div
+          className="welcome"
+          style={{ paddingRight: !hidden ? 0 : "300px" }}
+        >
+          有什么可以帮忙的？
+        </div>
         {/* <div className="content">有什么可以帮忙的？</div> */}
       </main>
     </div>
