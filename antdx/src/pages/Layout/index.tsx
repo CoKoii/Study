@@ -1,12 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.scss";
 import { MenuOutlined } from "@ant-design/icons";
 import Sider from "../../components/Sider";
+
 const Layout = () => {
-  const [hidden, setHidden] = useState(true);
+  const [hidden, setHidden] = useState(window.innerWidth >= 768);
   const ToggleMenu = () => {
     setHidden((s) => !s);
   };
+  useEffect(() => {
+    const handleResize = () => {
+      setHidden(window.innerWidth >= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <div
@@ -33,7 +44,7 @@ const Layout = () => {
         {hidden && <div className="mask" onClick={() => ToggleMenu()}></div>}
         <div className="header">
           <div className="menu">
-            <MenuOutlined onClick={() => ToggleMenu()} />
+            <MenuOutlined onClick={() => ToggleMenu()} className="icon" />
             <span>DeepSeek</span>
           </div>
         </div>

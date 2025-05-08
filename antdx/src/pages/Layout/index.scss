@@ -27,7 +27,7 @@
     width: 100%;
     position: relative;
     .welcome {
-      font-size: 20px;
+      font-size: 25px;
       font-weight: 700;
       white-space: nowrap;
       position: absolute;
@@ -46,9 +46,11 @@
       height: auto;
       width: 100%;
       .menu {
-        cursor: pointer;
         display: flex;
         gap: 15px;
+        .icon {
+          cursor: pointer;
+        }
         span {
           font-weight: 700;
           font-size: 17px;
