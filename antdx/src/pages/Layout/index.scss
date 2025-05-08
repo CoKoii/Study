@@ -12,6 +12,7 @@
   .left {
     flex: 5;
     min-width: 300px;
+    max-width: 300px;
     background-color: #f9f9f9;
     overflow: hidden;
   }
@@ -28,7 +29,6 @@
     .welcome {
       font-size: 25px;
       font-weight: 700;
-      white-space: nowrap;
       position: absolute;
       top: 40%;
       transform: translate(0, -50%);
@@ -58,6 +58,9 @@
   }
 }
 @media (max-width: 768px) {
+  .layout {
+    width: 100vw;
+  }
   .left {
     flex: 0;
     min-width: 0;
@@ -66,8 +69,11 @@
   .right {
     flex: 1;
     width: 100%;
+    min-width: 100vw; /* 确保在移动端时右侧内容最小宽度是100vw */
     .welcome {
       padding-right: 0 !important;
+      white-space: nowrap !important; /* 强制不换行 */
+      width: auto !important; /* 确保宽度自适应内容 */
     }
     .mask {
       visibility: visible !important;
