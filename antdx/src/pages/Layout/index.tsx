@@ -39,7 +39,7 @@ const Layout = () => {
         className="right"
         style={{
           flex: hidden ? 43 : 1,
-          width: "100%", // 使用固定的100%宽度，而不是可能超出屏幕的计算值
+          width: "100%",
         }}
       >
         {hidden && <div className="mask" onClick={() => ToggleMenu()}></div>}
