@@ -34,6 +34,22 @@
       transform: translate(0, -50%);
       text-align: center;
     }
+    .content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 106px;
+      overflow: auto;
+    }
+    .footer {
+      width: 100%;
+      height: 116px;
+      position: absolute;
+      bottom: 10px;
+    }
     .mask {
       visibility: hidden;
       opacity: 0;
@@ -74,6 +90,12 @@
       padding-right: 0 !important;
       white-space: nowrap !important;
       width: auto !important;
+    }
+    .content {
+      margin-bottom: 96px !important;
+    }
+    .footer {
+      bottom: 0px !important;
     }
     .mask {
       visibility: visible !important;

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import "./index.scss";
 import { MenuOutlined } from "@ant-design/icons";
 import Sider from "../../components/Sider";
-
+import Sender from "../../components/Sender";
 const Layout = () => {
   const [hidden, setHidden] = useState(window.innerWidth >= 768);
   const ToggleMenu = () => {
@@ -50,48 +50,10 @@ const Layout = () => {
           </div>
         </div>
         <div className="welcome">有什么可以帮忙的？</div>
-        {/* <div className="content">
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-          <h1>有什么可以帮忙的？</h1>
-        </div> */}
+        {/* <div className="content"></div> */}
+        <div className="footer">
+          <Sender />
+        </div>
       </main>
     </div>
   );
