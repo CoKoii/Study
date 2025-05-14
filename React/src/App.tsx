@@ -1,8 +1,13 @@
+import { useState } from "react";
+
 const App = () => {
+  const [count, setcount] = useState(0);
+  const add = () => {
+    setcount((prev) => prev + 1);
+  };
   return (
     <div>
-      <h1>Welcome to React</h1>
-      <p>This is a simple React application.</p>
+      <button onClick={add}>{count}</button>
     </div>
   );
 };
