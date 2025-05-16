@@ -1,13 +1,25 @@
-import { useState } from "react";
+import { createContext, useContext } from "react";
 
-const App = () => {
-  const [count, setcount] = useState(0);
-  const add = () => {
-    setcount((prev) => prev + 1);
-  };
+const MsgContext = createContext("");
+const A = () => {
   return (
     <div>
-      <button onClick={add}>{count}</button>
+      这是a组件
+      <B />
+    </div>
+  );
+};
+const B = () => {
+  const msg = useContext(MsgContext);
+  return <div>这是b组件{msg}</div>;
+};
+const App = () => {
+  return (
+    <div>
+      <MsgContext.Provider value={"hello"}>
+        <p>App</p>
+        <A />
+      </MsgContext.Provider>
     </div>
   );
 };
