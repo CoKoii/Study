@@ -1,25 +1,23 @@
-import { createContext, useContext } from "react";
+import { useEffect, useState } from "react";
 
-const MsgContext = createContext("");
-const A = () => {
-  return (
-    <div>
-      这是a组件
-      <B />
-    </div>
-  );
+const Son = () => {
+  useEffect(() => {
+    const timer = setInterval(() => {
+      console.log(1);
+    }, 1000);
+    // return () => {
+    //   clearInterval(timer);
+    // };
+  });
+  return <div>this is Son</div>;
 };
-const B = () => {
-  const msg = useContext(MsgContext);
-  return <div>这是b组件{msg}</div>;
-};
+
 const App = () => {
+  const [show, setShow] = useState(true);
   return (
     <div>
-      <MsgContext.Provider value={"hello"}>
-        <p>App</p>
-        <A />
-      </MsgContext.Provider>
+      {show && <Son />}
+      <button onClick={() => setShow((s) => !s)}>卸载Son组件</button>
     </div>
   );
 };
