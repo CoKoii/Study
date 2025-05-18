@@ -1,24 +1,34 @@
-import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "/vite.svg";
+import "./App.css";
+import { useDispatch, useSelector } from "react-redux";
+import { increament } from "./store/modules/counterStore";
 
-const Son = () => {
-  useEffect(() => {
-    const timer = setInterval(() => {
-      console.log(1);
-    }, 1000);
-    // return () => {
-    //   clearInterval(timer);
-    // };
-  });
-  return <div>this is Son</div>;
-};
-
-const App = () => {
-  const [show, setShow] = useState(true);
+function App() {
+  const { count } = useSelector((state) => state.counter);
+  const dispatch = useDispatch();
   return (
-    <div>
-      {show && <Son />}
-      <button onClick={() => setShow((s) => !s)}>卸载Son组件</button>
-    </div>
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => dispatch(increament())}>count is {count}</button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
   );
-};
+}
+
 export default App;
