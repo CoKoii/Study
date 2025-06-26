@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import Count from '@/components/Count.vue'
 defineExpose({
-  name: 'App',
+  name: 'LoveTalk',
 })
 </script>
 
 <template>
-  <Count />
+  <div></div>
 </template>
 
 <style scoped></style>
