@@ -1,0 +1,28 @@
+{
+  "name": "ai-cataract-diagnostic",
+  "version": "1.0.0",
+  "description": "AI白癜风辅助诊断系统",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "AI",
+    "医疗",
+    "诊断",
+    "白癜风"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.4"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5"
+  }
+}

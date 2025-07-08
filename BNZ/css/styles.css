@@ -1,0 +1,157 @@
+/* 自定义样式 */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-bg {
+  background: linear-gradient(-45deg, #3b82f6, #22d3ee, #2563eb, #60a5fa);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* 上传区域动画 */
+.upload-zone {
+  transition: all 0.3s ease;
+}
+
+.upload-zone:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+/* 预览图像样式 */
+.preview-fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.preview-fade-in.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.preview-image-container {
+  position: relative;
+  transition: max-height 0.3s ease;
+}
+
+.preview-image-zoom {
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.preview-image-hover {
+  transform: scale(1.02);
+}
+
+.preview-image-fullsize {
+  transform: scale(1);
+  cursor: zoom-out;
+}
+
+.preview-image-zoom.loaded {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 诊断中动画 */
+@keyframes diagnose {
+  0% {
+    stroke-dashoffset: 339.292;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.diagnostic-circle {
+  stroke-dasharray: 339.292;
+  animation: diagnose 2.5s ease-in-out infinite;
+}
+
+/* 平滑过渡 */
+.section-transition {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.section-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* 错误提示动画 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+.error-shake {
+  animation: shake 0.8s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* 图像分析区域高亮动画 */
+@keyframes pulseHighlight {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.highlight-area {
+  animation: pulseHighlight 2s ease infinite;
+}

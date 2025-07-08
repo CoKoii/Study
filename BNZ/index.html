@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI白癜风辅助诊断系统</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 自定义配置 -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3B82F6",
+              secondary: "#1E40AF",
+              dark: {
+                100: "#1E293B",
+                200: "#0F172A",
+                300: "#0B1120",
+              },
+              accent: {
+                blue: "#60A5FA",
+                cyan: "#22D3EE",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body class="bg-dark-300 text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+      <!-- 页面头部 -->
+      <header class="text-center mb-10">
+        <h1 class="text-3xl font-bold text-accent-blue mb-2">
+          AI白癜风辅助诊断系统
+        </h1>
+        <p class="text-gray-400">通过人工智能技术辅助白癜风早期筛查</p>
+      </header>
+
+      <!-- 主要内容区域 -->
+      <main class="flex flex-col gap-8">
+        <!-- 图像上传组件 -->
+        <div
+          id="upload-section"
+          class="bg-dark-200 rounded-xl p-6 shadow-lg border border-gray-700"
+        >
+          <!-- 图像上传组件内容将通过JS注入 -->
+        </div>
+
+        <!-- 模型推理中组件 -->
+        <div
+          id="processing-section"
+          class="bg-dark-200 rounded-xl p-6 shadow-lg border border-gray-700 hidden"
+        >
+          <!-- 模型推理组件内容将通过JS注入 -->
+        </div>
+
+        <!-- 诊断结果组件 -->
+        <div
+          id="results-section"
+          class="bg-dark-200 rounded-xl p-6 shadow-lg border border-gray-700 hidden"
+        >
+          <!-- 诊断结果组件内容将通过JS注入 -->
+        </div>
+      </main>
+
+      <!-- 页脚 -->
+      <footer class="text-center mt-10 text-sm text-gray-500"></footer>
+    </div>
+
+    <!-- 组件JS引入 -->
+    <script src="./components/UploadSection.js"></script>
+    <script src="./components/ProcessingSection.js"></script>
+    <script src="./components/ResultsSection.js"></script>
+    <script src="./js/app.js"></script>
+  </body>
+</html>

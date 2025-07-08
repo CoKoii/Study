@@ -1,11 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+const a = ref(1)
+
 defineExpose({
-  name: 'LoveTalk',
+  name: 'Son',
+  a,
 })
 </script>
 
 <template>
-  <div></div>
+  <div>{{ a }}</div>
 </template>
 
 <style scoped></style>
