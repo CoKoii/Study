@@ -1,0 +1,13 @@
+:root {
+  --text-color-1: #000000;
+  --background-color-1: #ffffff;
+}
+:root[data-theme='dark'] {
+  --text-color-1: #ffffff;
+  --background-color-1: #000000;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
