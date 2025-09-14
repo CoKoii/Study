@@ -2,445 +2,139 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>基金可视化（pingzhongdata + ECharts）</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <title>霞鹜文楷 Lite 示例</title>
     <style>
-      :root {
-        --fg: #111;
-        --muted: #666;
-        --border: #e5e7eb;
-        --accent: #3b82f6;
-        --accent-ghost: #e8f0fe;
+      /* 引入本地下载好的字体 */
+      @font-face {
+        font-family: "WenKaiLite";
+        src: url("LXGWWenKaiLite-Regular.woff2") format("woff2");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap; /* 优化加载体验 */
       }
+
       body {
-        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial;
-        margin: 0;
-        background: #fff;
-        color: var(--fg);
+        font-family: "WenKaiLite", "PingFang SC", "Microsoft YaHei", sans-serif;
+        line-height: 1.8;
+        margin: 40px;
       }
-      .wrap {
-        max-width: 1100px;
-        margin: 24px auto;
-        padding: 0 16px;
-      }
+
       h1 {
-        font-size: 20px;
-        margin: 0 0 12px;
-      }
-      .bar {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-      }
-      .bar input {
-        flex: 0 1 180px;
-        height: 36px;
-        padding: 0 12px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        outline: none;
-      }
-      .bar button {
-        height: 36px;
-        padding: 0 14px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: #fff;
-        cursor: pointer;
-      }
-      .bar button.primary {
-        background: var(--accent);
-        color: #fff;
-        border-color: transparent;
-      }
-      .hint {
-        font-size: 12px;
-        color: var(--muted);
-      }
-      .status {
-        font-size: 13px;
-        color: var(--muted);
-        margin: 6px 0 12px;
-      }
-      .card {
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px;
-      }
-      #chart {
-        width: 100%;
-        height: 520px;
-      }
-      .meta {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .meta b {
-        color: #111;
+        font-size: 2em;
+        font-weight: normal;
       }
 
-      .ranges {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin: 8px 0 12px;
-      }
-      .range-btn {
-        height: 30px;
-        padding: 0 12px;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        background: #fff;
-        cursor: pointer;
-        font-size: 13px;
-      }
-      .range-btn.active {
-        background: var(--accent-ghost);
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-
-      @media (max-width: 520px) {
-        #chart {
-          height: 420px;
-        }
+      p {
+        font-size: 1.2em;
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <h1>基金净值可视化（东方财富 pingzhongdata）</h1>
-
-      <div class="bar">
-        <input
-          id="codeInput"
-          type="text"
-          placeholder="输入基金代码，如 016371"
-          value="016371"
-          inputmode="numeric"
-        />
-        <button class="primary" id="loadBtn">查询</button>
-        <button id="todayBtn" title="回到今日">回到今日</button>
-        <span class="hint"
-          >数据源：<code
-            >http://fund.eastmoney.com/pingzhongdata/{代码}.js</code
-          ></span
-        >
-      </div>
-
-      <div class="ranges" id="ranges">
-        <button class="range-btn" data-m="1">近1月</button>
-        <button class="range-btn" data-m="3">近3月</button>
-        <button class="range-btn" data-m="6">近6月</button>
-        <button class="range-btn" data-m="12">近1年</button>
-        <button class="range-btn active" data-m="all">成立以来</button>
-      </div>
-
-      <div class="status" id="status">准备就绪</div>
-
-      <div class="card">
-        <div id="chart"></div>
-        <div class="meta" id="meta"></div>
-      </div>
-    </div>
-
-    <script>
-      // ===== 工具 =====
-      const $ = (sel) => document.querySelector(sel);
-      const fmtDate = (ts) => {
-        const d = new Date(ts);
-        const m = `${d.getMonth() + 1}`.padStart(2, "0");
-        const day = `${d.getDate()}`.padStart(2, "0");
-        return `${d.getFullYear()}-${m}-${day}`;
-      };
-      const parseYMD = (s) => {
-        // s: YYYY-MM-DD
-        const [y, m, d] = s.split("-").map(Number);
-        return new Date(y, m - 1, d);
-      };
-      const monthsAgo = (d, m) => {
-        const dd = new Date(d.getTime());
-        dd.setMonth(dd.getMonth() - m);
-        return dd;
-      };
-
-      // ===== 组件状态 =====
-      const chart = echarts.init(document.getElementById("chart"));
-      const statusEl = $("#status");
-      const metaEl = $("#meta");
-      const codeInput = $("#codeInput");
-      const loadBtn = $("#loadBtn");
-      const todayBtn = $("#todayBtn");
-      const rangesEl = $("#ranges");
-
-      let fullData = null; // { name, code, netTrend, acTrend, dailyRet }
-      let activeRange = "all";
-
-      // ===== 图表渲染（直线） =====
-      function renderChartForRange(rangeKey) {
-        if (!fullData) return;
-        activeRange = rangeKey;
-        const { name, code, netTrend, acTrend, dailyRet } = fullData;
-
-        // 确定过滤日期
-        let startDate = null;
-        const lastDate = parseYMD(netTrend[netTrend.length - 1].date);
-        if (rangeKey !== "all") {
-          const months = Number(rangeKey);
-          startDate = monthsAgo(lastDate, months);
-        }
-
-        // 过滤数据（以 netTrend 为基准）
-        const keep = (d) => !startDate || parseYMD(d.date) >= startDate;
-
-        const dates = netTrend.filter(keep).map((d) => d.date);
-        const unitNav = netTrend.filter(keep).map((d) => d.nav);
-        const dayRet = dailyRet.filter(keep).map((d) => d.ret);
-
-        // 对齐累计净值
-        const acMap = new Map(acTrend.map((d) => [d.date, d.nav]));
-        const acAligned = netTrend
-          .filter(keep)
-          .map((d) => ({ date: d.date, nav: acMap.get(d.date) ?? NaN }))
-          .filter((d) => !Number.isNaN(d.nav));
-        const acNav = acAligned.map((d) => d.nav);
-        const hasAC = acNav.length === unitNav.length && unitNav.length > 0;
-
-        const option = {
-          title: {
-            text: `${name}（${code}）`,
-            left: "center",
-            top: 8,
-            textStyle: { fontSize: 14 },
-          },
-          grid: { left: 48, right: 56, top: 50, bottom: 48 },
-          tooltip: {
-            trigger: "axis",
-            valueFormatter: (v) =>
-              typeof v === "number"
-                ? Math.abs(v) >= 100
-                  ? v.toFixed(2)
-                  : v
-                : v,
-          },
-          legend: {
-            top: 28,
-            data: hasAC
-              ? ["单位净值", "累计净值", "日涨跌幅(%)"]
-              : ["单位净值", "日涨跌幅(%)"],
-          },
-          xAxis: {
-            type: "category",
-            data: dates,
-            axisLabel: { showMinLabel: true, showMaxLabel: true },
-          },
-          yAxis: [
-            {
-              type: "value",
-              name: "净值",
-              scale: true,
-              axisLabel: { formatter: (v) => v.toFixed(2) },
-            },
-            {
-              type: "value",
-              name: "日涨跌(%)",
-              scale: true,
-              axisLabel: { formatter: (v) => v.toFixed(1) },
-            },
-          ],
-          dataZoom: [
-            { type: "inside", start: 70, end: 100 },
-            { start: 70, end: 100 },
-          ],
-          series: [
-            {
-              name: "单位净值",
-              type: "line",
-              yAxisIndex: 0,
-              showSymbol: false,
-              smooth: false, // 直线：关闭平滑
-              data: unitNav,
-            },
-            ...(hasAC
-              ? [
-                  {
-                    name: "累计净值",
-                    type: "line",
-                    yAxisIndex: 0,
-                    showSymbol: false,
-                    smooth: false, // 直线：关闭平滑
-                    data: acNav,
-                  },
-                ]
-              : []),
-            {
-              name: "日涨跌幅(%)",
-              type: "bar",
-              yAxisIndex: 1,
-              data: dayRet,
-            },
-          ],
-        };
-
-        chart.setOption(option, true);
-
-        // 下方 meta
-        if (dates.length) {
-          const lastIdx = dates.length - 1;
-          const lastNav = unitNav[lastIdx];
-          const lastRet = dayRet[lastIdx];
-          metaEl.innerHTML = `
-          <div>区间：<b>${
-            rangeKey === "all" ? "成立以来" : `近${rangeKey}月`
-          }</b></div>
-          <div>最新日期：<b>${dates[lastIdx]}</b></div>
-          <div>单位净值：<b>${(lastNav ?? NaN).toFixed?.(4) ?? "-"}</b></div>
-          ${
-            hasAC
-              ? `<div>累计净值：<b>${
-                  (acNav[lastIdx] ?? NaN).toFixed?.(4) ?? "-"
-                }</b></div>`
-              : ""
-          }
-          <div>日涨跌幅：<b>${
-            Number.isFinite(lastRet) ? lastRet.toFixed(2) : "-"
-          }%</b></div>
-        `;
-        } else {
-          metaEl.textContent = "无数据";
-        }
-      }
-
-      function setActiveRangeBtn(key) {
-        rangesEl.querySelectorAll(".range-btn").forEach((btn) => {
-          btn.classList.toggle("active", btn.dataset.m === key);
-        });
-      }
-
-      // ===== 加载 pingzhongdata 并存 fullData =====
-      function cleanupGlobals() {
-        const keys = [
-          "fS_name",
-          "fS_code",
-          "Data_netWorthTrend",
-          "Data_ACWorthTrend",
-          "Data_grandTotal",
-          "Data_rateInSimilarType",
-          "Data_rateInSimilarPersent",
-          "syl_1n",
-          "syl_3y",
-          "syl_6y",
-        ];
-        keys.forEach((k) => {
-          try {
-            delete window[k];
-          } catch (_) {}
-        });
-      }
-
-      function loadPingZhongData(code) {
-        return new Promise((resolve, reject) => {
-          cleanupGlobals();
-          const src = `http://fund.eastmoney.com/pingzhongdata/${code}.js?v=${Date.now()}`;
-          const s = document.createElement("script");
-          s.src = src;
-          s.async = true;
-          s.onload = () => {
-            try {
-              const name = window.fS_name || "";
-              const fcode = window.fS_code || code;
-
-              const net = Array.isArray(window.Data_netWorthTrend)
-                ? window.Data_netWorthTrend
-                : [];
-              const netTrend = net.map((d) => ({
-                date: fmtDate(d.x),
-                nav: Number(d.y),
-                ret: Number(d.equityReturn ?? 0),
-              }));
-
-              const ac = Array.isArray(window.Data_ACWorthTrend)
-                ? window.Data_ACWorthTrend
-                : [];
-              const acTrend = ac.map(([x, y]) => ({
-                date: fmtDate(x),
-                nav: Number(y),
-              }));
-
-              const dailyRet = netTrend.map((d) => ({
-                date: d.date,
-                ret: Number(d.ret),
-              }));
-
-              resolve({
-                name: name || "未知基金",
-                code: fcode,
-                netTrend,
-                acTrend,
-                dailyRet,
-              });
-            } catch (err) {
-              reject(new Error("解析数据失败：" + err.message));
-            } finally {
-              cleanupGlobals();
-              s.remove();
-            }
-          };
-          s.onerror = () => {
-            s.remove();
-            reject(new Error("脚本加载失败"));
-          };
-          document.head.appendChild(s);
-        });
-      }
-
-      async function loadAndRender(code) {
-        if (!/^\d{6}$/.test(code)) {
-          statusEl.textContent = "请输入 6 位基金代码，例如 016371";
-          return;
-        }
-        statusEl.textContent = "加载中…";
-        metaEl.textContent = "";
-        try {
-          fullData = await loadPingZhongData(code);
-          statusEl.textContent = `已加载：${fullData.name}（${fullData.code}）`;
-          setActiveRangeBtn("all");
-          renderChartForRange("all");
-        } catch (e) {
-          statusEl.textContent = "加载失败：" + e.message;
-          chart.clear();
-        }
-      }
-
-      // ===== 交互 =====
-      loadBtn.addEventListener("click", () =>
-        loadAndRender(codeInput.value.trim())
-      );
-      codeInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") loadAndRender(codeInput.value.trim());
-      });
-      todayBtn.addEventListener("click", () =>
-        chart.dispatchAction({ type: "dataZoom", start: 90, end: 100 })
-      );
-
-      rangesEl.addEventListener("click", (e) => {
-        const btn = e.target.closest(".range-btn");
-        if (!btn || !fullData) return;
-        const key = btn.dataset.m; // "1" | "3" | "6" | "12" | "all"
-        setActiveRangeBtn(key);
-        renderChartForRange(key);
-      });
-
-      // 初次加载默认
-      loadAndRender(codeInput.value.trim());
-      window.addEventListener("resize", () => chart.resize());
-    </script>
+    <h1>你好，世界！</h1>
+    <p>这是使用 <strong>霞鹜文楷 Lite Regular</strong> 的效果。</p>
+    <p>你可以在这里写中文内容，测试字体的美观性。卧槽尼玛</p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Provident quas,
+    veniam doloribus reprehenderit amet, ratione dolor dignissimos sunt, nobis
+    ex nisi excepturi. Ipsum dolorem quis labore illo, assumenda neque rerum
+    pariatur asperiores sed quo ut facere, id aut eaque eligendi dignissimos. Ex
+    a eaque tempore sint adipisci nulla non nam harum sit vitae officiis earum
+    expedita culpa quae necessitatibus, nemo enim optio nihil. Provident earum
+    quas minima voluptatum, perspiciatis aut enim nam sit sequi magnam odit
+    nihil voluptas quos natus soluta odio cum dolor sunt quaerat quae, culpa
+    fugiat reiciendis explicabo excepturi? Molestias eum dolor autem tenetur
+    quas dicta amet sint, velit quisquam delectus enim distinctio voluptatem,
+    officia non beatae veritatis unde. Dolor nihil, placeat aspernatur sed iste
+    porro consequatur impedit natus perferendis? Perspiciatis aut ea dolores
+    alias labore eum qui corporis natus sunt. Dolorem deleniti explicabo veniam
+    tempore earum suscipit perferendis facilis laudantium, saepe doloribus, aut
+    modi velit quis magni officia aperiam corporis eaque autem sit quasi amet
+    asperiores quo neque. Accusantium enim magnam consequatur cum modi delectus
+    sed ut vitae illum hic sunt autem dolorem, maiores, magni nostrum mollitia
+    ex laudantium officiis rem deserunt nam repellat explicabo, nemo dolor!
+    Cumque doloremque, nulla dignissimos illo neque impedit soluta deserunt ipsa
+    odio, ipsum recusandae quisquam veniam sed nam. Magni esse veritatis
+    voluptates dolorem officia enim sequi voluptatibus adipisci quos molestias
+    rerum officiis molestiae, beatae harum possimus fugiat nam nulla voluptatem,
+    accusamus culpa. Dolorum aliquam dolore quam repellat atque sequi deserunt
+    minus qui reprehenderit nihil quos ipsa, cupiditate praesentium tenetur
+    fugiat est nam laboriosam nemo molestiae eos iusto quidem. Minima voluptatum
+    ipsum iure at dolorum? Quidem explicabo enim rerum corrupti beatae, quae
+    assumenda eius quam nisi ullam facilis. Quasi illum non, odio at nihil qui
+    ut unde maxime id natus. Voluptates nesciunt at repellendus! Vel, adipisci
+    pariatur quam consequuntur doloremque ratione cum itaque praesentium! Ab
+    veniam quos saepe mollitia hic reprehenderit, facilis quia voluptates totam,
+    dignissimos obcaecati laborum minus. Distinctio doloribus quam tempore eius
+    placeat hic asperiores? Delectus a adipisci repudiandae facere doloribus
+    quidem omnis exercitationem velit sed eos officia quam, deserunt architecto,
+    cum enim nisi voluptatibus eaque fugiat tenetur eum aspernatur esse!
+    Doloribus delectus debitis nostrum error incidunt non unde. Accusantium
+    maiores quibusdam vel temporibus, eveniet architecto praesentium quam nobis?
+    Tempora illo, officiis repudiandae explicabo possimus nemo eius maxime!
+    Nihil tenetur dignissimos exercitationem veritatis eum! Reprehenderit
+    mollitia fugit aspernatur molestiae nemo placeat cupiditate ducimus,
+    deleniti, porro exercitationem qui omnis earum ipsa repudiandae accusamus
+    illum libero eligendi magnam delectus nesciunt perspiciatis sed provident!
+    Ratione, perspiciatis odit similique aliquam id veritatis vel! Sit eligendi
+    incidunt illo, tenetur dolores et nihil, omnis ea sint hic autem dignissimos
+    voluptates. Dolores aliquid vel dicta ab sint nostrum reiciendis a,
+    cupiditate molestiae error neque qui, iste delectus molestias sit. Harum
+    exercitationem delectus laborum, modi, voluptates, voluptas dolores est nisi
+    libero accusamus enim quos provident neque beatae voluptate! Amet,
+    consectetur totam repudiandae sint numquam sequi consequatur expedita quasi
+    perspiciatis fugiat odit voluptatum. Suscipit blanditiis asperiores odio in
+    temporibus error ea soluta tempora ipsum impedit expedita ratione illum
+    voluptates laboriosam perspiciatis, amet unde debitis eum fuga distinctio
+    saepe. Dicta labore sit quidem expedita totam velit ex qui asperiores ad
+    voluptas vel non illum nihil quibusdam error, quo voluptatum possimus
+    aliquam recusandae, odit eum facilis similique! Architecto quidem illum
+    optio alias veniam ipsa perspiciatis odit tempore voluptatibus, eaque magni
+    rerum, quasi necessitatibus omnis odio reiciendis eum eius vel incidunt.
+    Quisquam mollitia repellat placeat repudiandae laborum exercitationem, nobis
+    quos earum eum vero! Hic assumenda corrupti quia odit laborum nobis,
+    distinctio omnis consequuntur, dicta ea, fugit nesciunt numquam? Temporibus
+    obcaecati odio placeat nemo dignissimos beatae at accusamus ipsa
+    consequatur, esse error cupiditate? Quasi officiis vel, velit aliquam quis,
+    sapiente molestiae optio deserunt, ducimus non dolore eos? Nisi ducimus
+    quasi, sint nam ea animi quos, vel, eligendi modi molestiae consequuntur
+    accusamus eveniet incidunt ullam pariatur sed voluptates sapiente. Quasi nam
+    tempore sunt exercitationem? Nisi, omnis pariatur, earum nobis illo nemo
+    eius dolorum nihil distinctio numquam similique beatae, facilis quo
+    exercitationem impedit voluptas? Adipisci ad blanditiis in dolorem aliquid
+    sint, repudiandae unde laudantium? Tempora distinctio omnis saepe veritatis
+    itaque cupiditate quo, impedit nisi nobis esse velit hic officia expedita
+    voluptas incidunt reiciendis qui recusandae placeat voluptates vero, fuga
+    animi sint aperiam illum. Magni omnis, reprehenderit numquam eius,
+    cupiditate molestiae, sapiente pariatur similique in repellat adipisci.
+    Velit officia animi voluptatibus consequuntur. Iusto eum in praesentium!
+    Atque deserunt quidem sapiente totam qui voluptatibus velit necessitatibus
+    libero voluptate, doloribus recusandae officiis suscipit, blanditiis dolorem
+    ducimus! Similique suscipit blanditiis laborum asperiores minus neque,
+    beatae, enim maxime rem tenetur fugit officiis doloribus commodi reiciendis
+    laudantium dolore incidunt cupiditate libero temporibus recusandae error nam
+    harum. Temporibus earum eaque ipsam voluptate quaerat cupiditate maxime iure
+    dolore inventore rerum nam odio, velit numquam dolores ducimus amet? Eum
+    enim nesciunt ducimus assumenda quasi incidunt, possimus commodi velit
+    tempore voluptas harum laudantium provident cum voluptatibus hic? Obcaecati
+    magnam adipisci, voluptatibus magni qui expedita aut autem nobis consequatur
+    mollitia repudiandae vel, omnis placeat explicabo, voluptas labore ea velit
+    accusantium neque temporibus iure sequi quam a? Vero aspernatur quo nesciunt
+    minima, asperiores, animi eos unde corrupti dolorem, qui incidunt
+    laudantium. Error cumque earum minima. Nobis voluptatibus earum voluptatum
+    necessitatibus beatae veritatis nihil voluptate sunt numquam eius!
+    Reiciendis, cumque atque? Eaque nihil amet sed nesciunt ex aperiam
+    exercitationem possimus, minima, illo expedita eligendi ipsam atque ut esse
+    mollitia? Laborum itaque iusto officia cumque suscipit saepe dolorem commodi
+    excepturi? Dignissimos nostrum amet ipsum consequuntur possimus aspernatur
+    veritatis dolor dolorem quibusdam laudantium aliquid, est blanditiis rerum
+    optio eveniet? Quasi architecto doloremque alias corrupti, assumenda beatae,
+    quisquam, repellat error illum incidunt labore sint autem. Est laborum
+    consequatur ea. Accusamus laborum aspernatur dolorem voluptatem atque omnis
+    officia quidem necessitatibus ab iste. Ducimus sit a ea maxime odio quaerat
+    perferendis eum animi molestiae inventore quis ipsum repudiandae corrupti
+    minima rerum facere suscipit, atque nihil? Amet deleniti ab repellat ducimus
+    eos, provident nobis ea, soluta pariatur autem placeat porro excepturi
+    suscipit et officia aperiam? Sunt ipsa, necessitatibus, error officia
+    accusantium ipsum et tenetur assumenda dolore fugiat animi optio similique
+    consectetur iusto atque.
   </body>
 </html>
