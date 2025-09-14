@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>基金可视化（pingzhongdata + ECharts）</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+      :root {
+        --fg: #111;
+        --muted: #666;
+        --border: #e5e7eb;
+        --accent: #3b82f6;
+        --accent-ghost: #e8f0fe;
+      }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial;
+        margin: 0;
+        background: #fff;
+        color: var(--fg);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 12px;
+      }
+      .bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .bar input {
+        flex: 0 1 180px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        outline: none;
+      }
+      .bar button {
+        height: 36px;
+        padding: 0 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer;
+      }
+      .bar button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 6px 0 12px;
+      }
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      #chart {
+        width: 100%;
+        height: 520px;
+      }
+      .meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .meta b {
+        color: #111;
+      }
+
+      .ranges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 8px 0 12px;
+      }
+      .range-btn {
+        height: 30px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .range-btn.active {
+        background: var(--accent-ghost);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      @media (max-width: 520px) {
+        #chart {
+          height: 420px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>基金净值可视化（东方财富 pingzhongdata）</h1>
+
+      <div class="bar">
+        <input
+          id="codeInput"
+          type="text"
+          placeholder="输入基金代码，如 016371"
+          value="016371"
+          inputmode="numeric"
+        />
+        <button class="primary" id="loadBtn">查询</button>
+        <button id="todayBtn" title="回到今日">回到今日</button>
+        <span class="hint"
+          >数据源：<code
+            >http://fund.eastmoney.com/pingzhongdata/{代码}.js</code
+          ></span
+        >
+      </div>
+
+      <div class="ranges" id="ranges">
+        <button class="range-btn" data-m="1">近1月</button>
+        <button class="range-btn" data-m="3">近3月</button>
+        <button class="range-btn" data-m="6">近6月</button>
+        <button class="range-btn" data-m="12">近1年</button>
+        <button class="range-btn active" data-m="all">成立以来</button>
+      </div>
+
+      <div class="status" id="status">准备就绪</div>
+
+      <div class="card">
+        <div id="chart"></div>
+        <div class="meta" id="meta"></div>
+      </div>
+    </div>
+
+    <script>
+      // ===== 工具 =====
+      const $ = (sel) => document.querySelector(sel);
+      const fmtDate = (ts) => {
+        const d = new Date(ts);
+        const m = `${d.getMonth() + 1}`.padStart(2, "0");
+        const day = `${d.getDate()}`.padStart(2, "0");
+        return `${d.getFullYear()}-${m}-${day}`;
+      };
+      const parseYMD = (s) => {
+        // s: YYYY-MM-DD
+        const [y, m, d] = s.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      };
+      const monthsAgo = (d, m) => {
+        const dd = new Date(d.getTime());
+        dd.setMonth(dd.getMonth() - m);
+        return dd;
+      };
+
+      // ===== 组件状态 =====
+      const chart = echarts.init(document.getElementById("chart"));
+      const statusEl = $("#status");
+      const metaEl = $("#meta");
+      const codeInput = $("#codeInput");
+      const loadBtn = $("#loadBtn");
+      const todayBtn = $("#todayBtn");
+      const rangesEl = $("#ranges");
+
+      let fullData = null; // { name, code, netTrend, acTrend, dailyRet }
+      let activeRange = "all";
+
+      // ===== 图表渲染（直线） =====
+      function renderChartForRange(rangeKey) {
+        if (!fullData) return;
+        activeRange = rangeKey;
+        const { name, code, netTrend, acTrend, dailyRet } = fullData;
+
+        // 确定过滤日期
+        let startDate = null;
+        const lastDate = parseYMD(netTrend[netTrend.length - 1].date);
+        if (rangeKey !== "all") {
+          const months = Number(rangeKey);
+          startDate = monthsAgo(lastDate, months);
+        }
+
+        // 过滤数据（以 netTrend 为基准）
+        const keep = (d) => !startDate || parseYMD(d.date) >= startDate;
+
+        const dates = netTrend.filter(keep).map((d) => d.date);
+        const unitNav = netTrend.filter(keep).map((d) => d.nav);
+        const dayRet = dailyRet.filter(keep).map((d) => d.ret);
+
+        // 对齐累计净值
+        const acMap = new Map(acTrend.map((d) => [d.date, d.nav]));
+        const acAligned = netTrend
+          .filter(keep)
+          .map((d) => ({ date: d.date, nav: acMap.get(d.date) ?? NaN }))
+          .filter((d) => !Number.isNaN(d.nav));
+        const acNav = acAligned.map((d) => d.nav);
+        const hasAC = acNav.length === unitNav.length && unitNav.length > 0;
+
+        const option = {
+          title: {
+            text: `${name}（${code}）`,
+            left: "center",
+            top: 8,
+            textStyle: { fontSize: 14 },
+          },
+          grid: { left: 48, right: 56, top: 50, bottom: 48 },
+          tooltip: {
+            trigger: "axis",
+            valueFormatter: (v) =>
+              typeof v === "number"
+                ? Math.abs(v) >= 100
+                  ? v.toFixed(2)
+                  : v
+                : v,
+          },
+          legend: {
+            top: 28,
+            data: hasAC
+              ? ["单位净值", "累计净值", "日涨跌幅(%)"]
+              : ["单位净值", "日涨跌幅(%)"],
+          },
+          xAxis: {
+            type: "category",
+            data: dates,
+            axisLabel: { showMinLabel: true, showMaxLabel: true },
+          },
+          yAxis: [
+            {
+              type: "value",
+              name: "净值",
+              scale: true,
+              axisLabel: { formatter: (v) => v.toFixed(2) },
+            },
+            {
+              type: "value",
+              name: "日涨跌(%)",
+              scale: true,
+              axisLabel: { formatter: (v) => v.toFixed(1) },
+            },
+          ],
+          dataZoom: [
+            { type: "inside", start: 70, end: 100 },
+            { start: 70, end: 100 },
+          ],
+          series: [
+            {
+              name: "单位净值",
+              type: "line",
+              yAxisIndex: 0,
+              showSymbol: false,
+              smooth: false, // 直线：关闭平滑
+              data: unitNav,
+            },
+            ...(hasAC
+              ? [
+                  {
+                    name: "累计净值",
+                    type: "line",
+                    yAxisIndex: 0,
+                    showSymbol: false,
+                    smooth: false, // 直线：关闭平滑
+                    data: acNav,
+                  },
+                ]
+              : []),
+            {
+              name: "日涨跌幅(%)",
+              type: "bar",
+              yAxisIndex: 1,
+              data: dayRet,
+            },
+          ],
+        };
+
+        chart.setOption(option, true);
+
+        // 下方 meta
+        if (dates.length) {
+          const lastIdx = dates.length - 1;
+          const lastNav = unitNav[lastIdx];
+          const lastRet = dayRet[lastIdx];
+          metaEl.innerHTML = `
+          <div>区间：<b>${
+            rangeKey === "all" ? "成立以来" : `近${rangeKey}月`
+          }</b></div>
+          <div>最新日期：<b>${dates[lastIdx]}</b></div>
+          <div>单位净值：<b>${(lastNav ?? NaN).toFixed?.(4) ?? "-"}</b></div>
+          ${
+            hasAC
+              ? `<div>累计净值：<b>${
+                  (acNav[lastIdx] ?? NaN).toFixed?.(4) ?? "-"
+                }</b></div>`
+              : ""
+          }
+          <div>日涨跌幅：<b>${
+            Number.isFinite(lastRet) ? lastRet.toFixed(2) : "-"
+          }%</b></div>
+        `;
+        } else {
+          metaEl.textContent = "无数据";
+        }
+      }
+
+      function setActiveRangeBtn(key) {
+        rangesEl.querySelectorAll(".range-btn").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.m === key);
+        });
+      }
+
+      // ===== 加载 pingzhongdata 并存 fullData =====
+      function cleanupGlobals() {
+        const keys = [
+          "fS_name",
+          "fS_code",
+          "Data_netWorthTrend",
+          "Data_ACWorthTrend",
+          "Data_grandTotal",
+          "Data_rateInSimilarType",
+          "Data_rateInSimilarPersent",
+          "syl_1n",
+          "syl_3y",
+          "syl_6y",
+        ];
+        keys.forEach((k) => {
+          try {
+            delete window[k];
+          } catch (_) {}
+        });
+      }
+
+      function loadPingZhongData(code) {
+        return new Promise((resolve, reject) => {
+          cleanupGlobals();
+          const src = `http://fund.eastmoney.com/pingzhongdata/${code}.js?v=${Date.now()}`;
+          const s = document.createElement("script");
+          s.src = src;
+          s.async = true;
+          s.onload = () => {
+            try {
+              const name = window.fS_name || "";
+              const fcode = window.fS_code || code;
+
+              const net = Array.isArray(window.Data_netWorthTrend)
+                ? window.Data_netWorthTrend
+                : [];
+              const netTrend = net.map((d) => ({
+                date: fmtDate(d.x),
+                nav: Number(d.y),
+                ret: Number(d.equityReturn ?? 0),
+              }));
+
+              const ac = Array.isArray(window.Data_ACWorthTrend)
+                ? window.Data_ACWorthTrend
+                : [];
+              const acTrend = ac.map(([x, y]) => ({
+                date: fmtDate(x),
+                nav: Number(y),
+              }));
+
+              const dailyRet = netTrend.map((d) => ({
+                date: d.date,
+                ret: Number(d.ret),
+              }));
+
+              resolve({
+                name: name || "未知基金",
+                code: fcode,
+                netTrend,
+                acTrend,
+                dailyRet,
+              });
+            } catch (err) {
+              reject(new Error("解析数据失败：" + err.message));
+            } finally {
+              cleanupGlobals();
+              s.remove();
+            }
+          };
+          s.onerror = () => {
+            s.remove();
+            reject(new Error("脚本加载失败"));
+          };
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadAndRender(code) {
+        if (!/^\d{6}$/.test(code)) {
+          statusEl.textContent = "请输入 6 位基金代码，例如 016371";
+          return;
+        }
+        statusEl.textContent = "加载中…";
+        metaEl.textContent = "";
+        try {
+          fullData = await loadPingZhongData(code);
+          statusEl.textContent = `已加载：${fullData.name}（${fullData.code}）`;
+          setActiveRangeBtn("all");
+          renderChartForRange("all");
+        } catch (e) {
+          statusEl.textContent = "加载失败：" + e.message;
+          chart.clear();
+        }
+      }
+
+      // ===== 交互 =====
+      loadBtn.addEventListener("click", () =>
+        loadAndRender(codeInput.value.trim())
+      );
+      codeInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") loadAndRender(codeInput.value.trim());
+      });
+      todayBtn.addEventListener("click", () =>
+        chart.dispatchAction({ type: "dataZoom", start: 90, end: 100 })
+      );
+
+      rangesEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".range-btn");
+        if (!btn || !fullData) return;
+        const key = btn.dataset.m; // "1" | "3" | "6" | "12" | "all"
+        setActiveRangeBtn(key);
+        renderChartForRange(key);
+      });
+
+      // 初次加载默认
+      loadAndRender(codeInput.value.trim());
+      window.addEventListener("resize", () => chart.resize());
+    </script>
+  </body>
+</html>
