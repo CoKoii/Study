@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "experimentalDecorators": true,
+    "module": "commonjs",
     "target": "esnext",
-    "moduleResolution": "nodenext",
-    "module": "nodenext"
+    "experimentalDecorators": true
   }
 }
