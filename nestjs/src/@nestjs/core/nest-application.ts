@@ -1,13 +1,12 @@
 import * as express from "express";
 import { Logger } from "./logger";
-import { Controller } from "../common";
 export class NestApplication {
   private readonly app: express.Express = express();
   constructor(protected readonly module: any) {}
   async init() {
     const controllers = Reflect.getMetadata("controllers", this.module) || [];
     Logger.log("AppModule dependencies initalized", "InstanceLoader");
-    for (const controller of controllers) {
+    for (const Controller of controllers) {
       const controller = new Controller();
       const prefix = Reflect.getMetadata("prefix", controller) || "/";
       Logger.log(`${Controller.name} {${prefix}}`, "RoutesResolver");
