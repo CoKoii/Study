@@ -4,6 +4,6 @@ interface ModuleMetadata {
 }
 export function Module(metadata: ModuleMetadata): ClassDecorator {
   return (target: Function) => {
-    Reflect.defineMetadata("module", metadata, target);
+    //TODO
   };
 }
