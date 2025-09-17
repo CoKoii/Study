@@ -2,6 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "esnext",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "./",
+    "paths": {
+      "@nestjs/*": ["src/@nestjs/*"]
+    }
   }
 }
