@@ -1,10 +1,9 @@
 "use strict";
 
-const target = {
-  foo: "bar",
+const outer = () => {
+  inner();
 };
-const proxy = new Proxy(target, {
-  get: Reflect.get(...arguments),
-});
-
-console.log(proxy.foo);
+const inner = () => {
+  console.log(inner.caller);
+};
+outer();
