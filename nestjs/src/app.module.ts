@@ -1,12 +1,24 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
-import { UserService } from './user/user.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { getMysqlUsernameAndPassword } from './utils';
+const { username, password } = getMysqlUsernameAndPassword();
 @Module({
-  imports: [UserModule],
-  controllers: [AppController, UserController],
-  providers: [AppService, UserService],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username,
+      password,
+      database: 'vben',
+      autoLoadEntities: true,
+    }),
+    UserModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
