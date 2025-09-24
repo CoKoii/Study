@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getMysqlUsernameAndPassword } from './utils';
+import { AuthModule } from './modules/auth/auth.module';
 const { username, password } = getMysqlUsernameAndPassword();
 @Module({
   imports: [
@@ -17,6 +18,7 @@ const { username, password } = getMysqlUsernameAndPassword();
       autoLoadEntities: true,
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
