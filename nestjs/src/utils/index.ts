@@ -10,11 +10,11 @@ export const getMysqlUsernameAndPassword = () => {
   return { username, password };
 };
 
-export const success = (data: { token: string }, msg: string) => {
+export const success = <T = any>(data: T, message: string) => {
   return {
     code: 0,
     data,
-    msg: msg,
+    message,
   };
 };
 
@@ -23,4 +23,13 @@ export const error = (msg: string) => {
     code: -1,
     msg,
   };
+};
+
+export const wrapperResponse = <T = any>(
+  p: Promise<T>,
+  msg: string,
+): Promise<{ code: number; data?: T; message?: string; msg?: string }> => {
+  return p
+    .then((data) => success(data, msg))
+    .catch((err: Error) => error(err.message));
 };
