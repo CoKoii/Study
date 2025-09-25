@@ -9,3 +9,18 @@ export const getMysqlUsernameAndPassword = () => {
   const password = fs.readFileSync(passwordPath).toString();
   return { username, password };
 };
+
+export const success = (data: { token: string }, msg: string) => {
+  return {
+    code: 0,
+    data,
+    msg: msg,
+  };
+};
+
+export const error = (msg: string) => {
+  return {
+    code: -1,
+    msg,
+  };
+};
