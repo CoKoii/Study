@@ -1,12 +1,291 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <meta charset="utf-8" />
+    <title>D3 Fishbone Timeline Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- D3 v7 -->
+    <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+      }
+      .wrap {
+        height: 100%;
+        background: #f7f7f7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      svg {
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border-radius: 10px;
+      }
+
+      /* 轴与分支 */
+      .axis-line {
+        stroke: #000;
+        stroke-width: 8;
+        stroke-linecap: round;
+      }
+      .branch-line {
+        stroke: #000;
+        stroke-width: 8;
+        stroke-linecap: round;
+        fill: none;
+      }
+
+      /* 节点 */
+      .event-node {
+        fill: #fff;
+        stroke: #000;
+        stroke-width: 8;
+        cursor: pointer;
+      }
+      .event-node.active {
+        stroke: #2b6cff;
+      }
+      .tick-text {
+        font-size: 14px;
+        fill: #111;
+        user-select: none;
+      }
+
+      /* 终点箭头 */
+      .arrow-head {
+        fill: #000;
+      }
+
+      /* Tooltip 信息卡片 */
+      .tooltip {
+        position: absolute;
+        pointer-events: none;
+        background: #fff;
+        border: 2px solid #2b6cff;
+        border-radius: 6px;
+        padding: 10px 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        width: 280px;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .tooltip h4 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+      .tooltip p {
+        margin: 0 0 6px;
+        color: #333;
+      }
+      .tooltip .date {
+        color: #666;
+        font-size: 12px;
+      }
+    </style>
   </head>
   <body>
-    <button id="btn">发送ajax请求</button>
-    <script src="./index.js"></script>
+    <div class="wrap">
+      <svg id="viz" width="1100" height="520"></svg>
+    </div>
+    <div id="tooltip" class="tooltip" style="display: none"></div>
+
+    <script>
+      // =======================
+      // 1) 数据（可自行修改）
+      // =======================
+      const events = [
+        {
+          date: "2025-08-01",
+          title: "起点",
+          desc: "项目启动，确定方向。",
+          branch: -110,
+        },
+        {
+          date: "2025-08-02",
+          title: "任务A",
+          desc: "调研与资料收集。",
+          branch: +160,
+        },
+        {
+          date: "2025-08-03",
+          title: "任务B",
+          desc: "原型草图评审。",
+          branch: -150,
+        },
+        {
+          date: "2025-08-04",
+          title: "任务C",
+          desc: "技术预研与分工。",
+          branch: +150,
+        },
+        {
+          date: "2025-08-05",
+          title: "任务D",
+          desc: "关键模块开发。",
+          branch: -140,
+        },
+        {
+          date: "2025-08-05",
+          title: "任务E",
+          desc: "并行子任务。",
+          branch: -90,
+        }, // 同一天多个节点
+        {
+          date: "2025-08-06",
+          title: "汇总评审",
+          desc: "整体验收与复盘。",
+          branch: +130,
+        },
+      ];
+
+      // =======================
+      // 2) 基础设置
+      // =======================
+      const svg = d3.select("#viz");
+      const width = +svg.attr("width");
+      const height = +svg.attr("height");
+
+      const margin = { top: 60, right: 60, bottom: 60, left: 60 };
+      const innerW = width - margin.left - margin.right;
+      const innerH = height - margin.top - margin.bottom;
+
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      // 解析日期 & 计算域
+      const parseDate = d3.timeParse("%Y-%m-%d");
+      events.forEach((d) => (d.d = parseDate(d.date)));
+
+      const xDomain = d3.extent(events, (d) => d.d);
+      // 为了末端箭头留点空间
+      const xPadDays = 0.7;
+      const xScale = d3
+        .scaleTime()
+        .domain([
+          d3.timeDay.offset(xDomain[0], -xPadDays),
+          d3.timeDay.offset(xDomain[1], +xPadDays),
+        ])
+        .range([0, innerW]);
+
+      const baselineY = innerH / 2; // 主轴在中线
+      const nodeRadius = 18;
+
+      // =======================
+      // 3) 主轴与日期刻度
+      // =======================
+      // 主轴粗线
+      g.append("line")
+        .attr("class", "axis-line")
+        .attr("x1", xScale(xScale.domain()[0]))
+        .attr("y1", baselineY)
+        .attr("x2", xScale(xScale.domain()[1]) - 20) // 预留给箭头
+        .attr("y2", baselineY);
+
+      // 箭头
+      g.append("path")
+        .attr("class", "arrow-head")
+        .attr("d", d3.symbol(d3.symbolTriangle, 200)())
+        .attr(
+          "transform",
+          `translate(${xScale(xScale.domain()[1]) - 5},${baselineY}) rotate(90)`
+        );
+
+      // 选择一些日期打刻度标签（按数据项）
+      g.selectAll(".tick-text")
+        .data(events)
+        .enter()
+        .append("text")
+        .attr("class", "tick-text")
+        .attr("x", (d) => xScale(d.d))
+        .attr("y", baselineY + 26)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "hanging")
+        .text((d) => d3.timeFormat("%Y-%m-%d")(d.d));
+
+      // =======================
+      // 4) 分支与节点
+      // =======================
+      // 一个小方法：从轴到分支节点画一条斜线
+      function branchPath(x, y0, y1) {
+        // 为了有“鱼骨”味道，用直线（你也可用 d3.line 曲线）
+        return `M ${x} ${y0} L ${x - 80} ${y1}`; // 斜向左
+      }
+
+      // 绘制分支
+      g.selectAll(".branch-line")
+        .data(events)
+        .enter()
+        .append("path")
+        .attr("class", "branch-line")
+        .attr("d", (d) =>
+          branchPath(xScale(d.d), baselineY, baselineY + d.branch)
+        );
+
+      // 绘制节点
+      const nodes = g
+        .selectAll(".event-node")
+        .data(events)
+        .enter()
+        .append("circle")
+        .attr("class", "event-node")
+        .attr("r", nodeRadius)
+        .attr("cx", (d) => xScale(d.d) - 80) // 要与分支末端对齐（上面的 -80 一致）
+        .attr("cy", (d) => baselineY + d.branch);
+
+      // =======================
+      // 5) 悬浮信息框（Tooltip）
+      // =======================
+      const tooltip = d3.select("#tooltip");
+
+      nodes
+        .on("mouseenter", function (event, d) {
+          d3.select(this).classed("active", true);
+          const [pageX, pageY] = d3.pointer(event, document.body);
+
+          tooltip
+            .style("display", "block")
+            .style("left", pageX + 16 + "px")
+            .style("top", pageY - 10 + "px").html(`
+          <h4>${d.title}</h4>
+          <p>${d.desc}</p>
+          <div class="date">${d3.timeFormat("%Y-%m-%d")(d.d)}</div>
+        `);
+        })
+        .on("mousemove", function (event) {
+          const [pageX, pageY] = d3.pointer(event, document.body);
+          tooltip
+            .style("left", pageX + 16 + "px")
+            .style("top", pageY - 10 + "px");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).classed("active", false);
+          tooltip.style("display", "none");
+        });
+
+      // =======================
+      // 6) 自适应（可选）
+      // =======================
+      // 简单居中/缩放逻辑：根据窗口缩放 SVG 到容器宽度
+      function fit() {
+        const box = svg.node().getBBox();
+        const pad = 20;
+        svg.attr(
+          "viewBox",
+          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${
+            box.height + pad * 2
+          }`
+        );
+        svg.attr("preserveAspectRatio", "xMidYMid meet");
+      }
+      fit();
+      window.addEventListener("resize", fit);
+    </script>
   </body>
 </html>
