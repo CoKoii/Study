@@ -36,55 +36,55 @@ type CircleChartProps = {
 
 const data: CircleChartProps[] = [
   {
-    title: "Activity",
+    title: "活动",
     color: "default",
     total: 1358,
     chartData: [
-      { name: "Active Users", value: 780, fill: "hsl(var(--heroui-primary))" },
+      { name: "活跃用户", value: 780, fill: "hsl(var(--heroui-primary))" },
     ],
   },
   {
-    title: "Revenue",
+    title: "收入",
     color: "primary",
     total: 2450,
     chartData: [
-      { name: "Monthly", value: 1840, fill: "hsl(var(--heroui-primary))" },
+      { name: "月度收入", value: 1840, fill: "hsl(var(--heroui-primary))" },
     ],
   },
   {
-    title: "Engagement",
+    title: "参与度",
     color: "secondary",
     total: 4200,
     chartData: [
       {
-        name: "Daily Views",
+        name: "每日浏览",
         value: 3150,
         fill: "hsl(var(--heroui-secondary))",
       },
     ],
   },
   {
-    title: "Conversion",
+    title: "转化率",
     color: "success",
     total: 1000,
     chartData: [
-      { name: "Sales", value: 750, fill: "hsl(var(--heroui-success))" },
+      { name: "销售额", value: 750, fill: "hsl(var(--heroui-success))" },
     ],
   },
   {
-    title: "Bounce Rate",
+    title: "跳出率",
     color: "warning",
     total: 100,
     chartData: [
-      { name: "Exits", value: 80, fill: "hsl(var(--heroui-warning))" },
+      { name: "退出数", value: 80, fill: "hsl(var(--heroui-warning))" },
     ],
   },
   {
-    title: "Errors",
+    title: "错误",
     color: "danger",
     total: 500,
     chartData: [
-      { name: "Issues", value: 450, fill: "hsl(var(--heroui-danger))" },
+      { name: "问题数", value: 450, fill: "hsl(var(--heroui-danger))" },
     ],
   },
 ];
@@ -142,6 +142,7 @@ const CircleChartCard = React.forwardRef<
                 <DropdownItem key="view-details">查看细节</DropdownItem>
                 <DropdownItem key="export-data">导出数据</DropdownItem>
                 <DropdownItem key="set-alert">设置警报</DropdownItem>
+                <DropdownItem key="set-alert">自定义</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
