@@ -1,290 +1,502 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
-    <meta charset="utf-8" />
-    <title>D3 Fishbone Timeline Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- D3 v7 -->
-    <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>绿色有机蔬菜 - 健康生活从这里开始</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                200: '#bbf7d0',
+                300: '#86efac',
+                400: '#4ade80',
+                500: '#22c55e',
+                600: '#16a34a',
+                700: '#15803d',
+                800: '#166534',
+                900: '#14532d',
+              }
+            }
+          }
+        }
+      }
+    </script>
     <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial, "Noto Sans SC", "PingFang SC",
-          "Microsoft YaHei", sans-serif;
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
       }
-      .wrap {
-        height: 100%;
-        background: #f7f7f7;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      svg {
-        background: #fff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-        border-radius: 10px;
-      }
-      /* 轴与分支 */
-      .axis-line {
-        stroke: #000;
-        stroke-width: 8;
-        stroke-linecap: round;
-      }
-      .branch-line {
-        stroke: #000;
-        stroke-width: 8;
-        stroke-linecap: round;
-        fill: none;
-      }
-
-      /* 节点 */
-      .event-node {
-        fill: #fff;
-        stroke: #000;
-        stroke-width: 8;
-        cursor: pointer;
-      }
-      .event-node.active {
-        stroke: #2b6cff;
-      }
-      .tick-text {
-        font-size: 14px;
-        fill: #111;
-        user-select: none;
-      }
-
-      /* 终点箭头 */
-      .arrow-head {
-        fill: #000;
-      }
-
-      /* Tooltip 信息卡片 */
-      .tooltip {
-        position: absolute;
-        pointer-events: none;
-        background: #fff;
-        border: 2px solid #2b6cff;
-        border-radius: 6px;
-        padding: 10px 12px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-        width: 280px;
-        font-size: 14px;
-        line-height: 1.55;
-      }
-      .tooltip h4 {
-        margin: 0 0 6px;
-        font-size: 16px;
-      }
-      .tooltip p {
-        margin: 0 0 6px;
-        color: #333;
-      }
-      .tooltip .date {
-        color: #666;
-        font-size: 12px;
+      .animate-fade-in {
+        animation: fadeIn 0.6s ease-out;
       }
     </style>
   </head>
-  <body>
-    <div class="wrap">
-      <svg id="viz" width="1100" height="520"></svg>
-    </div>
-    <div id="tooltip" class="tooltip" style="display: none"></div>
+  <body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <span class="text-2xl font-bold text-primary-600">🥬 绿生活</span>
+          </div>
+          <div class="hidden md:flex space-x-8">
+            <a href="#home" class="text-gray-700 hover:text-primary-600 transition-colors duration-200">首页</a>
+            <a href="#products" class="text-gray-700 hover:text-primary-600 transition-colors duration-200">产品</a>
+            <a href="#about" class="text-gray-700 hover:text-primary-600 transition-colors duration-200">关于我们</a>
+            <a href="#contact" class="text-gray-700 hover:text-primary-600 transition-colors duration-200">联系我们</a>
+          </div>
+          <button class="bg-primary-600 text-white px-6 py-2 rounded-full hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+            立即购买
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="pt-24 pb-12 bg-gradient-to-br from-primary-50 to-green-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="animate-fade-in">
+            <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+              新鲜<span class="text-primary-600">有机蔬菜</span><br/>直达您家
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+              100%有机种植，无农药无化肥，为您和家人提供最健康的绿色食品
+            </p>
+            <div class="flex gap-4">
+              <button class="bg-primary-600 text-white px-8 py-4 rounded-full hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl text-lg font-semibold">
+                浏览产品
+              </button>
+              <button class="bg-white text-primary-600 px-8 py-4 rounded-full hover:bg-gray-50 transition-all duration-200 shadow-md border-2 border-primary-600 text-lg font-semibold">
+                了解更多
+              </button>
+            </div>
+            <div class="mt-12 grid grid-cols-3 gap-8">
+              <div>
+                <p class="text-3xl font-bold text-primary-600">100+</p>
+                <p class="text-gray-600">有机产品</p>
+              </div>
+              <div>
+                <p class="text-3xl font-bold text-primary-600">5000+</p>
+                <p class="text-gray-600">满意客户</p>
+              </div>
+              <div>
+                <p class="text-3xl font-bold text-primary-600">100%</p>
+                <p class="text-gray-600">有机认证</p>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <div class="bg-primary-600 rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-300">
+              <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800&h=600&fit=crop" alt="新鲜蔬菜" class="w-full h-auto opacity-90">
+            </div>
+            <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl">
+              <p class="text-sm text-gray-600">本周特惠</p>
+              <p class="text-2xl font-bold text-primary-600">7折优惠</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 特色优势 -->
+    <section class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">为什么选择我们</h2>
+          <p class="text-xl text-gray-600">我们致力于为您提供最优质的有机蔬菜</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-gradient-to-br from-primary-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="bg-primary-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">100%有机</h3>
+            <p class="text-gray-600">所有产品均通过有机认证，不使用任何化学农药和化肥</p>
+          </div>
+          <div class="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="bg-primary-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">新鲜配送</h3>
+            <p class="text-gray-600">24小时内从农场直达您家，保证新鲜度</p>
+          </div>
+          <div class="bg-gradient-to-br from-emerald-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="bg-primary-600 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">健康保证</h3>
+            <p class="text-gray-600">营养丰富，让您和家人享受健康生活</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 产品展示 -->
+    <section id="products" class="py-20 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">热门产品</h2>
+          <p class="text-xl text-gray-600">精选优质有机蔬菜</p>
+        </div>
+        <div class="grid md:grid-cols-4 gap-8">
+          <!-- 产品卡片 1 -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&h=300&fit=crop" alt="西红柿" class="w-full h-48 object-cover">
+              <span class="absolute top-4 right-4 bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-semibold">热销</span>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-2">有机西红柿</h3>
+              <p class="text-gray-600 mb-4">新鲜采摘，口感极佳</p>
+              <div class="flex justify-between items-center">
+                <span class="text-2xl font-bold text-primary-600">¥28/斤</span>
+                <button class="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-200">
+                  加入购物车
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 产品卡片 2 -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1622205313162-be1d5712a43f?w=400&h=300&fit=crop" alt="生菜" class="w-full h-48 object-cover">
+              <span class="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold">新品</span>
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-2">有机生菜</h3>
+              <p class="text-gray-600 mb-4">清脆爽口，营养丰富</p>
+              <div class="flex justify-between items-center">
+                <span class="text-2xl font-bold text-primary-600">¥18/斤</span>
+                <button class="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-200">
+                  加入购物车
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 产品卡片 3 -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1591814468924-caf88d1232e1?w=400&h=300&fit=crop" alt="西兰花" class="w-full h-48 object-cover">
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-2">有机西兰花</h3>
+              <p class="text-gray-600 mb-4">富含维生素，健康首选</p>
+              <div class="flex justify-between items-center">
+                <span class="text-2xl font-bold text-primary-600">¥32/斤</span>
+                <button class="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-200">
+                  加入购物车
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- 产品卡片 4 -->
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div class="relative">
+              <img src="https://images.unsplash.com/photo-1552904219-b3a87b6c7f0d?w=400&h=300&fit=crop" alt="胡萝卜" class="w-full h-48 object-cover">
+            </div>
+            <div class="p-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-2">有机胡萝卜</h3>
+              <p class="text-gray-600 mb-4">香甜可口，富含胡萝卜素</p>
+              <div class="flex justify-between items-center">
+                <span class="text-2xl font-bold text-primary-600">¥22/斤</span>
+                <button class="bg-primary-600 text-white px-4 py-2 rounded-full hover:bg-primary-700 transition-colors duration-200">
+                  加入购物车
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 关于我们 -->
+    <section id="about" class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop" alt="有机农场" class="rounded-3xl shadow-2xl">
+          </div>
+          <div>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">我们的故事</h2>
+            <p class="text-lg text-gray-600 mb-6">
+              我们是一家专注于有机蔬菜种植的农场，拥有超过10年的有机种植经验。我们坚信，健康的土壤才能生长出健康的蔬菜。
+            </p>
+            <p class="text-lg text-gray-600 mb-6">
+              我们的农场位于自然环境优美的郊区，采用传统与现代相结合的种植方式，不使用任何化学农药和化肥，让每一颗蔬菜都保持最自然的味道。
+            </p>
+            <div class="grid grid-cols-2 gap-6">
+              <div class="bg-primary-50 p-6 rounded-2xl">
+                <p class="text-3xl font-bold text-primary-600 mb-2">10+</p>
+                <p class="text-gray-700">年种植经验</p>
+              </div>
+              <div class="bg-primary-50 p-6 rounded-2xl">
+                <p class="text-3xl font-bold text-primary-600 mb-2">50+</p>
+                <p class="text-gray-700">亩有机农场</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 客户评价 -->
+    <section class="py-20 bg-gradient-to-br from-primary-50 to-green-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">客户评价</h2>
+          <p class="text-xl text-gray-600">听听他们怎么说</p>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="flex mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+            </div>
+            <p class="text-gray-600 mb-6">"蔬菜非常新鲜，口感特别好！我家孩子现在都爱吃蔬菜了。强烈推荐！"</p>
+            <div class="flex items-center">
+              <div class="bg-primary-200 w-12 h-12 rounded-full flex items-center justify-center text-primary-700 font-bold mr-4">李</div>
+              <div>
+                <p class="font-semibold text-gray-900">李女士</p>
+                <p class="text-sm text-gray-500">上海</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="flex mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+            </div>
+            <p class="text-gray-600 mb-6">"配送速度很快，蔬菜质量也很好。价格合理，性价比高，会继续购买！"</p>
+            <div class="flex items-center">
+              <div class="bg-primary-200 w-12 h-12 rounded-full flex items-center justify-center text-primary-700 font-bold mr-4">王</div>
+              <div>
+                <p class="font-semibold text-gray-900">王先生</p>
+                <p class="text-sm text-gray-500">北京</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <div class="flex mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+            </div>
+            <p class="text-gray-600 mb-6">"真正的有机蔬菜，吃得放心！客服态度也很好，解答问题很及时。"</p>
+            <div class="flex items-center">
+              <div class="bg-primary-200 w-12 h-12 rounded-full flex items-center justify-center text-primary-700 font-bold mr-4">张</div>
+              <div>
+                <p class="font-semibold text-gray-900">张女士</p>
+                <p class="text-sm text-gray-500">深圳</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 联系我们 -->
+    <section id="contact" class="py-20 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">联系我们</h2>
+          <p class="text-xl text-gray-600">有任何问题？随时联系我们</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-12">
+          <div>
+            <form class="space-y-6">
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">姓名</label>
+                <input type="text" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-200 outline-none transition-all duration-200" placeholder="请输入您的姓名">
+              </div>
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">邮箱</label>
+                <input type="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-200 outline-none transition-all duration-200" placeholder="请输入您的邮箱">
+              </div>
+              <div>
+                <label class="block text-gray-700 font-semibold mb-2">留言</label>
+                <textarea rows="5" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary-600 focus:ring-2 focus:ring-primary-200 outline-none transition-all duration-200" placeholder="请输入您的留言"></textarea>
+              </div>
+              <button type="submit" class="w-full bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold text-lg">
+                发送消息
+              </button>
+            </form>
+          </div>
+          <div class="space-y-8">
+            <div class="flex items-start">
+              <div class="bg-primary-600 w-12 h-12 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">地址</h3>
+                <p class="text-gray-600">中国上海市浦东新区绿色农场路123号</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="bg-primary-600 w-12 h-12 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">电话</h3>
+                <p class="text-gray-600">+86 400-123-4567</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="bg-primary-600 w-12 h-12 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">邮箱</h3>
+                <p class="text-gray-600">info@greenveg.com</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="bg-primary-600 w-12 h-12 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">营业时间</h3>
+                <p class="text-gray-600">周一至周日：8:00 - 20:00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-white py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <h3 class="text-2xl font-bold mb-4">🥬 绿生活</h3>
+            <p class="text-gray-400">为您提供最新鲜、最健康的有机蔬菜</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-4">快速链接</h4>
+            <ul class="space-y-2">
+              <li><a href="#home" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">首页</a></li>
+              <li><a href="#products" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">产品</a></li>
+              <li><a href="#about" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">关于我们</a></li>
+              <li><a href="#contact" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">联系我们</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-4">客户服务</h4>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">配送信息</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">退换政策</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">常见问题</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-primary-400 transition-colors duration-200">隐私政策</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-4">关注我们</h4>
+            <div class="flex space-x-4">
+              <a href="#" class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="#" class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+              </a>
+              <a href="#" class="bg-gray-800 w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+          <p>&copy; 2025 绿生活有机蔬菜. 保留所有权利.</p>
+        </div>
+      </div>
+    </footer>
 
     <script>
-      // =======================
-      // 1) 数据（可自行修改）
-      // =======================
-      const events = [
-        {
-          date: "2025-08-01",
-          title: "起点",
-          desc: "项目启动，确定方向。",
-          branch: -110,
-        },
-        {
-          date: "2025-08-02",
-          title: "任务A",
-          desc: "调研与资料收集。",
-          branch: +160,
-        },
-        {
-          date: "2025-08-03",
-          title: "任务B",
-          desc: "原型草图评审。",
-          branch: -150,
-        },
-        {
-          date: "2025-08-04",
-          title: "任务C",
-          desc: "技术预研与分工。",
-          branch: +150,
-        },
-        {
-          date: "2025-08-05",
-          title: "任务D",
-          desc: "关键模块开发。",
-          branch: -140,
-        },
-        {
-          date: "2025-08-05",
-          title: "任务E",
-          desc: "并行子任务。",
-          branch: -90,
-        }, // 同一天多个节点
-        {
-          date: "2025-08-06",
-          title: "汇总评审",
-          desc: "整体验收与复盘。",
-          branch: +130,
-        },
-      ];
-
-      // =======================
-      // 2) 基础设置
-      // =======================
-      const svg = d3.select("#viz");
-      const width = +svg.attr("width");
-      const height = +svg.attr("height");
-
-      const margin = { top: 60, right: 60, bottom: 60, left: 60 };
-      const innerW = width - margin.left - margin.right;
-      const innerH = height - margin.top - margin.bottom;
-
-      const g = svg
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-      // 解析日期 & 计算域
-      const parseDate = d3.timeParse("%Y-%m-%d");
-      events.forEach((d) => (d.d = parseDate(d.date)));
-
-      const xDomain = d3.extent(events, (d) => d.d);
-      // 为了末端箭头留点空间
-      const xPadDays = 0.7;
-      const xScale = d3
-        .scaleTime()
-        .domain([
-          d3.timeDay.offset(xDomain[0], -xPadDays),
-          d3.timeDay.offset(xDomain[1], +xPadDays),
-        ])
-        .range([0, innerW]);
-
-      const baselineY = innerH / 2; // 主轴在中线
-      const nodeRadius = 18;
-
-      // =======================
-      // 3) 主轴与日期刻度
-      // =======================
-      // 主轴粗线
-      g.append("line")
-        .attr("class", "axis-line")
-        .attr("x1", xScale(xScale.domain()[0]))
-        .attr("y1", baselineY)
-        .attr("x2", xScale(xScale.domain()[1]) - 20) // 预留给箭头
-        .attr("y2", baselineY);
-
-      // 箭头
-      g.append("path")
-        .attr("class", "arrow-head")
-        .attr("d", d3.symbol(d3.symbolTriangle, 200)())
-        .attr(
-          "transform",
-          `translate(${xScale(xScale.domain()[1]) - 5},${baselineY}) rotate(90)`
-        );
-
-      // 选择一些日期打刻度标签（按数据项）
-      g.selectAll(".tick-text")
-        .data(events)
-        .enter()
-        .append("text")
-        .attr("class", "tick-text")
-        .attr("x", (d) => xScale(d.d))
-        .attr("y", baselineY + 26)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "hanging")
-        .text((d) => d3.timeFormat("%Y-%m-%d")(d.d));
-
-      // =======================
-      // 4) 分支与节点
-      // =======================
-      // 一个小方法：从轴到分支节点画一条斜线
-      function branchPath(x, y0, y1) {
-        // 为了有“鱼骨”味道，用直线（你也可用 d3.line 曲线）
-        return `M ${x} ${y0} L ${x - 80} ${y1}`; // 斜向左
-      }
-
-      // 绘制分支
-      g.selectAll(".branch-line")
-        .data(events)
-        .enter()
-        .append("path")
-        .attr("class", "branch-line")
-        .attr("d", (d) =>
-          branchPath(xScale(d.d), baselineY, baselineY + d.branch)
-        );
-
-      // 绘制节点
-      const nodes = g
-        .selectAll(".event-node")
-        .data(events)
-        .enter()
-        .append("circle")
-        .attr("class", "event-node")
-        .attr("r", nodeRadius)
-        .attr("cx", (d) => xScale(d.d) - 80) // 要与分支末端对齐（上面的 -80 一致）
-        .attr("cy", (d) => baselineY + d.branch);
-
-      // =======================
-      // 5) 悬浮信息框（Tooltip）
-      // =======================
-      const tooltip = d3.select("#tooltip");
-
-      nodes
-        .on("mouseenter", function (event, d) {
-          d3.select(this).classed("active", true);
-          const [pageX, pageY] = d3.pointer(event, document.body);
-
-          tooltip
-            .style("display", "block")
-            .style("left", pageX + 16 + "px")
-            .style("top", pageY - 10 + "px").html(`
-          <h4>${d.title}</h4>
-          <p>${d.desc}</p>
-          <div class="date">${d3.timeFormat("%Y-%m-%d")(d.d)}</div>
-        `);
-        })
-        .on("mousemove", function (event) {
-          const [pageX, pageY] = d3.pointer(event, document.body);
-          tooltip
-            .style("left", pageX + 16 + "px")
-            .style("top", pageY - 10 + "px");
-        })
-        .on("mouseleave", function () {
-          d3.select(this).classed("active", false);
-          tooltip.style("display", "none");
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
         });
+      });
 
-      // =======================
-      // 6) 自适应（可选）
-      // =======================
-      // 简单居中/缩放逻辑：根据窗口缩放 SVG 到容器宽度
-      function fit() {
-        const box = svg.node().getBBox();
-        const pad = 20;
-        svg.attr(
-          "viewBox",
-          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${
-            box.height + pad * 2
-          }`
-        );
-        svg.attr("preserveAspectRatio", "xMidYMid meet");
-      }
-      fit();
-      window.addEventListener("resize", fit);
+      // 导航栏滚动效果
+      let lastScroll = 0;
+      const nav = document.querySelector('nav');
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        if (currentScroll > 100) {
+          nav.classList.add('shadow-xl');
+        } else {
+          nav.classList.remove('shadow-xl');
+        }
+        lastScroll = currentScroll;
+      });
     </script>
   </body>
 </html>
