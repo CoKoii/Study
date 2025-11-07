@@ -1,15 +1,7 @@
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  UseFilters,
-} from '@nestjs/common';
+import { Body, Controller, Get, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { HttpExceptionFilter } from './exception/http-exception.filter';
 
-@Controller()
+@Controller('/api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
@@ -18,12 +10,17 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('/data/:subId')
-  @UseFilters(new HttpExceptionFilter())
-  getData(@Param() params: { id: string; subId: string }): string {
-    if (!params.id) {
-      throw new HttpException('必须包含id参数', HttpStatus.BAD_REQUEST);
+  @Get('app')
+  getApp(): string {
+    return 'Hello Nestjs';
+  }
+
+  @Get('range')
+  getRange(@Query() query: { num: number }): number[] {
+    const arr: number[] = [];
+    for (let i = 0; i < query.num; i++) {
+      arr.push(i + 1);
     }
-    return params.id;
+    return arr;
   }
 }
