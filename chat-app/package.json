@@ -17,7 +17,7 @@
     "tailwindStylesheet": "app/globals.css"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.46",
+    "@ai-sdk/deepseek": "^1.0.28",
     "@assistant-ui/react": "^0.11.28",
     "@assistant-ui/react-ai-sdk": "^1.1.5",
     "@assistant-ui/react-markdown": "^0.11.1",
