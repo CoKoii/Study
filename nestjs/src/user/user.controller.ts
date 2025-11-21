@@ -10,8 +10,7 @@ export class UserController {
   ) {}
   @Get()
   getUsers(): any {
-    const db = this.configService.get<string>(ConfigEnum.DB);
-    const dbHost = this.configService.get<string>(ConfigEnum.DB_HOST);
-    return { message: `Database in use is ${db} at host ${dbHost}` };
+    const data = this.configService.get<object>(ConfigEnum.DB);
+    return data;
   }
 }
