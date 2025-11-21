@@ -1,6 +1,3 @@
-db:
-  mysql1:
-    name: mysql-prod
-
-  mysql2:
-    name: mysql-prod2
+auth:
+  whitelist:
+    - /auth/login
