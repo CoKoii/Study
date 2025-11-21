@@ -1,5 +1,8 @@
 export enum ConfigEnum {
-  DB = 'db',
+  // 数据库配置
   DB_HOST = 'DB_HOST',
-  DB_URL = 'DB_URL',
+  DB_PORT = 'DB_PORT',
+  DB_USERNAME = 'DB_USERNAME',
+  DB_PASSWORD = 'DB_PASSWORD',
+  DB_DATABASE = 'DB_DATABASE',
 }
