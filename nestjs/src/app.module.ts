@@ -5,6 +5,8 @@ import * as Joi from 'joi';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
+import { LoggerModule } from 'nestjs-pino';
+import { join } from 'path';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,10 +37,35 @@ import { UserModule } from './modules/user/user.module';
           database: configService.get<string>(ConfigEnum.DB_DATABASE),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: configService.get<boolean>(ConfigEnum.DB_SYNC),
-          logging: true,
           retryAttempts: Infinity,
           retryDelay: 5000,
         }) as TypeOrmModuleOptions,
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          targets: [
+            process.env.NODE_ENV === 'development'
+              ? {
+                  level: 'info',
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                  },
+                }
+              : {
+                  level: 'info',
+                  target: 'pino-roll',
+                  options: {
+                    file: join('logs', 'log.txt'),
+                    frequency: 'daily',
+                    size: '10m',
+                    mkdir: true,
+                  },
+                },
+          ],
+        },
+      },
     }),
     UserModule,
   ],
