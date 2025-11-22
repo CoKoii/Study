@@ -35,7 +35,7 @@ import { UserModule } from './modules/user/user.module';
           database: configService.get<string>(ConfigEnum.DB_DATABASE),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: configService.get<boolean>(ConfigEnum.DB_SYNC),
-          logging: ['error'],
+          logging: true,
           retryAttempts: Infinity,
           retryDelay: 5000,
         }) as TypeOrmModuleOptions,
