@@ -1,4 +1,10 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserRole } from './role.entity';
 
 @Entity()
@@ -21,6 +27,7 @@ export class UserAccount {
   @Column({ comment: '创建时间' })
   created_at: Date;
 
-  @OneToMany(() => UserRole, (userRole) => userRole.user)
+  @ManyToMany(() => UserRole, (userRole) => userRole.user)
+  @JoinTable({ name: 'users_roles' })
   roles: UserRole[];
 }

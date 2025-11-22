@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserAccount } from './user.entity';
 
 @Entity()
@@ -15,7 +9,6 @@ export class UserRole {
   @Column({ comment: '角色名称' })
   name: string;
 
-  @ManyToOne(() => UserAccount, (userAccount) => userAccount.roles)
-  @JoinColumn()
-  user: UserAccount;
+  @ManyToMany(() => UserAccount, (userAccount) => userAccount.roles)
+  user: UserAccount[];
 }
