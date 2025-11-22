@@ -11,8 +11,8 @@ import { UserModule } from './modules/user/user.module';
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
       load: [Configuration as ConfigFactory],
+      // 对环境配置进行校验
       validationSchema: Joi.object({
-        // 对环境配置进行校验
         DB_TYPE: Joi.string().valid('mysql').required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().default(3306),
