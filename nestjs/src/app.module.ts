@@ -7,6 +7,8 @@ import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
 import { LoggerModule } from 'nestjs-pino';
 import { join } from 'path';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,34 +44,36 @@ import { join } from 'path';
         }) as TypeOrmModuleOptions,
     }),
     LoggerModule.forRoot({
-      pinoHttp: {
-        transport: {
-          targets: [
-            process.env.NODE_ENV === 'development'
-              ? {
-                  level: 'info',
-                  target: 'pino-pretty',
-                  options: {
-                    colorize: true,
-                  },
-                }
-              : {
-                  level: 'info',
-                  target: 'pino-roll',
-                  options: {
-                    file: join('logs', 'log.txt'),
-                    frequency: 'daily',
-                    size: '10m',
-                    mkdir: true,
-                  },
+      pinoHttp:
+        process.env.NODE_ENV === 'production'
+          ? {
+              transport: {
+                target: 'pino-roll',
+                options: {
+                  file: join('logs', 'log.txt'),
+                  frequency: 'daily',
+                  size: '10m',
+                  mkdir: true,
                 },
-          ],
-        },
-      },
+              },
+            }
+          : {
+              transport: {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                },
+              },
+            },
     }),
     UserModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
