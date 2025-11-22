@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from './user.service';
-// import { ConfigEnum } from 'src/enum/config.enum';
+import { ConfigEnum } from 'src/enum/config.enum';
 @Controller('user')
 export class UserController {
   constructor(
@@ -10,7 +10,7 @@ export class UserController {
   ) {}
   @Get()
   getUsers(): any {
-    const data = this.configService.get<number>('DB_PORT');
+    const data = this.configService.get<number>(ConfigEnum.DB_PORT);
     return data;
   }
 }
