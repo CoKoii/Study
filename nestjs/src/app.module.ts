@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule, ConfigService } from '@nestjs/config';
-import { UserModule } from './user/user.module';
-import Configuration from './configuration';
+import Configuration from './config/configuration';
 import * as Joi from 'joi';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigEnum } from './enum/config.enum';
+import { ConfigEnum } from './common/enum/config.enum';
+import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
