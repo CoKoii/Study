@@ -1,4 +1,5 @@
 import { Module, INestApplication } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LoggerModule, Logger } from 'nestjs-pino';
 import { ServerResponse } from 'http';
 import { join } from 'path';
@@ -125,6 +126,10 @@ import { HttpAdapterHost } from '@nestjs/core';
 export class LogsModule {}
 
 export function setupAppLogging(app: INestApplication) {
+  const configService = app.get(ConfigService);
+  const logsEnabled = configService.get<boolean>('logs.enabled');
+  if (logsEnabled === false) return;
+
   const logger = app.get(Logger);
   app.useLogger(logger);
   const httpAdapterHost = app.get(HttpAdapterHost);
