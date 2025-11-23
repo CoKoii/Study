@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule, ConfigService } from '@nestjs/config';
 import Configuration from './config/configuration';
 import * as Joi from 'joi';
@@ -7,8 +7,8 @@ import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
 import { LoggerModule } from 'nestjs-pino';
 import { join } from 'path';
-import { APP_FILTER } from '@nestjs/core';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ServerResponse } from 'http';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,37 +43,74 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
           retryDelay: 5000,
         }) as TypeOrmModuleOptions,
     }),
+
     LoggerModule.forRoot({
-      pinoHttp:
-        process.env.NODE_ENV === 'production'
-          ? {
-              transport: {
-                target: 'pino-roll',
-                options: {
-                  file: join('logs', 'log.txt'),
-                  frequency: 'daily',
-                  size: '10m',
-                  mkdir: true,
-                },
-              },
-            }
-          : {
-              transport: {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                },
-              },
-            },
+      pinoHttp: {
+        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+
+        transport: {
+          targets:
+            process.env.NODE_ENV !== 'production'
+              ? [
+                  {
+                    level: 'debug',
+                    target: 'pino-pretty',
+                    options: {
+                      colorize: true,
+                      translateTime: 'SYS:standard',
+                      singleLine: true,
+                    },
+                  },
+                ]
+              : [
+                  {
+                    level: 'info',
+                    target: 'pino-roll',
+                    options: {
+                      file: join(
+                        process.cwd(),
+                        'logs',
+                        `${new Date().toISOString().slice(0, 10)}.log`,
+                      ),
+                      frequency: 'daily',
+                      size: '10m',
+                      mkdir: true,
+                    },
+                  },
+                ],
+        },
+        redact: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'req.body.password',
+          'req.body.token',
+          'res.headers["set-cookie"]',
+        ],
+        serializers: {
+          req(req: Request): { method: string; url: string } {
+            return {
+              method: req.method,
+              url: req.url,
+            };
+          },
+          res(res: ServerResponse) {
+            return {
+              statusCode: res.statusCode,
+            };
+          },
+        },
+
+        customLogLevel(req, res, error) {
+          if (error || res.statusCode >= 500) return 'error';
+          if (res.statusCode >= 400) return 'warn';
+          return 'info';
+        },
+      },
     }),
     UserModule,
   ],
   controllers: [],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-  ],
+  providers: [Logger],
+  exports: [Logger],
 })
 export class AppModule {}
