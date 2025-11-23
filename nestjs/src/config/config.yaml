@@ -1,6 +1,2 @@
-auth:
-  whitelist:
-    - /auth/login
-
 logs:
   enabled: true
