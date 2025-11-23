@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
-import { LoggerModule } from 'nestjs-pino';
+import { Module, INestApplication } from '@nestjs/common';
+import { LoggerModule, Logger } from 'nestjs-pino';
 import { ServerResponse } from 'http';
 import { join } from 'path';
 import { Request, Response } from 'express';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
+import { HttpAdapterHost } from '@nestjs/core';
 @Module({
   imports: [
     LoggerModule.forRoot({
@@ -121,3 +123,10 @@ import { Request, Response } from 'express';
   exports: [LoggerModule],
 })
 export class LogsModule {}
+
+export function setupAppLogging(app: INestApplication) {
+  const logger = app.get(Logger);
+  app.useLogger(logger);
+  const httpAdapterHost = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new HttpExceptionFilter(logger, httpAdapterHost));
+}
