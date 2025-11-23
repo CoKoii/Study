@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule, ConfigService } from '@nestjs/config';
 import Configuration from './config/configuration';
 import * as Joi from 'joi';
@@ -110,7 +110,6 @@ import { ServerResponse } from 'http';
     UserModule,
   ],
   controllers: [],
-  providers: [Logger],
-  exports: [Logger],
+  providers: [],
 })
 export class AppModule {}
