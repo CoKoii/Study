@@ -5,13 +5,16 @@ import * as Joi from 'joi';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
-import { LogsModule } from './common/logs/logs.module';
+import { LogsModule } from './core/logger/logger.modules';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
+      envFilePath: [
+        `src/config/.env.${process.env.NODE_ENV}`,
+        'src/config/.env',
+      ],
       load: [Configuration as ConfigFactory],
       // 对环境配置进行校验
       validationSchema: Joi.object({
