@@ -5,8 +5,7 @@ import * as Joi from 'joi';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
-import { LoggerModule } from 'nestjs-pino';
-import { loggerConfig } from './config/logger.config';
+import { LogsModule } from './common/logs/logs.module';
 
 @Module({
   imports: [
@@ -43,8 +42,8 @@ import { loggerConfig } from './config/logger.config';
         }) as TypeOrmModuleOptions,
     }),
 
-    LoggerModule.forRoot(loggerConfig),
     UserModule,
+    LogsModule,
   ],
   controllers: [],
   providers: [],
