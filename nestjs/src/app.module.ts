@@ -63,6 +63,7 @@ import { ServerResponse } from 'http';
                   },
                 ]
               : [
+                  // info 级别日志
                   {
                     level: 'info',
                     target: 'pino-roll',
@@ -70,6 +71,55 @@ import { ServerResponse } from 'http';
                       file: join(
                         process.cwd(),
                         'logs',
+                        'info',
+                        `${new Date().toISOString().slice(0, 10)}.log`,
+                      ),
+                      frequency: 'daily',
+                      size: '10m',
+                      mkdir: true,
+                    },
+                  },
+                  // warn 级别日志
+                  {
+                    level: 'warn',
+                    target: 'pino-roll',
+                    options: {
+                      file: join(
+                        process.cwd(),
+                        'logs',
+                        'warn',
+                        `${new Date().toISOString().slice(0, 10)}.log`,
+                      ),
+                      frequency: 'daily',
+                      size: '10m',
+                      mkdir: true,
+                    },
+                  },
+                  // error 级别日志
+                  {
+                    level: 'error',
+                    target: 'pino-roll',
+                    options: {
+                      file: join(
+                        process.cwd(),
+                        'logs',
+                        'error',
+                        `${new Date().toISOString().slice(0, 10)}.log`,
+                      ),
+                      frequency: 'daily',
+                      size: '10m',
+                      mkdir: true,
+                    },
+                  },
+                  // 所有级别的完整日志(可选)
+                  {
+                    level: 'info',
+                    target: 'pino-roll',
+                    options: {
+                      file: join(
+                        process.cwd(),
+                        'logs',
+                        'all',
                         `${new Date().toISOString().slice(0, 10)}.log`,
                       ),
                       frequency: 'daily',
