@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigFactory, ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigFactory, ConfigModule } from '@nestjs/config';
 import Configuration from './config/configuration';
 import * as Joi from 'joi';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigEnum } from './common/enum/config.enum';
 import { UserModule } from './modules/user/user.module';
 import { LogsModule } from './core/logger/logger.modules';
+import { DatabaseModule } from './core/database/database.module';
 
 @Module({
   imports: [
@@ -27,24 +26,7 @@ import { LogsModule } from './core/logger/logger.modules';
         DB_SYNC: Joi.boolean().required(),
       }),
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        ({
-          type: configService.get<string>(ConfigEnum.DB_TYPE),
-          host: configService.get<string>(ConfigEnum.DB_HOST),
-          port: configService.get<number>(ConfigEnum.DB_PORT),
-          username: configService.get<string>(ConfigEnum.DB_USERNAME),
-          password: configService.get<string>(ConfigEnum.DB_PASSWORD),
-          database: configService.get<string>(ConfigEnum.DB_DATABASE),
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: configService.get<boolean>(ConfigEnum.DB_SYNC),
-          retryAttempts: Infinity,
-          retryDelay: 5000,
-        }) as TypeOrmModuleOptions,
-    }),
-
+    DatabaseModule,
     UserModule,
     LogsModule,
   ],
