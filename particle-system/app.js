@@ -17,11 +17,11 @@ const STATE = {
   currentModel: "heart",
   targetPositions: [], // 目标位置数组
   handsDetected: false,
-  
+
   // 状态保持变量
   currentScale: 1,
   currentRotation: { x: 0, y: 0 },
-  
+
   // 上一帧数据，用于计算增量
   lastHandDistance: null,
   lastHandPosition: null, // { x, y }
@@ -276,41 +276,39 @@ function onResults(results) {
         STATE.currentScale = Math.max(0.2, Math.min(STATE.currentScale, 3.0));
       }
       STATE.lastHandDistance = distance;
-      
+
       // 双手操作时，重置单手位置记录，避免切换时跳变
       STATE.lastHandPosition = null;
-
     } else if (results.multiHandLandmarks.length === 1) {
       // ==========================================
       // 单手控制：旋转 (水平移动控制 Y 轴旋转)
       // ==========================================
       const hand = results.multiHandLandmarks[0][9]; // 中指根部
       const handedness = results.multiHandedness[0].label; // 'Left' or 'Right'
-      
+
       // MediaPipe 的 'Left' 是画面中的左手（用户的右手，如果镜像）
       // 但通常我们只关心屏幕上的移动方向
-      
+
       if (STATE.lastHandPosition !== null) {
         const deltaX = hand.x - STATE.lastHandPosition.x;
-        
+
         // 旋转灵敏度
         const rotationSensitivity = 5.0;
-        
+
         // 简单的增量旋转
         // 向左移 (deltaX < 0) -> 模型向左转 (Y 轴减小)
         // 向右移 (deltaX > 0) -> 模型向右转 (Y 轴增加)
         // 注意：MediaPipe x 坐标 0 在左，1 在右。
         // 如果是镜像模式，用户向左移手，屏幕上手向左移 (x 减小)。
-        
+
         // 修正方向以符合直觉：手往哪边划，模型往哪边转
         STATE.currentRotation.y += deltaX * rotationSensitivity;
       }
-      
+
       STATE.lastHandPosition = { x: hand.x, y: hand.y };
-      
+
       // 单手操作时，重置双手距离记录
       STATE.lastHandDistance = null;
-      
     } else {
       // 无手势
       STATE.lastHandDistance = null;
@@ -320,7 +318,7 @@ function onResults(results) {
     STATE.handsDetected = false;
     statusText.innerText = "未检测到手势";
     statusDot.classList.remove("active");
-    
+
     // 重置增量计算基准
     STATE.lastHandDistance = null;
     STATE.lastHandPosition = null;
@@ -367,9 +365,17 @@ function animate() {
 
   // 旋转控制
   // 使用 lerp 平滑过渡到目标旋转状态
-  particleSystem.rotation.y = THREE.MathUtils.lerp(particleSystem.rotation.y, STATE.currentRotation.y, 0.1);
+  particleSystem.rotation.y = THREE.MathUtils.lerp(
+    particleSystem.rotation.y,
+    STATE.currentRotation.y,
+    0.1
+  );
   // X 轴旋转暂时保持为 0 或根据需要添加
-  particleSystem.rotation.x = THREE.MathUtils.lerp(particleSystem.rotation.x, STATE.currentRotation.x, 0.1);
+  particleSystem.rotation.x = THREE.MathUtils.lerp(
+    particleSystem.rotation.x,
+    STATE.currentRotation.x,
+    0.1
+  );
 
   // 更新粒子位置
   for (let i = 0; i < CONFIG.particleCount; i++) {
@@ -390,7 +396,7 @@ function animate() {
     // 这里我们可以复用 currentScale 来做一点扩散效果，或者单独定义
     // 为了简化，我们让扩散也跟随缩放，或者移除独立的扩散因子
     // 如果想要“双手合并缩小”，那么 scale 变小自然就缩小了。
-    
+
     // 3. 添加一些自然的波动 (呼吸效果)
     const noise = Math.sin(time * 2 + i * 0.1) * 0.2;
     tx += noise;
