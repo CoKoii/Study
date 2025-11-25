@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D 粒子手势交互系统</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- MediaPipe 依赖 -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- Import map for Three.js -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 3D 容器 -->
+    <div id="canvas-container"></div>
+
+    <!-- 摄像头输入 (隐藏) -->
+    <video id="input-video" style="display: none"></video>
+
+    <!-- UI 面板 -->
+    <div id="ui-panel">
+      <div class="panel-header">
+        <h2>粒子控制台</h2>
+        <div class="status-indicator" id="status-indicator">
+          <span class="dot"></span> <span id="status-text">初始化中...</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>模型选择</label>
+        <div class="btn-group">
+          <button class="model-btn active" data-model="heart">❤️ 爱心</button>
+          <button class="model-btn" data-model="flower">🌸 花朵</button>
+          <button class="model-btn" data-model="text">📝 文字</button>
+        </div>
+      </div>
+
+      <div class="control-group" id="text-input-group" style="display: none">
+        <label>自定义文字</label>
+        <input
+          type="text"
+          id="custom-text"
+          value="Hello"
+          placeholder="输入文字..."
+        />
+        <button id="update-text-btn">生成</button>
+      </div>
+
+      <div class="control-group">
+        <label>粒子颜色</label>
+        <div class="color-picker-wrapper">
+          <input type="color" id="color-picker" value="#ff0055" />
+          <span id="color-value">#ff0055</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <button id="fullscreen-btn" class="action-btn">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+            />
+          </svg>
+          全屏模式
+        </button>
+      </div>
+
+      <div class="instructions">
+        <p>👋 <b>操作指南:</b></p>
+        <ul>
+          <li>允许摄像头权限以启用交互</li>
+          <li>双手张开/合拢控制粒子扩散</li>
+          <li>移动手掌位置控制视角</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 摄像头预览 (可选，用于调试，默认小窗口) -->
+    <canvas id="output-canvas" width="160" height="120"></canvas>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

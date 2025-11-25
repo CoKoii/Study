@@ -35,15 +35,28 @@ export class UserService {
   }
 
   async findProfile(id: number) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
-    const profile = await this.profileRepository.findOne({
-      where: { user: { id: user?.id } },
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .where('user.id = :id', { id })
+      .getOne();
+    if (!user) return null;
+    const { profile, ...rest } = user;
     return {
-      ...user,
+      ...rest,
       info: profile,
     };
+
+    // const user = await this.userRepository.findOne({
+    //   where: { id },
+    //   relations: ['profile', 'roles'],
+    // });
+    // if (!user) return null;
+    // const { profile, ...rest } = user;
+    // return {
+    //   ...rest,
+    //   info: profile,
+    // };
   }
 }
