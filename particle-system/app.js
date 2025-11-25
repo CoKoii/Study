@@ -17,9 +17,14 @@ const STATE = {
   currentModel: "heart",
   targetPositions: [], // 目标位置数组
   handsDetected: false,
-  handDistance: 0,
-  handCenter: new THREE.Vector3(0, 0, 0),
-  targetRotation: { x: 0, y: 0 }, // 目标旋转角度
+  
+  // 状态保持变量
+  currentScale: 1,
+  currentRotation: { x: 0, y: 0 },
+  
+  // 上一帧数据，用于计算增量
+  lastHandDistance: null,
+  lastHandPosition: null, // { x, y }
 }; // ==========================================
 // Three.js 初始化
 // ==========================================
@@ -251,63 +256,74 @@ function onResults(results) {
 
     // 交互逻辑
     if (results.multiHandLandmarks.length === 2) {
-      // 双手控制
+      // ==========================================
+      // 双手控制：缩放 (合并缩小，远离放大)
+      // ==========================================
       const hand1 = results.multiHandLandmarks[0][9]; // 中指根部
       const hand2 = results.multiHandLandmarks[1][9];
 
-      // 计算距离 (简单欧氏距离)
+      // 计算距离
       const dx = hand1.x - hand2.x;
       const dy = hand1.y - hand2.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // 映射距离到缩放/扩散
-      // 正常距离大概在 0.2 - 0.8 之间
-      STATE.handDistance = distance;
+      if (STATE.lastHandDistance !== null) {
+        const delta = distance - STATE.lastHandDistance;
+        // 灵敏度调节
+        const sensitivity = 2.0;
+        STATE.currentScale += delta * sensitivity;
+        // 限制缩放范围
+        STATE.currentScale = Math.max(0.2, Math.min(STATE.currentScale, 3.0));
+      }
+      STATE.lastHandDistance = distance;
+      
+      // 双手操作时，重置单手位置记录，避免切换时跳变
+      STATE.lastHandPosition = null;
 
-      // 计算双手中心点 (0~1)
-      const centerX = (hand1.x + hand2.x) / 2;
-      const centerY = (hand1.y + hand2.y) / 2;
-
-      // 映射中心点到旋转角度
-      // X轴移动控制Y轴旋转 (左右转)
-      // Y轴移动控制X轴旋转 (上下转)
-      // 范围: -PI ~ PI
-      STATE.targetRotation.y = (centerX - 0.5) * Math.PI * 3; // 增加灵敏度
-      STATE.targetRotation.x = (centerY - 0.5) * Math.PI;
-
-      // 扩散因子：距离越大，扩散越大
-      // 0.2 -> 0, 0.6 -> 10
-      CONFIG.spreadFactor = THREE.MathUtils.mapLinear(
-        distance,
-        0.1,
-        0.6,
-        0,
-        15
-      );
-      CONFIG.spreadFactor = Math.max(0, CONFIG.spreadFactor); // 不小于0
-
-      // 缩放因子
-      CONFIG.scaleFactor = THREE.MathUtils.mapLinear(
-        distance,
-        0.1,
-        0.6,
-        0.5,
-        2.0
-      );
+    } else if (results.multiHandLandmarks.length === 1) {
+      // ==========================================
+      // 单手控制：旋转 (水平移动控制 Y 轴旋转)
+      // ==========================================
+      const hand = results.multiHandLandmarks[0][9]; // 中指根部
+      const handedness = results.multiHandedness[0].label; // 'Left' or 'Right'
+      
+      // MediaPipe 的 'Left' 是画面中的左手（用户的右手，如果镜像）
+      // 但通常我们只关心屏幕上的移动方向
+      
+      if (STATE.lastHandPosition !== null) {
+        const deltaX = hand.x - STATE.lastHandPosition.x;
+        
+        // 旋转灵敏度
+        const rotationSensitivity = 5.0;
+        
+        // 简单的增量旋转
+        // 向左移 (deltaX < 0) -> 模型向左转 (Y 轴减小)
+        // 向右移 (deltaX > 0) -> 模型向右转 (Y 轴增加)
+        // 注意：MediaPipe x 坐标 0 在左，1 在右。
+        // 如果是镜像模式，用户向左移手，屏幕上手向左移 (x 减小)。
+        
+        // 修正方向以符合直觉：手往哪边划，模型往哪边转
+        STATE.currentRotation.y += deltaX * rotationSensitivity;
+      }
+      
+      STATE.lastHandPosition = { x: hand.x, y: hand.y };
+      
+      // 单手操作时，重置双手距离记录
+      STATE.lastHandDistance = null;
+      
     } else {
-      // 单手控制 (可选：控制旋转或位置)
-      // 这里简单处理：单手时慢慢恢复默认
-      CONFIG.spreadFactor = THREE.MathUtils.lerp(CONFIG.spreadFactor, 0, 0.05);
-      CONFIG.scaleFactor = THREE.MathUtils.lerp(CONFIG.scaleFactor, 1, 0.05);
+      // 无手势
+      STATE.lastHandDistance = null;
+      STATE.lastHandPosition = null;
     }
   } else {
     STATE.handsDetected = false;
     statusText.innerText = "未检测到手势";
     statusDot.classList.remove("active");
-
-    // 无手势时恢复默认
-    CONFIG.spreadFactor = THREE.MathUtils.lerp(CONFIG.spreadFactor, 0, 0.05);
-    CONFIG.scaleFactor = THREE.MathUtils.lerp(CONFIG.scaleFactor, 1, 0.05);
+    
+    // 重置增量计算基准
+    STATE.lastHandDistance = null;
+    STATE.lastHandPosition = null;
   }
   canvasCtx.restore();
 }
@@ -350,31 +366,10 @@ function animate() {
   const currentPositions = positionsAttribute.array;
 
   // 旋转控制
-  if (!STATE.handsDetected) {
-    // 无手势：自动旋转
-    particleSystem.rotation.y += 0.002;
-    // 慢慢恢复 X 轴旋转到 0
-    particleSystem.rotation.x = THREE.MathUtils.lerp(
-      particleSystem.rotation.x,
-      0,
-      0.05
-    );
-  } else {
-    // 有手势：跟随手势旋转
-    // 使用 lerp 平滑过渡
-    // 注意：MediaPipe 的坐标系 X 轴是反的（镜像），所以可能需要调整方向
-    // 这里假设镜像已经处理，或者用户习惯镜像操作
-    particleSystem.rotation.y = THREE.MathUtils.lerp(
-      particleSystem.rotation.y,
-      -STATE.targetRotation.y,
-      0.1
-    ); // 取反以符合直觉
-    particleSystem.rotation.x = THREE.MathUtils.lerp(
-      particleSystem.rotation.x,
-      STATE.targetRotation.x,
-      0.1
-    );
-  }
+  // 使用 lerp 平滑过渡到目标旋转状态
+  particleSystem.rotation.y = THREE.MathUtils.lerp(particleSystem.rotation.y, STATE.currentRotation.y, 0.1);
+  // X 轴旋转暂时保持为 0 或根据需要添加
+  particleSystem.rotation.x = THREE.MathUtils.lerp(particleSystem.rotation.x, STATE.currentRotation.x, 0.1);
 
   // 更新粒子位置
   for (let i = 0; i < CONFIG.particleCount; i++) {
@@ -385,22 +380,17 @@ function animate() {
     let ty = STATE.targetPositions[idx + 1] || 0;
     let tz = STATE.targetPositions[idx + 2] || 0;
 
-    // 1. 应用缩放 (基于手势)
-    tx *= CONFIG.scaleFactor;
-    ty *= CONFIG.scaleFactor;
-    tz *= CONFIG.scaleFactor;
+    // 1. 应用缩放 (基于手势状态)
+    tx *= STATE.currentScale;
+    ty *= STATE.currentScale;
+    tz *= STATE.currentScale;
 
     // 2. 应用扩散 (基于手势)
     // 简单的径向扩散：沿着从原点向外的方向移动
-    const dist = Math.sqrt(tx * tx + ty * ty + tz * tz) + 0.001;
-    const dirX = tx / dist;
-    const dirY = ty / dist;
-    const dirZ = tz / dist;
-
-    tx += dirX * CONFIG.spreadFactor;
-    ty += dirY * CONFIG.spreadFactor;
-    tz += dirZ * CONFIG.spreadFactor;
-
+    // 这里我们可以复用 currentScale 来做一点扩散效果，或者单独定义
+    // 为了简化，我们让扩散也跟随缩放，或者移除独立的扩散因子
+    // 如果想要“双手合并缩小”，那么 scale 变小自然就缩小了。
+    
     // 3. 添加一些自然的波动 (呼吸效果)
     const noise = Math.sin(time * 2 + i * 0.1) * 0.2;
     tx += noise;
