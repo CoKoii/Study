@@ -17,10 +17,10 @@ const STATE = {
   currentModel: "heart",
   targetPositions: [], // 目标位置数组
   handsDetected: false,
-    handDistance: 0,
-    handCenter: new THREE.Vector3(0, 0, 0),
-    targetRotation: { x: 0, y: 0 }, // 目标旋转角度
-};// ==========================================
+  handDistance: 0,
+  handCenter: new THREE.Vector3(0, 0, 0),
+  targetRotation: { x: 0, y: 0 }, // 目标旋转角度
+}; // ==========================================
 // Three.js 初始化
 // ==========================================
 const container = document.getElementById("canvas-container");
@@ -267,7 +267,7 @@ function onResults(results) {
       // 计算双手中心点 (0~1)
       const centerX = (hand1.x + hand2.x) / 2;
       const centerY = (hand1.y + hand2.y) / 2;
-      
+
       // 映射中心点到旋转角度
       // X轴移动控制Y轴旋转 (左右转)
       // Y轴移动控制X轴旋转 (上下转)
@@ -349,20 +349,32 @@ function animate() {
   const positionsAttribute = geometry.attributes.position;
   const currentPositions = positionsAttribute.array;
 
-    // 旋转控制
-    if (!STATE.handsDetected) {
-        // 无手势：自动旋转
-        particleSystem.rotation.y += 0.002;
-        // 慢慢恢复 X 轴旋转到 0
-        particleSystem.rotation.x = THREE.MathUtils.lerp(particleSystem.rotation.x, 0, 0.05);
-    } else {
-        // 有手势：跟随手势旋转
-        // 使用 lerp 平滑过渡
-        // 注意：MediaPipe 的坐标系 X 轴是反的（镜像），所以可能需要调整方向
-        // 这里假设镜像已经处理，或者用户习惯镜像操作
-        particleSystem.rotation.y = THREE.MathUtils.lerp(particleSystem.rotation.y, -STATE.targetRotation.y, 0.1); // 取反以符合直觉
-        particleSystem.rotation.x = THREE.MathUtils.lerp(particleSystem.rotation.x, STATE.targetRotation.x, 0.1);
-    }
+  // 旋转控制
+  if (!STATE.handsDetected) {
+    // 无手势：自动旋转
+    particleSystem.rotation.y += 0.002;
+    // 慢慢恢复 X 轴旋转到 0
+    particleSystem.rotation.x = THREE.MathUtils.lerp(
+      particleSystem.rotation.x,
+      0,
+      0.05
+    );
+  } else {
+    // 有手势：跟随手势旋转
+    // 使用 lerp 平滑过渡
+    // 注意：MediaPipe 的坐标系 X 轴是反的（镜像），所以可能需要调整方向
+    // 这里假设镜像已经处理，或者用户习惯镜像操作
+    particleSystem.rotation.y = THREE.MathUtils.lerp(
+      particleSystem.rotation.y,
+      -STATE.targetRotation.y,
+      0.1
+    ); // 取反以符合直觉
+    particleSystem.rotation.x = THREE.MathUtils.lerp(
+      particleSystem.rotation.x,
+      STATE.targetRotation.x,
+      0.1
+    );
+  }
 
   // 更新粒子位置
   for (let i = 0; i < CONFIG.particleCount; i++) {
