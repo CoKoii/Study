@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0" version="28.2.7">
+  <diagram name="Page-1" id="13e1069c-82ec-6db2-03f1-153e76fe0fe0">
+    <mxGraphModel dx="3218" dy="617" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="RcIcD_emELilp9cN9h8U-1222" value="课件上传系统状态图" style="shape=umlFrame;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=14;width=160;height=29;" vertex="1" parent="1">
+          <mxGeometry x="-480" y="1541" width="420" height="930" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1223" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-285" y="1560" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1224" value="等待登录" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="-330" y="1630" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1225" value="用户已认证" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="-330" y="1750" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1226" value="文件处理" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=top;fontSize=12;container=0;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="-450" y="1870" width="360" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1234" value="" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-295" y="2210" width="50" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1235" value="文件已发布" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="-440" y="2280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1236" value="文件未通过认证" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="-220" y="2280" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1237" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;strokeWidth=3;fillColor=white;" vertex="1" parent="1">
+          <mxGeometry x="-397.5" y="2380" width="35" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1238" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="RcIcD_emELilp9cN9h8U-1237">
+          <mxGeometry x="7.5" y="7.5" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1239" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;strokeColor=#000000;strokeWidth=3;fillColor=white;" vertex="1" parent="1">
+          <mxGeometry x="-177.5" y="2380" width="35" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1240" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="RcIcD_emELilp9cN9h8U-1239">
+          <mxGeometry x="7.5" y="7.5" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1241" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1223" target="RcIcD_emELilp9cN9h8U-1224">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1242" value="登录验证通过" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1224" target="RcIcD_emELilp9cN9h8U-1225">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1243" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1225" target="RcIcD_emELilp9cN9h8U-1226">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1244" value="管理员完成审核" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1230" target="RcIcD_emELilp9cN9h8U-1234">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1245" value="[认证通过]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1234" target="RcIcD_emELilp9cN9h8U-1235">
+          <mxGeometry x="-0.4706" y="-15" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1246" value="[认证未通过]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1234" target="RcIcD_emELilp9cN9h8U-1236">
+          <mxGeometry x="-0.4706" y="15" relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="-160" y="2370" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1247" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1235" target="RcIcD_emELilp9cN9h8U-1237">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1248" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1236" target="RcIcD_emELilp9cN9h8U-1239">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1227" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-285" y="1900" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1228" value="准备上传" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-325" y="1960" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1229" value="文件上传中" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-325" y="2040" width="110" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1230" value="等待审核&lt;hr&gt;存储文件()" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=top;container=0;" vertex="1" parent="1">
+          <mxGeometry x="-335" y="2120" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1231" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1227" target="RcIcD_emELilp9cN9h8U-1228">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1232" value="开始上传文件" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1228" target="RcIcD_emELilp9cN9h8U-1229">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RcIcD_emELilp9cN9h8U-1233" value="上传完成" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="RcIcD_emELilp9cN9h8U-1229" target="RcIcD_emELilp9cN9h8U-1230">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
