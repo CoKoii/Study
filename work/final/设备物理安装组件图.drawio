@@ -55,17 +55,50 @@
             </mxGeometry>
         </mxCell>
 
-        <!-- Dependencies -->
-        <mxCell id="edge_1" style="dashed=1;endArrow=open;html=1;rounded=0;entryX=0.5;entryY=1;exitX=0.5;exitY=0;" edge="1" parent="1" source="comp_system" target="comp_parts">
+        <!-- Interface Nodes -->
+        <mxCell id="if_parts" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+            <mxGeometry x="415" y="220" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="if_loc" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+            <mxGeometry x="280" y="325" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="if_lines" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+            <mxGeometry x="560" y="325" width="10" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="if_aux" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+            <mxGeometry x="415" y="430" width="10" height="10" as="geometry" />
+        </mxCell>
+
+        <!-- Dependencies/Interfaces -->
+        <!-- Parts (Provider) -> Interface -> System (Requirer) -->
+        <mxCell id="edge_parts_prov" style="endArrow=oval;html=1;rounded=0;endFill=0;endSize=10;exitX=0.5;exitY=1;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_parts" target="if_parts">
             <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_2" style="dashed=1;endArrow=open;html=1;rounded=0;entryX=1;entryY=0.5;exitX=0;exitY=0.5;" edge="1" parent="1" source="comp_system" target="comp_location">
+        <mxCell id="edge_parts_req" style="endArrow=halfCircle;html=1;rounded=0;endFill=0;endSize=10;exitX=0.5;exitY=0;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_system" target="if_parts">
             <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_3" style="dashed=1;endArrow=open;html=1;rounded=0;entryX=0;entryY=0.5;exitX=1;exitY=0.5;" edge="1" parent="1" source="comp_system" target="comp_lines">
+
+        <!-- Location (Provider) -> Interface -> System (Requirer) -->
+        <mxCell id="edge_loc_prov" style="endArrow=oval;html=1;rounded=0;endFill=0;endSize=10;exitX=1;exitY=0.5;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_location" target="if_loc">
             <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="edge_4" style="dashed=1;endArrow=open;html=1;rounded=0;entryX=0.5;entryY=0;exitX=0.5;exitY=1;" edge="1" parent="1" source="comp_system" target="comp_aux">
+        <mxCell id="edge_loc_req" style="endArrow=halfCircle;html=1;rounded=0;endFill=0;endSize=10;exitX=0;exitY=0.5;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_system" target="if_loc">
+            <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lines (Provider) -> Interface -> System (Requirer) -->
+        <mxCell id="edge_lines_prov" style="endArrow=oval;html=1;rounded=0;endFill=0;endSize=10;exitX=0;exitY=0.5;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_lines" target="if_lines">
+            <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_lines_req" style="endArrow=halfCircle;html=1;rounded=0;endFill=0;endSize=10;exitX=1;exitY=0.5;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_system" target="if_lines">
+            <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Aux (Provider) -> Interface -> System (Requirer) -->
+        <mxCell id="edge_aux_prov" style="endArrow=oval;html=1;rounded=0;endFill=0;endSize=10;exitX=0.5;exitY=0;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_aux" target="if_aux">
+            <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_aux_req" style="endArrow=halfCircle;html=1;rounded=0;endFill=0;endSize=10;exitX=0.5;exitY=1;entryX=0.5;entryY=0.5;" edge="1" parent="1" source="comp_system" target="if_aux">
             <mxGeometry relative="1" as="geometry" />
         </mxCell>
 

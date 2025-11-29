@@ -1,132 +1,145 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="29.2.1">
   <diagram name="Procurement Delivery Process" id="procurement_delivery_process_id">
-    <mxGraphModel dx="1000" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1994" dy="1154" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        
-        <!-- Main Pool -->
-        <mxCell id="pool" value="采购交付全流程" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;horizontal=1;horizontalStack=0;html=1;" vertex="1" parent="1">
-          <mxGeometry x="40" y="40" width="880" height="1080" as="geometry" />
+        <mxCell id="pool" parent="1" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;horizontal=1;horizontalStack=0;html=1;" value="采购交付全流程" vertex="1">
+          <mxGeometry height="1400" width="880" x="40" y="40" as="geometry" />
         </mxCell>
-
-        <!-- Lane 1: Procurement Specialist -->
-        <mxCell id="lane_procurement" value="采购专员" style="swimlane;startSize=20;html=1;" vertex="1" parent="pool">
-          <mxGeometry x="0" y="20" width="220" height="1060" as="geometry" />
+        <mxCell id="lane_procurement" parent="pool" style="swimlane;startSize=20;html=1;" value="采购专员" vertex="1">
+          <mxGeometry height="1380" width="220" y="20" as="geometry" />
         </mxCell>
-        
-        <!-- Lane 2: Supplier -->
-        <mxCell id="lane_supplier" value="供应商" style="swimlane;startSize=20;html=1;" vertex="1" parent="pool">
-          <mxGeometry x="220" y="20" width="220" height="1060" as="geometry" />
+        <mxCell id="start" parent="lane_procurement" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="95" y="40" as="geometry" />
         </mxCell>
-
-        <!-- Lane 3: Implementation Engineer -->
-        <mxCell id="lane_engineer" value="实施工程师" style="swimlane;startSize=20;html=1;" vertex="1" parent="pool">
-          <mxGeometry x="440" y="20" width="220" height="1060" as="geometry" />
+        <mxCell id="act_receive" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="接收需求计划" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="100" as="geometry" />
         </mxCell>
-
-        <!-- Lane 4: Asset Admin -->
-        <mxCell id="lane_admin" value="资产管理员" style="swimlane;startSize=20;html=1;" vertex="1" parent="pool">
-          <mxGeometry x="660" y="20" width="220" height="1060" as="geometry" />
+        <mxCell id="act_publish" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="发布招标寻源" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="180" as="geometry" />
         </mxCell>
-
-        <!-- Nodes in Lane 1 -->
-        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="95" y="40" width="30" height="30" as="geometry" />
+        <mxCell id="act_evaluate" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="进行评标定标" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="340" as="geometry" />
         </mxCell>
-        <mxCell id="act_receive" value="接收需求计划" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="100" width="120" height="50" as="geometry" />
+        <mxCell id="act_sign_proc" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="签署合同订单" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="420" as="geometry" />
         </mxCell>
-        <mxCell id="act_publish" value="发布招标寻源" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="180" width="120" height="50" as="geometry" />
+        <mxCell id="act_order" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="下达采购订单" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="500" as="geometry" />
         </mxCell>
-        <mxCell id="act_evaluate" value="进行评标定标" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="340" width="120" height="50" as="geometry" />
+        <mxCell id="act_track" parent="lane_procurement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="跟踪物流状态" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="660" as="geometry" />
         </mxCell>
-        <mxCell id="act_sign_proc" value="签署合同订单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="420" width="120" height="50" as="geometry" />
+        <mxCell id="lane_supplier" parent="pool" style="swimlane;startSize=20;html=1;" value="供应商" vertex="1">
+          <mxGeometry height="1380" width="220" x="220" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="act_order" value="下达采购订单" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="500" width="120" height="50" as="geometry" />
+        <mxCell id="act_bid" parent="lane_supplier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="投标报价" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="260" as="geometry" />
         </mxCell>
-        <mxCell id="act_track" value="跟踪物流状态" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_procurement">
-          <mxGeometry x="50" y="660" width="120" height="50" as="geometry" />
+        <mxCell id="act_ship" parent="lane_supplier" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="供应商发货运输" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="580" as="geometry" />
         </mxCell>
-
-        <!-- Nodes in Lane 2 -->
-        <mxCell id="act_bid" value="投标报价" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_supplier">
-          <mxGeometry x="50" y="260" width="120" height="50" as="geometry" />
+        <mxCell id="lane_engineer" parent="pool" style="swimlane;startSize=20;html=1;" value="实施工程师" vertex="1">
+          <mxGeometry height="1380" width="220" x="440" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="act_ship" value="供应商发货运输" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_supplier">
-          <mxGeometry x="50" y="580" width="120" height="50" as="geometry" />
+        <mxCell id="act_receipt" parent="lane_engineer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="现场到货接收" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="660" as="geometry" />
         </mxCell>
-
-        <!-- Nodes in Lane 3 -->
-        <mxCell id="act_receipt" value="现场到货接收" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_engineer">
-          <mxGeometry x="50" y="660" width="120" height="50" as="geometry" />
+        <mxCell id="exp_region" parent="lane_engineer" style="swimlane;whiteSpace=wrap;html=1;startSize=20;rounded=1;dashed=1;fillColor=none;" value="安装调试阶段" vertex="1">
+          <mxGeometry height="200" width="180" x="20" y="720" as="geometry" />
         </mxCell>
-        <mxCell id="act_install" value="执行物理安装" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_engineer">
-          <mxGeometry x="50" y="740" width="120" height="50" as="geometry" />
+        <mxCell id="act_install" parent="exp_region" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="执行物理安装" vertex="1">
+          <mxGeometry height="50" width="120" x="30" y="30" as="geometry" />
         </mxCell>
-        <mxCell id="act_debug" value="进行调试联调" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_engineer">
-          <mxGeometry x="50" y="820" width="120" height="50" as="geometry" />
+        <mxCell id="act_debug" parent="exp_region" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="进行调试联调" vertex="1">
+          <mxGeometry height="50" width="120" x="30" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="act_apply_accept" value="发起验收移交申请" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_engineer">
-          <mxGeometry x="50" y="900" width="120" height="50" as="geometry" />
+        <mxCell id="dec_debug" parent="lane_engineer" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="调试成功?" vertex="1">
+          <mxGeometry height="80" width="80" x="70" y="940" as="geometry" />
         </mxCell>
-
-        <!-- Nodes in Lane 4 -->
-        <mxCell id="act_final_accept" value="最终现场验收" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="lane_admin">
-          <mxGeometry x="50" y="900" width="120" height="50" as="geometry" />
+        <mxCell id="act_apply_accept" parent="lane_engineer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="发起验收移交申请" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="1060" as="geometry" />
         </mxCell>
-        <mxCell id="end" value="" style="ellipse;shape=doubleEllipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="lane_admin">
-          <mxGeometry x="95" y="980" width="30" height="30" as="geometry" />
+        <mxCell id="lane_admin" parent="pool" style="swimlane;startSize=20;html=1;" value="资产管理员" vertex="1">
+          <mxGeometry height="1380" width="220" x="660" y="20" as="geometry" />
         </mxCell>
-
-        <!-- Edges -->
-        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="start" target="act_receive">
+        <mxCell id="act_final_accept" parent="lane_admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="最终现场验收" vertex="1">
+          <mxGeometry height="50" width="120" x="50" y="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_accept" parent="lane_admin" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="验收通过?" vertex="1">
+          <mxGeometry height="80" width="80" x="70" y="1140" as="geometry" />
+        </mxCell>
+        <mxCell id="end" parent="lane_admin" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=none;strokeColor=#000000;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="95" y="1260" as="geometry" />
+        </mxCell>
+        <mxCell id="end_inner" parent="lane_admin" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="100" y="1265" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="pool" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_receive">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_receive" target="act_publish">
+        <mxCell id="e2" edge="1" parent="pool" source="act_receive" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_publish">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_publish" target="act_bid">
+        <mxCell id="e3" edge="1" parent="pool" source="act_publish" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_bid">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_bid" target="act_evaluate">
+        <mxCell id="e4" edge="1" parent="pool" source="act_bid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_evaluate">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_evaluate" target="act_sign_proc">
+        <mxCell id="e5" edge="1" parent="pool" source="act_evaluate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_sign_proc">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_sign_proc" target="act_order">
+        <mxCell id="e6" edge="1" parent="pool" source="act_sign_proc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_order">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_order" target="act_ship">
+        <mxCell id="e7" edge="1" parent="pool" source="act_order" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_ship">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_ship" target="act_track">
+        <mxCell id="e8" edge="1" parent="pool" source="act_ship" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_track">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_track" target="act_receipt">
+        <mxCell id="e9" edge="1" parent="pool" source="act_track" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_receipt">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_receipt" target="act_install">
+        <mxCell id="e10" edge="1" parent="pool" source="act_receipt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_install">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_install" target="act_debug">
+        <mxCell id="e11" edge="1" parent="pool" source="act_install" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_debug">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_debug" target="act_apply_accept">
+        <mxCell id="e12" edge="1" parent="pool" source="act_debug" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="dec_debug">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_apply_accept" target="act_final_accept">
+        <mxCell id="e13_yes" edge="1" parent="pool" source="dec_debug" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_apply_accept" value="是">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="pool" source="act_final_accept" target="end">
+        <mxCell id="e13_no" edge="1" parent="pool" source="dec_debug" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=1;entryY=0.5;" target="act_debug" value="否">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="980" />
+              <mxPoint x="600" y="855" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="pool" source="act_apply_accept" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="act_final_accept">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
+        <mxCell id="e15" edge="1" parent="pool" source="act_final_accept" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="dec_accept">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16_yes" edge="1" parent="pool" source="dec_accept" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="end" value="是">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16_no" edge="1" parent="pool" source="dec_accept" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;entryX=1;entryY=0.5;" target="act_install" value="否">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="850" y="1180" />
+              <mxPoint x="850" y="775" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

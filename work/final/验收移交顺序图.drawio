@@ -4,65 +4,95 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="life_engineer" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="实施工程师" vertex="1">
-          <mxGeometry height="400" width="100" x="100" y="80" as="geometry" />
+        <mxCell id="life_engineer" parent="1" style="shape=umlLifeline;participant=umlActor;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;spacingTop=36;outlineConnect=0;" value="实施工程师" vertex="1">
+          <mxGeometry height="500" width="20" x="50" y="80" as="geometry" />
         </mxCell>
-        <mxCell id="life_acceptance" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="现场验收" vertex="1">
-          <mxGeometry height="400" width="100" x="300" y="80" as="geometry" />
+        <mxCell id="life_boundary" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="界面类" vertex="1">
+          <mxGeometry height="500" width="100" x="150" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="life_control" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="系统处理类" vertex="1">
+          <mxGeometry height="500" width="100" x="350" y="80" as="geometry" />
         </mxCell>
         <mxCell id="life_procurement" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="采购模块" vertex="1">
-          <mxGeometry height="400" width="100" x="500" y="80" as="geometry" />
+          <mxGeometry height="500" width="100" x="550" y="80" as="geometry" />
         </mxCell>
         <mxCell id="life_asset" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;" value="资产模块" vertex="1">
-          <mxGeometry height="400" width="100" x="700" y="80" as="geometry" />
+          <mxGeometry height="500" width="100" x="750" y="80" as="geometry" />
         </mxCell>
-        <mxCell id="msg_1" edge="1" parent="1" source="life_engineer" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_acceptance" value="提交验收报告">
+        <mxCell id="msg_1" edge="1" parent="1" source="life_engineer" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_boundary" value="提交验收报告()">
           <mxGeometry relative="1" width="80" as="geometry">
             <Array as="points">
-              <mxPoint x="250" y="160" />
+              <mxPoint x="130" y="160" />
             </Array>
-            <mxPoint x="150" y="160" as="sourcePoint" />
-            <mxPoint x="350" y="160" as="targetPoint" />
+            <mxPoint x="60" y="160" as="sourcePoint" />
+            <mxPoint x="200" y="160" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg_2" edge="1" parent="1" source="life_acceptance" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_procurement" value="验收通过">
+        <mxCell id="msg_2" edge="1" parent="1" source="life_boundary" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_control" value="处理验收请求()">
           <mxGeometry relative="1" width="80" as="geometry">
             <Array as="points">
-              <mxPoint x="450" y="200" />
+              <mxPoint x="300" y="200" />
             </Array>
-            <mxPoint x="350" y="200" as="sourcePoint" />
-            <mxPoint x="550" y="200" as="targetPoint" />
+            <mxPoint x="200" y="200" as="sourcePoint" />
+            <mxPoint x="400" y="200" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg_3" edge="1" parent="1" source="life_procurement" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_asset" value="发起新资产注册请求">
+        <mxCell id="msg_3" edge="1" parent="1" source="life_control" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_procurement" value="发起资产注册()">
           <mxGeometry relative="1" width="80" as="geometry">
             <Array as="points">
-              <mxPoint x="650" y="240" />
+              <mxPoint x="500" y="240" />
             </Array>
-            <mxPoint x="550" y="240" as="sourcePoint" />
-            <mxPoint x="750" y="240" as="targetPoint" />
+            <mxPoint x="400" y="240" as="sourcePoint" />
+            <mxPoint x="600" y="240" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg_4" edge="1" parent="1" source="life_asset" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_procurement" value="返回唯一的资产编码">
+        <mxCell id="msg_4" edge="1" parent="1" source="life_procurement" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" target="life_asset" value="登记新资产()">
           <mxGeometry relative="1" width="80" as="geometry">
             <Array as="points">
-              <mxPoint x="650" y="280" />
+              <mxPoint x="700" y="280" />
             </Array>
-            <mxPoint x="750" y="280" as="sourcePoint" />
-            <mxPoint x="550" y="280" as="targetPoint" />
+            <mxPoint x="600" y="280" as="sourcePoint" />
+            <mxPoint x="800" y="280" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="msg_5" edge="1" parent="1" source="life_procurement" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_engineer" value="移交完成">
+        <mxCell id="msg_5" edge="1" parent="1" source="life_asset" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_procurement" value="返回资产编码">
           <mxGeometry relative="1" width="80" as="geometry">
             <Array as="points">
-              <mxPoint x="350" y="320" />
+              <mxPoint x="700" y="320" />
             </Array>
-            <mxPoint x="550" y="320" as="sourcePoint" />
-            <mxPoint x="150" y="320" as="targetPoint" />
+            <mxPoint x="800" y="320" as="sourcePoint" />
+            <mxPoint x="600" y="320" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="jnnv8WnKqNyDv9c784CY-1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;recursiveResize=0;container=1;collapsible=0;width=160;" value="Diagram Heading" vertex="1">
-          <mxGeometry height="480" width="780" x="70" y="30" as="geometry" />
+        <mxCell id="msg_6" edge="1" parent="1" source="life_procurement" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_control" value="返回处理结果">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points">
+              <mxPoint x="500" y="360" />
+            </Array>
+            <mxPoint x="600" y="360" as="sourcePoint" />
+            <mxPoint x="400" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_7" edge="1" parent="1" source="life_control" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_boundary" value="显示验收结果">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="400" />
+            </Array>
+            <mxPoint x="400" y="400" as="sourcePoint" />
+            <mxPoint x="200" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg_8" edge="1" parent="1" source="life_boundary" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" target="life_engineer" value="显示成功信息">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <Array as="points">
+              <mxPoint x="130" y="440" />
+            </Array>
+            <mxPoint x="200" y="440" as="sourcePoint" />
+            <mxPoint x="60" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="heading" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;recursiveResize=0;container=1;collapsible=0;width=160;" value="验收移交顺序图" vertex="1">
+          <mxGeometry height="600" width="900" x="10" y="10" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
