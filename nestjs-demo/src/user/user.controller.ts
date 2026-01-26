@@ -1,25 +1,40 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { ConfigService } from '@nestjs/config';
-import { ConfigEnum } from 'src/enum/config';
+
 @Controller('user')
 export class UserController {
-  constructor(
-    private userService: UserService,
-    private configService: ConfigService,
-  ) {}
-  @Get()
-  getUser() {
-    const data = this.configService.get<string>(ConfigEnum.DB);
-    console.log('Config DB Value:', data);
-    return this.userService.getUsers();
-  }
+  constructor(private readonly userService: UserService) {}
+
   @Post()
-  addUser() {
-    return this.userService.addUser();
+  create() {
+    return this.userService.create();
   }
-  @Get('range')
-  getUserRange(@Query('num') num: number) {
-    return this.userService.rangeUser(num);
+
+  @Get()
+  findAll() {
+    return this.userService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string) {
+    return this.userService.update(+id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.userService.remove(+id);
   }
 }

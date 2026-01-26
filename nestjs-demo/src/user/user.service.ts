@@ -2,31 +2,23 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UserService {
-  getUsers() {
-    return {
-      code: 0,
-      data: [],
-      message: '请求用户列表成功',
-    };
+  create() {
+    return 'This action adds a new user';
   }
 
-  addUser() {
-    return {
-      code: 0,
-      data: null,
-      message: '添加用户成功',
-    };
+  findAll() {
+    return `This action returns all user`;
   }
-  rangeUser(num: number) {
-    const arr: string[] = [];
-    for (let i = 1; i <= num; i++) {
-      arr.push(i.toString());
-      console.log(i);
-    }
-    return {
-      code: 0,
-      data: arr,
-      message: '操作成功',
-    };
+
+  findOne(id: number) {
+    return `This action returns a #${id} user`;
+  }
+
+  update(id: number) {
+    return `This action updates a #${id} user`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} user`;
   }
 }
