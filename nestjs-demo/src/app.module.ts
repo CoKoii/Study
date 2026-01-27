@@ -10,8 +10,7 @@ import { User } from './user/entities/user.entity';
 import { Profile } from './user/entities/profile.entity';
 import { Logs } from './logs/logs.entity';
 import { Roles } from './roles/roles.entity';
-// import { LoggerModule } from 'nestjs-pino';
-// import { join } from 'path';
+
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 @Global()
 @Module({
@@ -50,32 +49,6 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
           logging: process.env.NODE_ENV === 'development',
         }) as TypeOrmModuleOptions,
     }),
-    // LoggerModule.forRoot({
-    //   pinoHttp: {
-    //     transport: {
-    //       targets: [
-    //         process.env.NODE_ENV === 'development'
-    //           ? {
-    //               level: 'info',
-    //               target: 'pino-pretty',
-    //               options: {
-    //                 colorize: true,
-    //               },
-    //             }
-    //           : {
-    //               level: 'info',
-    //               target: 'pino-roll',
-    //               options: {
-    //                 file: join('log', 'log.txt'),
-    //                 frequency: 'daily',
-    //                 size: '10M',
-    //                 mkdir: true,
-    //               },
-    //             },
-    //       ],
-    //     },
-    //   },
-    // }),
     UserModule,
   ],
   controllers: [],
