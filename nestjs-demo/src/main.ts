@@ -1,9 +1,9 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import winston, { createLogger } from 'winston';
 import { utilities, WinstonModule } from 'nest-winston';
 import 'winston-daily-rotate-file';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { AllExceptionFilter } from './filters/http-exception.filter';
 async function bootstrap() {
   const instance = createLogger({
     transports: [
@@ -49,7 +49,9 @@ async function bootstrap() {
     logger,
   });
   app.setGlobalPrefix('api/v1');
-  app.useGlobalFilters(new HttpExceptionFilter(logger));
+  app.useGlobalFilters(
+    new AllExceptionFilter(logger, app.get(HttpAdapterHost)),
+  );
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
