@@ -10,6 +10,7 @@ import { User } from './user/entities/user.entity';
 import { Profile } from './user/entities/profile.entity';
 import { Logs } from './logs/logs.entity';
 import { Roles } from './roles/roles.entity';
+import { LogsModule } from './logs/logs.module';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 @Global()
@@ -46,10 +47,12 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
           database: configService.get<string>(ConfigEnum.DB_NAME),
           entities: [User, Profile, Logs, Roles],
           synchronize: configService.get<boolean>(ConfigEnum.DB_SYNC),
-          logging: process.env.NODE_ENV === 'development',
+          // logging: process.env.NODE_ENV === 'development',
+          logging: false,
         }) as TypeOrmModuleOptions,
     }),
     UserModule,
+    LogsModule,
   ],
   controllers: [],
   providers: [Logger],

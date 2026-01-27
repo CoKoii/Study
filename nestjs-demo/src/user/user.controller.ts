@@ -2,17 +2,22 @@ import {
   Controller,
   Get,
   Post,
-  Logger,
   NotFoundException,
+  Inject,
+  type LoggerService,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly logger: Logger,
-  ) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {
+    this.logger.log('UserController initialized');
+  }
   @Get()
   getUsers() {
     const user = { isAdmin: false };
