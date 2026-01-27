@@ -1,16 +1,8 @@
-info: UserController initialized {"timestamp":"2026-01-27T08:07:34.892Z"}
-info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T08:07:34.894Z"}
-info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:07:34.895Z"}
-info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:07:34.895Z"}
-info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:07:34.896Z"}
-info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:07:34.896Z"}
-info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:07:34.896Z"}
-info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T08:07:34.897Z"}
-info: UserController initialized {"timestamp":"2026-01-27T08:10:27.762Z"}
-info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T08:10:27.764Z"}
-info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:10:27.765Z"}
-info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:10:27.766Z"}
-info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:10:27.766Z"}
-info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:10:27.766Z"}
-info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:10:27.766Z"}
-info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T08:10:27.767Z"}
+info: UserController initialized {"timestamp":"2026-01-27T08:31:33.112Z"}
+info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T08:31:33.114Z"}
+info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:31:33.115Z"}
+info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:31:33.116Z"}
+info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:31:33.116Z"}
+info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:31:33.116Z"}
+info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T08:31:33.117Z"}
+info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T08:31:33.117Z"}

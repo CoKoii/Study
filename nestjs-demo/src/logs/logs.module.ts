@@ -9,7 +9,20 @@ import {
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { Console } from 'winston/lib/winston/transports';
 import { LogEnum } from '../enum/config';
-
+const createDailyTransport = (level: string, filename: string) =>
+  new DailyRotateFile({
+    level,
+    dirname: 'logs',
+    filename,
+    datePattern: 'YYYY-MM-DD-HH',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.simple(),
+    ),
+  });
 @Module({
   imports: [
     WinstonModule.forRootAsync({
@@ -22,37 +35,16 @@ import { LogEnum } from '../enum/config';
             utilities.format.nestLike(),
           ),
         });
-        const dailyTransports = new DailyRotateFile({
-          level: 'warn',
-          dirname: 'logs',
-          filename: 'application-%DATE%.log',
-          datePattern: 'YYYY-MM-DD-HH',
-          zippedArchive: true,
-          maxSize: '20m',
-          maxFiles: '14d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.simple(),
-          ),
-        });
-        const dailyInfoTransports = new DailyRotateFile({
-          level: configService.get<string>(LogEnum.LOG_LEVEL),
-          dirname: 'logs',
-          filename: 'application-%DATE%.log',
-          datePattern: 'YYYY-MM-DD-HH',
-          zippedArchive: true,
-          maxSize: '20m',
-          maxFiles: '14d',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.simple(),
-          ),
-        });
+        const isLogOn =
+          configService.get<string>(LogEnum.LOG_ON)?.toLowerCase() === 'true';
         return {
           transports: [
             consoleTransports,
-            ...(configService.get<boolean>(LogEnum.LOG_ON)
-              ? [dailyTransports, dailyInfoTransports]
+            ...(isLogOn
+              ? [
+                  createDailyTransport('info', 'application-%DATE%.log'),
+                  createDailyTransport('warn', 'warn-%DATE%.log'),
+                ]
               : []),
           ],
         } as WinstonModuleOptions;
