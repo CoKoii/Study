@@ -6,9 +6,7 @@ export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly logger: Logger,
-  ) {
-    this.logger.log('UserController initialized');
-  }
+  ) {}
   @Get()
   getUsers() {
     this.logger.log('获取用户列表');
