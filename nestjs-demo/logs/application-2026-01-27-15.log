@@ -1,0 +1,33 @@
+info: UserController initialized {"timestamp":"2026-01-27T07:36:52.315Z"}
+info: UserController initialized {"timestamp":"2026-01-27T07:36:52.321Z"}
+info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T07:36:52.319Z"}
+info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:36:52.321Z"}
+info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:36:52.322Z"}
+info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:36:52.323Z"}
+info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:36:52.324Z"}
+info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:36:52.325Z"}
+info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T07:36:52.328Z"}
+error: Error: listen EADDRINUSE: address already in use :::3000 {"context":"NestApplication","stack":[null],"timestamp":"2026-01-27T07:36:52.336Z"}
+info: UserController initialized {"timestamp":"2026-01-27T07:36:55.756Z"}
+error: Error: listen EADDRINUSE: address already in use :::3000 {"context":"NestApplication","stack":[null],"timestamp":"2026-01-27T07:36:55.762Z"}
+info: UserController initialized {"timestamp":"2026-01-27T07:37:23.180Z"}
+info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T07:37:23.181Z"}
+info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:37:23.183Z"}
+info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:37:23.183Z"}
+info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:37:23.183Z"}
+info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:37:23.183Z"}
+info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:37:23.184Z"}
+info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T07:37:23.184Z"}
+info: UserController initialized {"timestamp":"2026-01-27T07:38:48.956Z"}
+info: UserController {/api/v1/user}: {"context":"RoutesResolver","timestamp":"2026-01-27T07:38:48.958Z"}
+info: Mapped {/api/v1/user, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:38:48.959Z"}
+info: Mapped {/api/v1/user, POST} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:38:48.959Z"}
+info: Mapped {/api/v1/user/profile, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:38:48.960Z"}
+info: Mapped {/api/v1/user/logs, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:38:48.960Z"}
+info: Mapped {/api/v1/user/logsByGrop, GET} route {"context":"RouterExplorer","timestamp":"2026-01-27T07:38:48.960Z"}
+info: Nest application successfully started {"context":"NestApplication","timestamp":"2026-01-27T07:38:48.961Z"}
+info: 获取用户列表 {"timestamp":"2026-01-27T07:38:51.720Z"}
+warn: 获取用户列表 {"timestamp":"2026-01-27T07:38:51.721Z"}
+warn: 获取用户列表 {"timestamp":"2026-01-27T07:38:51.721Z"}
+error: 获取用户列表 {"stack":[null],"timestamp":"2026-01-27T07:38:51.721Z"}
+error: 获取用户列表 {"stack":[null],"timestamp":"2026-01-27T07:38:51.721Z"}

@@ -8,7 +8,7 @@ import {
 } from 'nest-winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { Console } from 'winston/lib/winston/transports';
-import { LogEnum } from 'src/enum/config';
+import { LogEnum } from '../enum/config';
 
 @Module({
   imports: [
