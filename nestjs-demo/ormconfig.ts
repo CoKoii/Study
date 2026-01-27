@@ -1,12 +1,13 @@
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Logs } from './src/logs/logs.entity';
-import { Roles } from './src/roles/roles.entity';
-import { Profile } from './src/user/entities/profile.entity';
-import { User } from './src/user/entities/user.entity';
 import { DataSource, type DataSourceOptions } from 'typeorm';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { ConfigEnum } from './src/enum/config';
+
+const entitiesDir =
+  process.env.NODE_ENV === 'test'
+    ? [__dirname + '/**/*.entity{.ts}']
+    : [__dirname + '/**/*.entity{.ts,.js}'];
 const getEnv = (env: string) => {
   if (fs.existsSync(env)) {
     return dotenv.parse(fs.readFileSync(env));
@@ -24,7 +25,7 @@ const buildConnectionOptions = () => {
     username: config[ConfigEnum.DB_USERNAME],
     password: config[ConfigEnum.DB_PASSWORD],
     database: config[ConfigEnum.DB_DATABASE],
-    entities: [User, Profile, Logs, Roles],
+    entities: entitiesDir,
     synchronize: true,
     logging: false,
   } as TypeOrmModuleOptions;
