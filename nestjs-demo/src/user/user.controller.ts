@@ -1,4 +1,10 @@
-import { Controller, Get, Post, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 @Controller('user')
@@ -9,6 +15,10 @@ export class UserController {
   ) {}
   @Get()
   getUsers() {
+    const user = { isAdmin: false };
+    if (!user.isAdmin) {
+      throw new NotFoundException('用户不存在');
+    }
     this.logger.log('获取用户列表');
     this.logger.warn('获取用户列表');
     this.logger.error('获取用户列表');
