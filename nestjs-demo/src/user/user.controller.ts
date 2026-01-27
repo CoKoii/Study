@@ -1,12 +1,16 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Logger, Post } from '@nestjs/common';
 import { UserService } from './user.service';
-import type { User } from './entities/user.entity';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  private logger = new Logger(UserController.name);
+  constructor(private readonly userService: UserService) {
+    this.logger.log('UserController initialized');
+  }
   @Get()
   getUsers() {
+    this.logger.log('Fetching all users');
     return this.userService.findAll();
   }
 
