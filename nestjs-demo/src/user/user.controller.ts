@@ -1,40 +1,37 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { UserService } from './user.service';
+import type { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post()
-  create() {
-    return this.userService.create();
-  }
-
   @Get()
-  findAll() {
+  getUsers() {
     return this.userService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Post()
+  addUser() {
+    const user = { username: 'test', password: 'test' } as Partial<User>;
+    return this.userService.create(user);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string) {
-    return this.userService.update(+id);
+  @Get('profile')
+  getUserProfile() {
+    return this.userService.findProfile(2);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Get('logs')
+  getUserLogs() {
+    return this.userService.findLogs(2);
+  }
+
+  @Get('logsByGrop')
+  async getUserLogsByGrop(): Promise<any> {
+    const res = await this.userService.findLogsByGroup(2);
+    return res.map((item: { result: string; count: number }) => ({
+      result: item.result,
+      count: item.count,
+    }));
   }
 }

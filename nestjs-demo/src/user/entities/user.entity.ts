@@ -1,7 +1,17 @@
 import { Logs } from 'src/logs/logs.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Roles } from 'src/roles/roles.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Profile } from './profile.entity';
 
-@Entity()
+@Entity({ comment: '用户表' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,4 +24,11 @@ export class User {
 
   @OneToMany(() => Logs, (logs) => logs.user)
   logs: Logs[];
+
+  @ManyToMany(() => Roles, (roles) => roles.users)
+  @JoinTable({ name: 'users_roles' })
+  roles: Roles[];
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }

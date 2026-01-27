@@ -1,24 +1,61 @@
 import { Injectable } from '@nestjs/common';
+import { User } from './entities/user.entity';
+import type { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Logs } from 'src/logs/logs.entity';
 
 @Injectable()
 export class UserService {
-  create() {
-    return 'This action adds a new user';
-  }
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Logs) private readonly logsRepository: Repository<Logs>,
+  ) {}
 
   findAll() {
-    return `This action returns all user`;
+    return this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(username: string) {
+    return this.userRepository.findOne({ where: { username } });
   }
 
-  update(id: number) {
-    return `This action updates a #${id} user`;
+  create(user: Partial<User>) {
+    const userTmp = this.userRepository.create(user);
+    return this.userRepository.save(userTmp);
+  }
+
+  update(id: number, user: Partial<User>) {
+    return this.userRepository.update(id, user);
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.userRepository.delete(id);
+  }
+  findProfile(id: number) {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: {
+        profile: true,
+      },
+    });
+  }
+  async findLogs(id: number) {
+    return this.logsRepository.find({
+      where: { user: { id } },
+      relations: {
+        user: true,
+      },
+    });
+  }
+  findLogsByGroup(id: number) {
+    return this.logsRepository
+      .createQueryBuilder('logs')
+      .select('logs.result', 'result')
+      .addSelect('COUNT(logs.result)', 'count')
+      .leftJoinAndSelect('logs.user', 'user')
+      .where('user.id = :id', { id })
+      .groupBy('logs.result')
+      .orderBy('result', 'DESC')
+      .getRawMany();
   }
 }
