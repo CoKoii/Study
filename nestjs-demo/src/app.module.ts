@@ -1,16 +1,12 @@
 import { Global, Logger, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
-// import Configuration from './configuration';
 import * as dotenv from 'dotenv';
 import * as Joi from 'joi';
-import { TypeOrmModule, type TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigEnum } from './enum/config';
-import { User } from './user/entities/user.entity';
-import { Profile } from './user/entities/profile.entity';
-import { Logs } from './logs/logs.entity';
-import { Roles } from './roles/roles.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { LogsModule } from './logs/logs.module';
+import ormconfig from 'ormconfig';
 
 const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
 @Global()
@@ -18,7 +14,6 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // load: [Configuration],
       envFilePath,
       load: [() => dotenv.config({ path: '.env' })],
       validationSchema: Joi.object({
@@ -34,23 +29,7 @@ const envFilePath = `.env.${process.env.NODE_ENV || 'development'}`;
         DB_SYNC: Joi.boolean().default(false),
       }),
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) =>
-        ({
-          type: configService.get(ConfigEnum.DB) as 'mysql',
-          host: configService.get<string>(ConfigEnum.DB_HOST),
-          port: configService.get<number>(ConfigEnum.DB_PORT),
-          username: configService.get<string>(ConfigEnum.DB_USERNAME),
-          password: configService.get<string>(ConfigEnum.DB_PASSWORD),
-          database: configService.get<string>(ConfigEnum.DB_NAME),
-          entities: [User, Profile, Logs, Roles],
-          synchronize: configService.get<boolean>(ConfigEnum.DB_SYNC),
-          // logging: process.env.NODE_ENV === 'development',
-          logging: false,
-        }) as TypeOrmModuleOptions,
-    }),
+    TypeOrmModule.forRoot(ormconfig),
     UserModule,
     LogsModule,
   ],

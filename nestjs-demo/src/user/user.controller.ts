@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Post,
-  NotFoundException,
+  // NotFoundException,
   Inject,
   type LoggerService,
 } from '@nestjs/common';
@@ -20,10 +20,10 @@ export class UserController {
   }
   @Get()
   getUsers() {
-    const user = { isAdmin: false };
-    if (!user.isAdmin) {
-      throw new NotFoundException('用户不存在');
-    }
+    // const user = { isAdmin: false };
+    // if (!user.isAdmin) {
+    //   throw new NotFoundException('用户不存在');
+    // }
     this.logger.log('获取用户列表');
     this.logger.warn('获取用户列表');
     this.logger.error('获取用户列表');
