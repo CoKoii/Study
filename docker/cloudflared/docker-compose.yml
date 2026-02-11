@@ -1,0 +1,8 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: >
+      tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate
+      --url http://host.docker.internal:3000
