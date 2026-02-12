@@ -1,4 +1,6 @@
 const path = require("path");
+const webpack = require("webpack");
+const FooterPlugin = require("./plugin/FooterPlugin");
 module.exports = {
   mode: "development",
   devtool: "source-map",
@@ -19,4 +21,12 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new webpack.BannerPlugin({
+      banner: "欢迎学习慕课网前端工程化课程",
+    }),
+    new FooterPlugin({
+      banner: "Sam老师出品",
+    }),
+  ],
 };
