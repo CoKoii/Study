@@ -1,7 +1,7 @@
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
+    container_name: "3000"
     restart: unless-stopped
     command: >
       tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate
