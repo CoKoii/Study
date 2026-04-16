@@ -1,35 +1,79 @@
 import "dotenv/config";
-import { initChatModel } from "langchain";
+import { createAgent, createMiddleware, initChatModel, tool } from "langchain";
 import { z } from "zod";
 
-const movieSchema = z.object({
-  title: z.string().describe("电影的标题"),
-  director: z.string().describe("电影的导演"),
-  releaseYear: z.number().describe("电影的上映年份"),
-  genre: z.string().describe("电影的类型"),
-  description: z.string().describe("电影的简介"),
+const getWeather = tool(
+  async ({ location }) => {
+    return `${location}的天气是晴天，温度25摄氏度。`;
+  },
+  {
+    name: "get_weather",
+    description: "获取指定位置的天气信息",
+    schema: z.object({
+      location: z.string().describe("要查询天气的地理位置"),
+    }),
+  },
+);
+
+const choiceClothes = tool(
+  async ({ weather }) => {
+    if (weather.includes("晴天")) {
+      return "建议穿短袖和短裤。";
+    } else if (weather.includes("雨天")) {
+      return "建议穿雨衣和带伞。";
+    } else if (weather.includes("寒冷")) {
+      return "建议穿厚外套和保暖衣物。";
+    } else {
+      return "建议根据天气情况选择合适的衣物。";
+    }
+  },
+  {
+    name: "choice_clothes",
+    description: "根据天气情况推荐穿着",
+    schema: z.object({
+      weather: z.string().describe("天气信息"),
+    }),
+  },
+);
+
+const basicModel = await initChatModel("gpt-5.2", {
+  apiKey: process.env.API_KEY,
+  modelProvider: "openai",
+  temperature: 0,
+  configuration: {
+    baseURL: process.env.API_BASE_URL,
+  },
+  toolChoice: { type: "auto", multiple: false },
 });
 
-async function main() {
-  const llm = await initChatModel("deepseek-chat", {
-    apiKey: process.env.DEEPSEEK_API_KEY,
-    modelProvider: "deepseek",
-    temperature: 0,
-    maxRetries: 1,
-    configuration: {
-      baseURL: process.env.DEEPSEEK_API_BASE_URL,
-    },
-  });
+const advancedModel = await initChatModel("gpt-5.4", {
+  apiKey: process.env.API_KEY,
+  modelProvider: "openai",
+  temperature: 0,
+  configuration: {
+    baseURL: process.env.API_BASE_URL,
+  },
+  toolChoice: { type: "auto", multiple: false },
+});
 
-  const structuredModel = llm.withStructuredOutput(movieSchema, {
-    name: "movie_info",
-  });
+const logMiddleware = createMiddleware({
+  name: "switch-model",
+  wrapModelCall: async (request, handler) => {
+    const msgCount = request.state.messages.length;
 
-  const result = await structuredModel.invoke(
-    "请介绍电影《肖申克的救赎》，并严格按给定结构返回。",
-  );
+    request.model = msgCount >= 3 ? advancedModel : basicModel;
+    return handler(request);
+  },
+});
 
-  console.log(result);
-}
+const agent = createAgent({
+  model: basicModel,
+  tools: [getWeather, choiceClothes],
+  middleware: [logMiddleware],
+});
 
-main().catch(console.error);
+const response = await agent.invoke({
+  messages: [{ role: "user", content: "北京明天穿什么衣服" }],
+});
+
+console.log(response.messages[response.messages.length - 1].content);
