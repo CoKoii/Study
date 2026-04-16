@@ -36,27 +36,25 @@ const choiceClothes = tool(
   },
 );
 
-const basicModel = await initChatModel("gpt-5.2", {
+const basicModel = await initChatModel("deepseek-chat", {
   apiKey: process.env.API_KEY,
-  modelProvider: "openai",
+  modelProvider: "deepseek",
   temperature: 0,
   configuration: {
     baseURL: process.env.API_BASE_URL,
   },
-  toolChoice: { type: "auto", multiple: false },
 });
 
-const advancedModel = await initChatModel("gpt-5.4", {
+const advancedModel = await initChatModel("deepseek-chat", {
   apiKey: process.env.API_KEY,
-  modelProvider: "openai",
+  modelProvider: "deepseek",
   temperature: 0,
   configuration: {
     baseURL: process.env.API_BASE_URL,
   },
-  toolChoice: { type: "auto", multiple: false },
 });
 
-const logMiddleware = createMiddleware({
+const switchModelMiddleware = createMiddleware({
   name: "switch-model",
   wrapModelCall: async (request, handler) => {
     const msgCount = request.state.messages.length;
@@ -66,14 +64,53 @@ const logMiddleware = createMiddleware({
   },
 });
 
+const dynamicPromptMiddleware = createMiddleware({
+  name: "dynamic-prompt",
+  wrapModelCall: async (request, handler) => {
+    const userType = request.runtime.context?.user_type ?? "normal";
+
+    const prompt =
+      userType === "vip"
+        ? "你是一名高质量客服助手。回答前先称呼：尊贵的VIP客户你好，然后再清晰、完整地回答问题。"
+        : "你是一名简洁助手。直接回答问题，不需要称呼和客套。";
+
+    return handler({
+      ...request,
+      systemMessage: request.systemMessage.concat(`\n${prompt}`),
+    });
+  },
+});
+const handler_tool_errors = createMiddleware({
+  name: "handle-tool-errors",
+  wrapToolCall: async (request, handler) => {
+    try {
+      return await handler(request);
+    } catch (error) {
+      return `工具调用失败，错误信息：${error.message}`;
+    }
+  },
+});
+
 const agent = createAgent({
   model: basicModel,
   tools: [getWeather, choiceClothes],
-  middleware: [logMiddleware],
+  middleware: [
+    switchModelMiddleware,
+    dynamicPromptMiddleware,
+    handler_tool_errors,
+  ],
 });
 
-const response = await agent.invoke({
-  messages: [{ role: "user", content: "北京明天穿什么衣服" }],
-});
+const response = await agent.invoke(
+  {
+    messages: [{ role: "user", content: "北京明天穿什么衣服" }],
+  },
+  {
+    context: {
+      user_type: "vip",
+    },
+  },
+);
+// console.log(response.messages);
 
 console.log(response.messages[response.messages.length - 1].content);
