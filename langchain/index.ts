@@ -1,3 +1,11 @@
 import "dotenv/config";
-console.log(process.env.API_KEY);
-console.log(process.env.BASE_URL);
+import { initChatModel } from "langchain";
+
+const model = initChatModel("deepseek-chat", {
+  modelProvider: "deepseek",
+  apiKey: process.env.API_KEY,
+  maxRetries: 3,
+  configuration: {
+    baseURL: process.env.BASE_URL,
+  },
+});
