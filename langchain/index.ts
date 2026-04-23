@@ -12,9 +12,10 @@ const model = await initChatModel("deepseek-chat", {
 const llm = createAgent({
   model,
 });
-const response = await llm.invoke({
+const chunck = await llm.stream({
   messages: [{ role: "user", content: "Hello, how are you?" }],
 });
 
-const lastMessage = response.messages[response.messages.length - 1];
-console.log(lastMessage?.content);
+for await (const part of chunck) {
+  console.log(part);
+}
