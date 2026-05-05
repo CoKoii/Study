@@ -16,7 +16,6 @@
     "onCommand:codexSwitch.addAccount",
     "onCommand:codexSwitch.switchAccount",
     "onCommand:codexSwitch.removeAccount",
-    "onCommand:codexSwitch.refreshAccounts",
     "onCommand:codexSwitch.focusAccountsView"
   ],
   "main": "./dist/extension.js",
@@ -33,10 +32,6 @@
       {
         "command": "codexSwitch.removeAccount",
         "title": "codex账号助手: 删除账号"
-      },
-      {
-        "command": "codexSwitch.refreshAccounts",
-        "title": "codex账号助手: 刷新账号"
       },
       {
         "command": "codexSwitch.focusAccountsView",
@@ -73,6 +68,21 @@
           "type": "string",
           "default": "~/.codex/auth-profiles",
           "description": "Directory used to store saved Codex auth.json profiles."
+        },
+        "codexSwitch.codexPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional absolute path to the codex CLI executable. Leave empty to auto-detect."
+        },
+        "codexSwitch.openaiExtensionRefreshStrategy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "restartExtensionHost",
+            "reloadWindow"
+          ],
+          "default": "restartExtensionHost",
+          "description": "How to refresh the official OpenAI Codex VS Code extension after switching accounts."
         }
       }
     }

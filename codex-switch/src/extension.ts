@@ -1,63 +1,39 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
+import { execFile } from 'child_process';
+import { spawn } from 'child_process';
+import { promisify } from 'util';
 
-type JsonObject = Record<string, unknown>;
+const execFileAsync = promisify(execFile);
+const OPENAI_EXTENSION_ID = 'openai.chatgpt';
+const PROFILE_VERSION = 2;
+const LOGIN_WAIT_MS = 5 * 60 * 1000;
+const LOGIN_POLL_MS = 1500;
+const APP_SERVER_WAIT_MS = 12000;
 
-interface Profile {
-  id: string;
-  label: string;
-  email?: string;
-  accountId?: string;
-  teamId?: string;
-  teamName?: string;
-  savedAt: string;
-  fileName: string;
-}
-
-interface StoredProfile {
-  version: 2;
-  profile: Profile;
-  auth: JsonObject;
-}
-
-interface ViewState {
-  currentProfileId?: string;
-  profiles: Profile[];
-}
-
-interface ViewMessage {
-  command: 'addAccount' | 'refresh' | 'switch' | 'remove';
-  id?: string;
-}
-
-interface TeamInfo {
-  id?: string;
-  name?: string;
-}
-
-interface OrganizationInfo extends TeamInfo {
-  isDefault?: boolean;
-}
+type AnyObject = any;
+type Profile = any;
+type StoredProfile = any;
+type ViewState = any;
+type ViewMessage = any;
 
 class AccountsViewProvider implements vscode.WebviewViewProvider {
   static readonly viewType = 'codexSwitch.accountsView';
 
   private view?: vscode.WebviewView;
-  private onMessage?: (message: ViewMessage) => void;
-  private lastState?: ViewState;
+  private state: ViewState = { profiles: [], currentProfileId: undefined, currentLabel: '未识别' };
+  private onMessage: ((message: ViewMessage) => void) | undefined;
 
   resolveWebviewView(view: vscode.WebviewView): void {
     this.view = view;
     view.webview.options = { enableScripts: true };
     view.webview.onDidReceiveMessage((message) => {
-      this.onMessage?.(message as ViewMessage);
+      this.onMessage?.(message);
     });
-
-    if (this.lastState) {
-      this.view.webview.html = this.getHtml(view.webview, this.lastState);
-    }
+    this.render(this.state);
   }
 
   setMessageHandler(handler: (message: ViewMessage) => void): void {
@@ -70,7 +46,7 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
   }
 
   render(state: ViewState): void {
-    this.lastState = state;
+    this.state = state;
     if (this.view) {
       this.view.webview.html = this.getHtml(this.view.webview, state);
     }
@@ -106,7 +82,7 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
 
     body {
       margin: 0;
-      padding: 10px;
+      padding: 12px;
       background: var(--bg);
       color: var(--text);
       font: 12px/1.5 var(--vscode-font-family);
@@ -114,10 +90,10 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
 
     .shell, .list {
       display: grid;
-      gap: 8px;
+      gap: 12px;
     }
 
-    .toolbar, .summary, .actions, .meta {
+    .toolbar, .summary, .actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -127,7 +103,7 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
       appearance: none;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 4px 10px;
+      padding: 6px 12px;
       cursor: pointer;
       font: inherit;
       background: var(--secondary-bg);
@@ -141,9 +117,10 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
     }
 
     .account {
-      padding: 10px;
+      position: relative;
+      padding: 14px 12px 12px;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 10px;
       background: var(--panel);
     }
 
@@ -152,23 +129,90 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
     }
 
     .account-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: flex-start;
+      display: block;
     }
 
     .title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
     }
 
-    .subtle, .summary, .badge, .meta {
+    .subtle, .summary, .badge {
       color: var(--muted);
     }
 
-    .meta {
-      margin: 6px 0 8px;
+    .account-header > div:first-child {
+      display: grid;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .summary {
+      justify-content: space-between;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .meter {
+      display: grid;
+      gap: 6px;
+    }
+
+    .meter-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      column-gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .meter-label {
+      font-weight: 500;
+    }
+
+    .meter-value {
+      display: inline-block;
+      min-width: 44px;
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meter-track {
+      height: 10px;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--foreground) 12%, transparent);
+    }
+
+    .meter-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: #2fbf5b;
+    }
+
+    .actions {
+      margin-top: 12px;
+    }
+
+    .meter-reset {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .badge {
+      position: absolute;
+      top: 14px;
+      right: 12px;
     }
 
     .empty {
@@ -181,12 +225,11 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
   <div class="shell">
     <div class="toolbar">
       <button class="primary" data-command="addAccount">添加账号</button>
-      <button data-command="refresh">刷新</button>
     </div>
 
     <div class="summary">
-      <span>当前: <strong>${escapeHtml(getCurrentLabel(state))}</strong></span>
-      <span>已保存: <strong>${state.profiles.length}</strong></span>
+      <span>当前: <strong>${escapeHtml(state.currentLabel || '未识别')}</strong></span>
+      <span>已保存: <strong>${Array.isArray(state.profiles) ? state.profiles.length : 0}</strong></span>
     </div>
 
     <div class="list" id="profiles"></div>
@@ -207,21 +250,23 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
     }
 
     function renderProfiles() {
-      if (!state.profiles.length) {
+      if (!Array.isArray(state.profiles) || !state.profiles.length) {
         container.innerHTML = '<div class="empty">还没有保存过账号。</div>';
         return;
       }
 
       container.innerHTML = state.profiles.map((profile) => {
         const current = profile.id === state.currentProfileId;
-        const email = profile.email || profile.accountId || profile.id;
+        const email = profile.email || profile.accountId || profile.id || 'Unknown';
 
         return \`
           <article class="account \${current ? 'current' : ''}">
             <div class="account-header">
               <div>
-                <div class="title">\${escapeHtml(profile.label)}</div>
+                <div class="title">\${escapeHtml(profile.label || 'Unknown Account')}</div>
                 <div class="subtle">\${escapeHtml(email)}</div>
+                <div class="subtle">\${escapeHtml(profile.planLabel || '')}</div>
+                \${renderMeters(profile.quotaBars)}
               </div>
               \${current ? '<div class="badge">当前</div>' : ''}
             </div>
@@ -232,6 +277,29 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
           </article>
         \`;
       }).join('');
+    }
+
+    function renderMeters(quotaBars) {
+      if (!Array.isArray(quotaBars) || !quotaBars.length) {
+        return '';
+      }
+
+      return \`
+        <div class="metrics">
+          \${quotaBars.map((item) => \`
+            <div class="meter">
+              <div class="meter-head">
+                <span class="meter-label">\${escapeHtml(item.label || '')}</span>
+                <span class="meter-value">\${escapeHtml(String(item.remaining ?? 0))}%</span>
+              </div>
+              <div class="meter-track">
+                <div class="meter-fill" style="width:\${Math.max(0, Math.min(100, Number(item.remaining) || 0))}%"></div>
+              </div>
+              \${item.resetAtLabel ? '<div class="meter-reset">重置时间: ' + escapeHtml(item.resetAtLabel) + '</div>' : ''}
+            </div>
+          \`).join('')}
+        </div>
+      \`;
     }
 
     document.body.addEventListener('click', (event) => {
@@ -256,11 +324,15 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
 class CodexAccountManager {
   private readonly statusBar: vscode.StatusBarItem;
   private readonly viewProvider = new AccountsViewProvider();
+  private readonly codexTerminal = vscode.window.createTerminal('Codex 登录');
+  private profiles: StoredProfile[] = [];
+  private currentProfile: StoredProfile | undefined;
+  private loginWatcherSerial = 0;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
     this.statusBar.command = 'codexSwitch.focusAccountsView';
-    context.subscriptions.push(this.statusBar);
+    context.subscriptions.push(this.statusBar, this.codexTerminal);
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(AccountsViewProvider.viewType, this.viewProvider),
     );
@@ -271,22 +343,19 @@ class CodexAccountManager {
     this.viewProvider.setMessageHandler((message) => {
       void this.handleViewMessage(message);
     });
-
-    await this.getStorageDirectory();
-    await this.pruneLegacyProfiles();
-    await this.refreshUi();
+    await this.ensureStorageDirectory();
+    await this.pruneInvalidProfiles();
+    await this.reloadState();
+    void this.refreshAllProfileSnapshots();
   }
 
-  dispose(): void {
-    // VS Code disposes subscriptions automatically.
-  }
+  dispose(): void {}
 
   private registerCommands(): void {
     const commands: Array<[string, () => Promise<void>]> = [
       ['codexSwitch.addAccount', () => this.addAccount()],
       ['codexSwitch.switchAccount', () => this.switchByPicker()],
       ['codexSwitch.removeAccount', () => this.removeByPicker()],
-      ['codexSwitch.refreshAccounts', () => this.refreshAccounts()],
       ['codexSwitch.focusAccountsView', () => this.viewProvider.focus()],
     ];
 
@@ -296,135 +365,162 @@ class CodexAccountManager {
   }
 
   private async handleViewMessage(message: ViewMessage): Promise<void> {
-    switch (message.command) {
-      case 'addAccount':
-        await this.addAccount();
-        return;
-      case 'refresh':
-        await this.refreshAccounts();
-        return;
-      case 'switch':
-        if (message.id) {
-          await this.switchToProfile(message.id);
-        }
-        return;
-      case 'remove':
-        if (message.id) {
-          await this.removeProfile(message.id);
-        }
-        return;
+    if (message?.command === 'addAccount') {
+      await this.addAccount();
+      return;
+    }
+
+    if (message?.command === 'switch' && message.id) {
+      await this.switchToProfile(String(message.id));
+      return;
+    }
+
+    if (message?.command === 'remove' && message.id) {
+      await this.removeProfile(String(message.id));
     }
   }
 
-  private async saveCurrentProfile(showMessage: boolean, messagePrefix = '已保存'): Promise<StoredProfile> {
-    const stored = this.createStoredProfile(await this.readAuthFile(this.getAuthFilePath()));
-    const targetPath = path.join(await this.getStorageDirectory(), stored.profile.fileName);
-    const existing = await this.tryReadStoredProfile(targetPath);
+  private async reloadState(activeProfile?: StoredProfile): Promise<void> {
+    this.profiles = await this.readProfilesFromDisk();
+    this.currentProfile = activeProfile ?? (await this.readCurrentProfile());
+    this.renderUi();
+  }
 
-    if (JSON.stringify(existing?.auth) !== JSON.stringify(stored.auth)) {
-      await this.writeJson(targetPath, stored);
-    }
+  private renderUi(): void {
+    const currentProfileId = this.resolveCurrentProfileId();
+    const currentLabel = this.describeCurrentLabel();
 
-    await this.refreshUi(stored.profile);
-    if (showMessage) {
-      void vscode.window.showInformationMessage(`${messagePrefix} ${this.describeProfile(stored.profile)}`);
-    }
+    this.statusBar.text = `Codex: ${currentLabel}`;
+    this.statusBar.tooltip = currentProfileId
+      ? `当前配置: ${currentLabel}\n点击打开账号管理面板`
+      : '点击打开账号管理面板';
+    this.statusBar.show();
 
-    return stored;
+    this.viewProvider.render({
+      currentProfileId,
+      currentLabel,
+      profiles: this.profiles.map((entry) => ({
+        ...entry.profile,
+        planLabel: formatPlanLabel(entry.profile),
+        quotaBars: getQuotaBars(entry.profile?.rateLimits),
+      })),
+    });
   }
 
   private async addAccount(): Promise<void> {
-    try {
-      await fsp.unlink(this.getAuthFilePath());
-    } catch (error) {
-      const code = (error as NodeJS.ErrnoException).code;
-      if (code !== 'ENOENT') {
-        console.error('Failed to remove existing auth.json before login', error);
-        void vscode.window.showErrorMessage('删除当前 auth.json 失败，无法开始新增账号。');
-        return;
-      }
+    const codexCommand = await this.resolveCodexCommand();
+    if (!codexCommand) {
+      void vscode.window.showErrorMessage('没有找到 codex CLI，无法拉起 OpenAI 登录。');
+      return;
     }
 
-    await this.refreshUi();
-    void vscode.window.showInformationMessage('已清除当前 auth.json，请手动登录新账号，登录后点击刷新保存到列表。');
+    await this.backupCurrentProfileIfNeeded();
+
+    const before = await this.tryReadText(this.getAuthFilePath());
+    const shellCommand = `${quoteForShell(codexCommand)} login`;
+
+    this.codexTerminal.show(true);
+    this.codexTerminal.sendText(shellCommand, true);
+    void this.waitForLoginResult(before);
+
+    void vscode.window.showInformationMessage('已拉起 OpenAI 登录，请在终端和浏览器中完成授权，成功后会自动保存账号。');
   }
 
-  private async refreshAccounts(): Promise<void> {
-    try {
-      const current = await this.getCurrentProfile();
-      if (current && !(await this.findProfile(current.profile.id))) {
-        await this.saveCurrentProfile(true, '已添加账号');
+  private async waitForLoginResult(previousText?: string): Promise<void> {
+    const serial = ++this.loginWatcherSerial;
+    const filePath = this.getAuthFilePath();
+    const deadline = Date.now() + LOGIN_WAIT_MS;
+
+    while (serial === this.loginWatcherSerial && Date.now() < deadline) {
+      await delay(LOGIN_POLL_MS);
+      const currentText = await this.tryReadText(filePath);
+      if (!currentText || currentText === previousText) {
+        continue;
+      }
+
+      const saved = await this.saveCurrentAuthAsProfile(false);
+      if (saved) {
+        await this.refreshAllProfileSnapshots();
+        void vscode.window.showInformationMessage(`已添加账号 ${saved.profile.label}`);
         return;
       }
-    } catch {
-      // Ignore invalid or missing auth.json during manual refresh.
     }
 
-    await this.refreshUi();
+    if (serial === this.loginWatcherSerial) {
+      await this.reloadState();
+      void vscode.window.showWarningMessage('等待 OpenAI 登录结果超时，请确认登录是否完成后重试。');
+    }
   }
 
   private async switchByPicker(): Promise<void> {
-    const currentId = (await this.getCurrentProfile())?.profile.id;
-    const options = (await this.listProfiles()).map(({ profile }) => ({
-      label: profile.label,
-      detail: `${profile.email ?? profile.accountId ?? profile.id}${profile.id === currentId ? ' · 当前' : ''}`,
-      id: profile.id,
-    }));
-
-    if (!options.length) {
+    if (!this.profiles.length) {
       void vscode.window.showWarningMessage('还没有已保存的账号');
       return;
     }
 
-    const picked = await vscode.window.showQuickPick(options, {
-      placeHolder: '选择要切换到的账号',
-    });
-    if (picked) {
+    const currentId = this.currentProfile?.profile?.id;
+    const picked = await vscode.window.showQuickPick(
+      this.profiles.map((entry) => ({
+        label: entry.profile.label,
+        detail: `${entry.profile.email ?? entry.profile.accountId ?? entry.profile.id}${entry.profile.id === currentId ? ' · 当前' : ''}`,
+        id: entry.profile.id,
+      })),
+      { placeHolder: '选择要切换到的账号' },
+    );
+
+    if (picked?.id) {
       await this.switchToProfile(picked.id);
     }
   }
 
   private async removeByPicker(): Promise<void> {
-    const options = (await this.listProfiles()).map(({ profile }) => ({
-      label: profile.label,
-      detail: profile.email ?? profile.accountId ?? profile.id,
-      id: profile.id,
-    }));
-
-    if (!options.length) {
+    if (!this.profiles.length) {
       void vscode.window.showWarningMessage('没有可删除的已保存账号');
       return;
     }
 
-    const picked = await vscode.window.showQuickPick(options, {
-      placeHolder: '选择要删除的账号',
-    });
-    if (picked) {
+    const picked = await vscode.window.showQuickPick(
+      this.profiles.map((entry) => ({
+        label: entry.profile.label,
+        detail: entry.profile.email ?? entry.profile.accountId ?? entry.profile.id,
+        id: entry.profile.id,
+      })),
+      { placeHolder: '选择要删除的账号' },
+    );
+
+    if (picked?.id) {
       await this.removeProfile(picked.id);
     }
   }
 
   private async switchToProfile(id: string): Promise<void> {
-    const target = await this.findProfile(id);
+    const target = this.findProfileById(id);
     if (!target) {
       void vscode.window.showWarningMessage('没有找到对应的备份');
       return;
     }
 
     await this.writeJson(this.getAuthFilePath(), target.auth);
-    await this.refreshUi(target.profile);
-    void vscode.window.showInformationMessage(`已切换到 ${this.describeProfile(target.profile)}`);
+    this.currentProfile = target;
+    await this.refreshAllProfileSnapshots();
+    this.renderUi();
+
+    const strategy = this.getConfig('openaiExtensionRefreshStrategy', 'restartExtensionHost');
+    const refreshed = await this.refreshOpenAiExtensionState(strategy);
+    if (!refreshed) {
+      void vscode.window.showInformationMessage(`已切换到 ${target.profile.label}`);
+    }
   }
 
   private async removeProfile(id: string): Promise<void> {
-    const target = await this.findProfile(id);
+    const target = this.findProfileById(id);
     if (!target) {
       void vscode.window.showWarningMessage('没有找到可删除的备份');
       return;
     }
 
     const confirmed = await vscode.window.showWarningMessage(
-      `确认删除 ${this.describeProfile(target.profile)} 吗？`,
+      `确认删除 ${target.profile.label} 吗？`,
       { modal: true },
       '删除',
     );
@@ -432,87 +528,114 @@ class CodexAccountManager {
       return;
     }
 
-    await fsp.unlink(path.join(await this.getStorageDirectory(), target.profile.fileName));
-    await this.refreshUi();
-    void vscode.window.showInformationMessage(`已删除 ${this.describeProfile(target.profile)}`);
+    await fsp.unlink(path.join(await this.ensureStorageDirectory(), target.profile.fileName)).catch(() => undefined);
+    this.profiles = this.profiles.filter((entry) => entry.profile.id !== id);
+    this.renderUi();
+    void vscode.window.showInformationMessage(`已删除 ${target.profile.label}`);
   }
 
-  private async refreshUi(activeProfile?: Profile): Promise<void> {
-    const current = activeProfile ?? (await this.getCurrentProfile())?.profile;
-    this.statusBar.text = current ? `Codex: ${this.describeProfile(current)}` : 'Codex: 未识别';
-    this.statusBar.tooltip = current
-      ? `当前配置: ${this.describeProfile(current)}\n点击打开账号管理面板`
-      : '点击打开账号管理面板';
-    this.statusBar.show();
+  private async backupCurrentProfileIfNeeded(): Promise<void> {
+    const current = await this.readCurrentProfile();
+    if (!current) {
+      return;
+    }
 
-    this.viewProvider.render({
-      currentProfileId: current?.id,
-      profiles: (await this.listProfiles()).map(({ profile }) => profile),
-    });
+    if (!this.findProfileById(current.profile.id)) {
+      await this.saveProfile(current, false);
+    }
   }
 
-  private async getCurrentProfile(): Promise<StoredProfile | undefined> {
+  private async saveCurrentAuthAsProfile(showMessage: boolean): Promise<StoredProfile | undefined> {
+    const current = await this.readCurrentProfile();
+    if (!current) {
+      return undefined;
+    }
+
+    await this.saveProfile(current, showMessage);
+    return current;
+  }
+
+  private async saveProfile(entry: StoredProfile, showMessage: boolean): Promise<void> {
+    const targetPath = path.join(await this.ensureStorageDirectory(), entry.profile.fileName);
+    const existing = await this.tryReadStoredProfile(targetPath);
+    if (JSON.stringify(existing?.auth) !== JSON.stringify(entry.auth)) {
+      await this.writeJson(targetPath, entry);
+    }
+
+    const index = this.profiles.findIndex((profile) => profile.profile.id === entry.profile.id);
+    if (index >= 0) {
+      this.profiles[index] = entry;
+    } else {
+      this.profiles.push(entry);
+    }
+
+    this.profiles.sort((a, b) => String(a.profile.label).localeCompare(String(b.profile.label), 'zh-Hans-CN'));
+    this.currentProfile = entry;
+    this.renderUi();
+
+    if (showMessage) {
+      void vscode.window.showInformationMessage(`已保存 ${entry.profile.label}`);
+    }
+  }
+
+  private async readCurrentProfile(): Promise<StoredProfile | undefined> {
     try {
-      return this.createStoredProfile(await this.readAuthFile(this.getAuthFilePath()));
+      return this.createStoredProfile(await this.readJson(this.getAuthFilePath()));
     } catch {
       return undefined;
     }
   }
 
-  private async listProfiles(): Promise<StoredProfile[]> {
-    const directory = await this.getStorageDirectory();
-    const entries = await Promise.all(
-      (await fsp.readdir(directory))
-        .filter((file) => file.endsWith('.json'))
-        .map((file) => this.tryReadStoredProfile(path.join(directory, file))),
-    );
-
+  private async readProfilesFromDisk(): Promise<StoredProfile[]> {
+    const directory = await this.ensureStorageDirectory();
+    const files = (await fsp.readdir(directory)).filter((file) => file.endsWith('.json'));
+    const entries = await Promise.all(files.map((file) => this.tryReadStoredProfile(path.join(directory, file))));
     return entries
-      .filter((entry): entry is StoredProfile => Boolean(entry))
-      .sort((a, b) => this.describeProfile(a.profile).localeCompare(this.describeProfile(b.profile), 'zh-Hans-CN'));
+      .filter(Boolean)
+      .sort((a, b) => String(a.profile.label).localeCompare(String(b.profile.label), 'zh-Hans-CN'));
   }
 
-  private async findProfile(id: string): Promise<StoredProfile | undefined> {
-    return (await this.listProfiles()).find((entry) => entry.profile.id === id);
+  private findProfileById(id: string): StoredProfile | undefined {
+    return this.profiles.find((entry) => entry.profile.id === id);
   }
 
-  private createStoredProfile(auth: JsonObject): StoredProfile {
+  private createStoredProfile(auth: AnyObject): StoredProfile {
     const tokens = this.getTokens(auth);
     const idPayload = this.decodeJwtPayload(tokens.idToken);
     const accessPayload = this.decodeJwtPayload(tokens.accessToken);
-    const authClaims = this.readObject(idPayload, 'https://api.openai.com/auth') ??
-      this.readObject(accessPayload, 'https://api.openai.com/auth');
-    const email =
-      this.readString(idPayload, 'email') ??
-      this.readNestedString(accessPayload, ['https://api.openai.com/profile', 'email']);
-    const accountId =
-      this.readString(authClaims, 'chatgpt_account_id') ??
-      this.readString(tokens.raw, 'account_id');
-    const userId =
-      this.readString(authClaims, 'chatgpt_user_id') ??
-      this.readString(authClaims, 'user_id') ??
-      this.readString(idPayload, 'sub');
-    const accountName = this.firstNonEmpty(
-      this.readString(idPayload, 'name'),
+    const authClaims = this.pickObject(idPayload, 'https://api.openai.com/auth')
+      || this.pickObject(accessPayload, 'https://api.openai.com/auth')
+      || {};
+    const email = this.pickString(idPayload, 'email')
+      || this.pickNestedString(accessPayload, ['https://api.openai.com/profile', 'email']);
+    const accountId = this.pickString(authClaims, 'chatgpt_account_id')
+      || this.pickString(tokens.raw, 'account_id');
+    const userId = this.pickString(authClaims, 'chatgpt_user_id')
+      || this.pickString(authClaims, 'user_id')
+      || this.pickString(idPayload, 'sub');
+    const label = firstNonEmpty(
+      this.pickString(idPayload, 'name'),
       email,
       accountId,
       userId,
       'Unknown Account',
     );
     const team = this.readTeam(auth, authClaims);
-    const accountKey = this.firstNonEmpty(accountId, email, userId, accountName);
-    const teamKey = this.firstNonEmpty(team.id, team.name, 'personal');
-    const id = this.slugify(`${accountKey}-${teamKey}-${this.hash(`${accountKey}:${teamKey}`)}`);
+    const planType = this.pickString(authClaims, 'chatgpt_plan_type');
+    const accountKey = firstNonEmpty(accountId, email, userId, label);
+    const teamKey = firstNonEmpty(team.id, team.name, 'personal');
+    const id = slugify(`${accountKey}-${teamKey}-${hashText(`${accountKey}:${teamKey}`)}`);
 
     return {
-      version: 2,
+      version: PROFILE_VERSION,
       profile: {
         id,
-        label: accountName,
+        label,
         email,
         accountId,
         teamId: team.id,
         teamName: team.name,
+        planType,
         savedAt: new Date().toISOString(),
         fileName: `${id}.json`,
       },
@@ -520,154 +643,116 @@ class CodexAccountManager {
     };
   }
 
-  private readTeam(auth: JsonObject, authClaims?: JsonObject): TeamInfo {
+  private readTeam(auth: AnyObject, authClaims: AnyObject): AnyObject {
     const organizations = this.readOrganizations(authClaims);
-    const explicitId = this.firstNonEmpty(
-      this.readNestedString(auth, ['organization_id']),
-      this.readNestedString(auth, ['org_id']),
-      this.readString(authClaims, 'organization_id'),
-      this.readString(authClaims, 'org_id'),
-      this.readString(authClaims, 'workspace_id'),
-      this.readString(authClaims, 'team_id'),
+    const explicitId = firstNonEmpty(
+      this.pickNestedString(auth, ['organization_id']),
+      this.pickNestedString(auth, ['org_id']),
+      this.pickString(authClaims, 'organization_id'),
+      this.pickString(authClaims, 'org_id'),
+      this.pickString(authClaims, 'workspace_id'),
+      this.pickString(authClaims, 'team_id'),
     );
-    const explicitName = this.firstNonEmpty(
-      this.readNestedString(auth, ['organization_name']),
-      this.readNestedString(auth, ['org_name']),
-      this.readNestedString(auth, ['workspace_name']),
-      this.readNestedString(auth, ['team_name']),
+    const explicitName = firstNonEmpty(
+      this.pickNestedString(auth, ['organization_name']),
+      this.pickNestedString(auth, ['org_name']),
+      this.pickNestedString(auth, ['workspace_name']),
+      this.pickNestedString(auth, ['team_name']),
     );
-    const organization =
-      organizations.find((entry) => entry.id && entry.id === explicitId) ??
-      organizations.find((entry) => entry.isDefault) ??
-      (organizations.length === 1 ? organizations[0] : undefined);
+    const organization = organizations.find((entry: any) => entry.id && entry.id === explicitId)
+      || organizations.find((entry: any) => entry.isDefault)
+      || (organizations.length === 1 ? organizations[0] : undefined);
 
     return {
-      id: explicitId ?? organization?.id,
-      name: explicitName ?? organization?.name,
+      id: explicitId || organization?.id,
+      name: explicitName || organization?.name,
     };
   }
 
-  private readOrganizations(authClaims?: JsonObject): OrganizationInfo[] {
-    const value = authClaims?.organizations;
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    const organizations: OrganizationInfo[] = [];
-    for (const entry of value) {
-      if (!entry || typeof entry !== 'object') {
-        continue;
-      }
-
-      const source = entry as Record<string, unknown>;
-      const id = typeof source.id === 'string' ? source.id : undefined;
-      const name =
-        typeof source.title === 'string' ? source.title :
-        typeof source.name === 'string' ? source.name :
-        undefined;
-      const isDefault = typeof source.is_default === 'boolean' ? source.is_default : undefined;
-
-      if (id || name) {
-        organizations.push({ id, name, isDefault });
-      }
-    }
-
-    return organizations;
+  private readOrganizations(authClaims: AnyObject): any[] {
+    const source = Array.isArray(authClaims?.organizations) ? authClaims.organizations : [];
+    return source
+      .filter((entry: any) => entry && typeof entry === 'object')
+      .map((entry: any) => ({
+        id: typeof entry.id === 'string' ? entry.id : undefined,
+        name: typeof entry.title === 'string' ? entry.title : typeof entry.name === 'string' ? entry.name : undefined,
+        isDefault: typeof entry.is_default === 'boolean' ? entry.is_default : undefined,
+      }))
+      .filter((entry: any) => entry.id || entry.name);
   }
 
-  private getTokens(auth: JsonObject): { idToken?: string; accessToken?: string; raw: JsonObject } {
-    const value = auth.tokens;
-    if (!value || typeof value !== 'object') {
-      return { raw: {} };
-    }
-
-    const tokens = value as JsonObject;
+  private getTokens(auth: AnyObject): AnyObject {
+    const tokens = auth?.tokens && typeof auth.tokens === 'object' ? auth.tokens : {};
     return {
-      idToken: this.readString(tokens, 'id_token'),
-      accessToken: this.readString(tokens, 'access_token'),
+      idToken: this.pickString(tokens, 'id_token'),
+      accessToken: this.pickString(tokens, 'access_token'),
       raw: tokens,
     };
   }
 
-  private decodeJwtPayload(token?: string): JsonObject | undefined {
+  private decodeJwtPayload(token?: string): AnyObject {
     if (!token) {
       return undefined;
     }
 
-    const [, payload] = token.split('.');
-    if (!payload) {
+    const parts = token.split('.');
+    if (parts.length < 2) {
       return undefined;
     }
 
     try {
-      const base64 = payload
+      const base64 = parts[1]
         .replace(/-/g, '+')
         .replace(/_/g, '/')
-        .padEnd(Math.ceil(payload.length / 4) * 4, '=');
-      return JSON.parse(Buffer.from(base64, 'base64').toString('utf8')) as JsonObject;
+        .padEnd(Math.ceil(parts[1].length / 4) * 4, '=');
+      return JSON.parse(Buffer.from(base64, 'base64').toString('utf8'));
     } catch {
       return undefined;
     }
   }
 
-  private readObject(source: JsonObject | undefined, key: string): JsonObject | undefined {
+  private pickObject(source: AnyObject, key: string): AnyObject {
     const value = source?.[key];
-    return value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonObject) : undefined;
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
   }
 
-  private readString(source: JsonObject | undefined, key: string): string | undefined {
-    const value = source?.[key];
-    return typeof value === 'string' ? value : undefined;
+  private pickString(source: AnyObject, key: string): string | undefined {
+    return typeof source?.[key] === 'string' ? source[key] : undefined;
   }
 
-  private readNestedString(source: JsonObject | undefined, keys: string[]): string | undefined {
-    let current: unknown = source;
+  private pickNestedString(source: AnyObject, keys: string[]): string | undefined {
+    let current = source;
     for (const key of keys) {
       if (!current || typeof current !== 'object') {
         return undefined;
       }
-      current = (current as Record<string, unknown>)[key];
+      current = current[key];
     }
     return typeof current === 'string' ? current : undefined;
   }
 
-  private firstNonEmpty(...values: Array<string | undefined>): string {
-    return values.find((value) => Boolean(value?.trim()))?.trim() ?? '';
-  }
-
-  private hash(value: string): string {
-    let hash = 2166136261;
-    for (let index = 0; index < value.length; index += 1) {
-      hash ^= value.charCodeAt(index);
-      hash = Math.imul(hash, 16777619);
-    }
-    return (hash >>> 0).toString(36);
-  }
-
-  private slugify(value: string): string {
-    return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96) || 'profile';
-  }
-
-  private describeProfile(profile: Profile): string {
-    return profile.label;
-  }
-
-  private async readAuthFile(filePath: string): Promise<JsonObject> {
-    return JSON.parse(await fsp.readFile(filePath, 'utf8')) as JsonObject;
-  }
-
   private async tryReadStoredProfile(filePath: string): Promise<StoredProfile | undefined> {
     try {
-      const parsed = JSON.parse(await fsp.readFile(filePath, 'utf8')) as unknown;
+      const parsed = JSON.parse(await fsp.readFile(filePath, 'utf8'));
       if (
-        parsed &&
-        typeof parsed === 'object' &&
-        (parsed as StoredProfile).version === 2 &&
-        'profile' in parsed &&
-        'auth' in parsed &&
-        typeof (parsed as StoredProfile).profile?.id === 'string'
+        parsed
+        && typeof parsed === 'object'
+        && parsed.version === PROFILE_VERSION
+        && parsed.profile
+        && typeof parsed.profile.id === 'string'
+        && parsed.auth
       ) {
-        return parsed as StoredProfile;
+        const normalized = this.createStoredProfile(parsed.auth);
+        normalized.profile.savedAt = parsed.profile.savedAt || normalized.profile.savedAt;
+        normalized.profile.rateLimits = parsed.profile.rateLimits;
+        normalized.profile.planType = parsed.profile.planType || normalized.profile.planType;
+        if (normalized.profile.fileName !== path.basename(filePath) || JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+          await this.writeJson(path.join(path.dirname(filePath), normalized.profile.fileName), normalized);
+          if (normalized.profile.fileName !== path.basename(filePath)) {
+            await fsp.unlink(filePath).catch(() => undefined);
+          }
+        }
+        return normalized;
       }
     } catch {
       // Ignore invalid files.
@@ -676,8 +761,8 @@ class CodexAccountManager {
     return undefined;
   }
 
-  private async pruneLegacyProfiles(): Promise<void> {
-    const directory = await this.getStorageDirectory();
+  private async pruneInvalidProfiles(): Promise<void> {
+    const directory = await this.ensureStorageDirectory();
     const files = (await fsp.readdir(directory)).filter((file) => file.endsWith('.json'));
 
     await Promise.all(
@@ -690,33 +775,358 @@ class CodexAccountManager {
     );
   }
 
-  private async writeJson(filePath: string, value: unknown): Promise<void> {
+  private async readJson(filePath: string): Promise<any> {
+    return JSON.parse(await fsp.readFile(filePath, 'utf8'));
+  }
+
+  private async tryReadText(filePath: string): Promise<string | undefined> {
+    try {
+      return await fsp.readFile(filePath, 'utf8');
+    } catch {
+      return undefined;
+    }
+  }
+
+  private async writeJson(filePath: string, value: any): Promise<void> {
     await fsp.mkdir(path.dirname(filePath), { recursive: true });
     await fsp.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
   }
 
   private getAuthFilePath(): string {
-    return this.expandHome(this.getConfig('authFilePath', '~/.codex/auth.json'));
+    return expandHome(this.getConfig('authFilePath', '~/.codex/auth.json'));
   }
 
-  private async getStorageDirectory(): Promise<string> {
-    const directory = this.expandHome(this.getConfig('storageDirectory', '~/.codex/auth-profiles'));
+  private async ensureStorageDirectory(): Promise<string> {
+    const directory = expandHome(this.getConfig('storageDirectory', '~/.codex/auth-profiles'));
     await fsp.mkdir(directory, { recursive: true });
     return directory;
   }
 
-  private getConfig<T>(key: string, fallback: T): T {
-    return vscode.workspace.getConfiguration('codexSwitch').get<T>(key, fallback);
+  private getConfig(key: string, fallback: any): any {
+    return vscode.workspace.getConfiguration('codexSwitch').get(key, fallback);
   }
 
-  private expandHome(filePath: string): string {
-    return filePath.startsWith('~/') ? path.join(os.homedir(), filePath.slice(2)) : filePath;
+  private async refreshOpenAiExtensionState(strategy: string): Promise<boolean> {
+    if (strategy === 'none' || !vscode.extensions.getExtension(OPENAI_EXTENSION_ID)) {
+      return false;
+    }
+
+    const description = strategy === 'reloadWindow' ? '并重新加载窗口' : '并重启扩展宿主';
+    void vscode.window.showInformationMessage(`已切换账号，正在刷新 Codex 扩展登录状态${description}。`);
+
+    try {
+      if (strategy === 'reloadWindow') {
+        await vscode.commands.executeCommand('workbench.action.reloadWindow');
+      } else {
+        await vscode.commands.executeCommand('workbench.action.restartExtensionHost');
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to refresh OpenAI extension state', error);
+      void vscode.window.showWarningMessage('账号已切换，但刷新 Codex 扩展状态失败。你可以手动执行 “Developer: Restart Extension Host”。');
+      return false;
+    }
+  }
+
+  private async resolveCodexCommand(): Promise<string | undefined> {
+    const configuredPath = expandHome(this.getConfig('codexPath', ''));
+    const candidates = uniqueStrings([
+      configuredPath,
+      ...findExecutablesInPath(process.env.PATH || ''),
+      ...getBundledCodexCandidates(),
+      ...(process.platform === 'win32' ? ['codex.cmd', 'codex.exe', 'codex'] : ['codex']),
+    ]);
+
+    for (const candidate of candidates) {
+      try {
+        await execFileAsync(candidate, ['--version']);
+        return candidate;
+      } catch {
+        // Try next.
+      }
+    }
+
+    return undefined;
+  }
+
+  private resolveCurrentProfileId(): string | undefined {
+    if (!this.currentProfile) {
+      return undefined;
+    }
+
+    const exact = this.findProfileById(this.currentProfile.profile.id);
+    if (exact) {
+      return exact.profile.id;
+    }
+
+    const currentAccountId = this.currentProfile.profile.accountId;
+    const currentTeamId = this.currentProfile.profile.teamId;
+    const fallback = this.profiles.find((entry) => {
+      if (entry.profile.accountId && currentAccountId && entry.profile.accountId === currentAccountId) {
+        if (!entry.profile.teamId || !currentTeamId) {
+          return true;
+        }
+        return entry.profile.teamId === currentTeamId;
+      }
+      return false;
+    });
+
+    return fallback?.profile.id;
+  }
+
+  private describeCurrentLabel(): string {
+    if (!this.currentProfile?.profile) {
+      return '未识别';
+    }
+
+    return this.currentProfile.profile.label;
+  }
+
+  private async refreshAllProfileSnapshots(): Promise<void> {
+    if (!this.profiles.length) {
+      return;
+    }
+
+    const codexCommand = await this.resolveCodexCommand();
+    if (!codexCommand) {
+      return;
+    }
+
+    const storageDirectory = await this.ensureStorageDirectory();
+    let changed = false;
+    for (const entry of this.profiles) {
+      try {
+        const snapshot = await readAccountSnapshotForAuth(codexCommand, entry.auth);
+        if (snapshot.planType && snapshot.planType !== entry.profile.planType) {
+          entry.profile.planType = snapshot.planType;
+          changed = true;
+        }
+        if (snapshot.email && snapshot.email !== entry.profile.email) {
+          entry.profile.email = snapshot.email;
+          changed = true;
+        }
+        if (snapshot.rateLimits && JSON.stringify(snapshot.rateLimits) !== JSON.stringify(entry.profile.rateLimits)) {
+          entry.profile.rateLimits = snapshot.rateLimits;
+          entry.profile.rateLimitsUpdatedAt = new Date().toISOString();
+          changed = true;
+        }
+        if (
+          this.currentProfile
+          && entry.profile.id === this.currentProfile.profile.id
+        ) {
+          this.currentProfile = entry;
+        }
+      } catch (error) {
+        console.error(`Failed to read Codex account snapshot for ${entry.profile.id}`, error);
+      }
+    }
+
+    if (changed) {
+      for (const entry of this.profiles) {
+        await this.writeJson(path.join(storageDirectory, entry.profile.fileName), entry);
+      }
+      this.renderUi();
+    }
   }
 }
 
-function getCurrentLabel(state: ViewState): string {
-  const current = state.profiles.find((profile) => profile.id === state.currentProfileId);
-  return current ? current.label : '未识别';
+function expandHome(filePath: string): string {
+  return filePath.startsWith('~/') ? path.join(os.homedir(), filePath.slice(2)) : filePath;
+}
+
+function firstNonEmpty(...values: Array<string | undefined>): string {
+  return values.find((value) => Boolean(value?.trim()))?.trim() || '';
+}
+
+function hashText(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96) || 'profile';
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return values.filter((value, index) => Boolean(value) && values.indexOf(value) === index);
+}
+
+function findExecutablesInPath(pathValue: string): string[] {
+  const names = process.platform === 'win32' ? ['codex.cmd', 'codex.exe', 'codex'] : ['codex'];
+  const directories = pathValue.split(path.delimiter).filter(Boolean);
+  const found: string[] = [];
+
+  for (const directory of directories) {
+    for (const name of names) {
+      const fullPath = path.join(directory, name);
+      if (fs.existsSync(fullPath)) {
+        found.push(fullPath);
+      }
+    }
+  }
+
+  return found;
+}
+
+function getBundledCodexCandidates(): string[] {
+  const extension = vscode.extensions.getExtension(OPENAI_EXTENSION_ID);
+  if (!extension) {
+    return [];
+  }
+
+  const platformDirectory = process.platform === 'darwin'
+    ? (process.arch === 'arm64' ? 'macos-aarch64' : 'macos-x64')
+    : process.platform === 'win32'
+      ? (process.arch === 'arm64' ? 'windows-arm64' : 'windows-x64')
+      : process.arch === 'arm64'
+        ? 'linux-arm64'
+        : 'linux-x64';
+  const executable = process.platform === 'win32' ? 'codex.exe' : 'codex';
+  return [path.join(extension.extensionPath, 'bin', platformDirectory, executable)];
+}
+
+function quoteForShell(value: string): string {
+  if (process.platform === 'win32') {
+    return /[\s"]/u.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  }
+  return /[\s'"]/u.test(value) ? `'${value.replace(/'/g, `'\\''`)}'` : value;
+}
+
+async function readAccountSnapshotForAuth(codexCommand: string, auth: any): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-switch-profile-'));
+    const codexHome = path.join(tempRoot, '.codex');
+    fs.mkdirSync(codexHome, { recursive: true });
+    fs.writeFileSync(path.join(codexHome, 'auth.json'), `${JSON.stringify(auth, null, 2)}\n`, 'utf8');
+
+    const child = spawn(codexCommand, ['app-server', '--listen', 'stdio://'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, HOME: tempRoot },
+    });
+    const results: AnyObject = {};
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+
+    const finish = (error?: Error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      child.kill('SIGTERM');
+      fsp.rm(tempRoot, { recursive: true, force: true }).catch(() => undefined);
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    };
+
+    const send = (message: any) => {
+      child.stdin.write(`${JSON.stringify(message)}\n`);
+    };
+
+    const timer = setTimeout(() => {
+      finish(new Error(`Timed out reading app-server snapshot: ${stderr || stdout}`));
+    }, APP_SERVER_WAIT_MS);
+
+    child.stdout.on('data', (chunk) => {
+      stdout += String(chunk);
+      const lines = stdout.split('\n');
+      stdout = lines.pop() || '';
+
+      for (const line of lines) {
+        const text = line.trim();
+        if (!text) {
+          continue;
+        }
+
+        try {
+          const payload = JSON.parse(text);
+          if (payload.id === 2) {
+            results.email = payload.result?.account?.email;
+            results.planType = payload.result?.account?.planType;
+          }
+          if (payload.id === 3) {
+            results.rateLimits = payload.result?.rateLimits;
+            finish();
+          }
+        } catch {
+          // Ignore non-JSON lines.
+        }
+      }
+    });
+
+    child.stderr.on('data', (chunk) => {
+      stderr += String(chunk);
+    });
+
+    child.on('error', (error) => {
+      finish(error);
+    });
+
+    child.on('exit', (code) => {
+      if (!settled && code !== 0) {
+        finish(new Error(`app-server exited with code ${code}: ${stderr}`));
+      }
+    });
+
+    send({ id: 1, method: 'initialize', params: { clientInfo: { name: 'codex-switch', version: '0.0.2' }, protocolVersion: 1 } });
+    send({ id: 2, method: 'account/read', params: { refreshToken: false } });
+    send({ id: 3, method: 'account/rateLimits/read', params: {} });
+  });
+}
+
+function formatPlanLabel(profile: any): string {
+  return profile.planType ? `套餐: ${profile.planType}` : '';
+}
+
+function getQuotaBars(rateLimits: any): any[] {
+  const items: any[] = [];
+  if (typeof rateLimits?.primary?.usedPercent === 'number') {
+    items.push({
+      label: '5h剩余',
+      remaining: Math.max(0, 100 - rateLimits.primary.usedPercent),
+      resetAtLabel: formatResetAt(rateLimits.primary.resetsAt),
+    });
+  }
+  if (typeof rateLimits?.secondary?.usedPercent === 'number') {
+    items.push({
+      label: '7d剩余',
+      remaining: Math.max(0, 100 - rateLimits.secondary.usedPercent),
+      resetAtLabel: formatResetAt(rateLimits.secondary.resetsAt),
+    });
+  }
+  return items;
+}
+
+function formatResetAt(value: any): string {
+  if (typeof value !== 'number' && typeof value !== 'string') {
+    return '';
+  }
+
+  const timestamp = typeof value === 'number' ? value * 1000 : value;
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function escapeHtml(value: string): string {
@@ -734,6 +1144,4 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   await manager.activate();
 }
 
-export function deactivate(): void {
-  // VS Code disposes subscriptions automatically.
-}
+export function deactivate(): void {}
