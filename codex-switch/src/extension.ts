@@ -52,6 +52,10 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  async setPendingAction(command = '', id = ''): Promise<void> {
+    await this.view?.webview.postMessage({ type: 'setPendingAction', command, id });
+  }
+
   private getHtml(webview: vscode.Webview, state: ViewState): string {
     const nonce = String(Date.now());
     const payload = JSON.stringify(state).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
@@ -225,6 +229,7 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
   <div class="shell">
     <div class="toolbar">
       <button class="primary" data-command="addAccount">添加账号</button>
+      <button data-command="refreshQuota">刷新额度</button>
     </div>
 
     <div class="summary">
@@ -239,6 +244,8 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
     const vscode = acquireVsCodeApi();
     const state = ${payload};
     const container = document.getElementById('profiles');
+    let pendingCommand = '';
+    let pendingId = '';
 
     function escapeHtml(value) {
       return String(value)
@@ -302,19 +309,62 @@ class AccountsViewProvider implements vscode.WebviewViewProvider {
       \`;
     }
 
+    function syncPendingState() {
+      document.querySelectorAll('button[data-command]').forEach((element) => {
+        if (!(element instanceof HTMLButtonElement)) {
+          return;
+        }
+        const matchesCommand = pendingCommand && element.dataset.command === pendingCommand;
+        const matchesTarget = !pendingId || element.dataset.id === pendingId;
+        const matches = Boolean(matchesCommand && matchesTarget);
+        element.disabled = Boolean(pendingCommand);
+        if (matches && element.dataset.command === 'refreshQuota') {
+          element.textContent = '刷新中...';
+        } else if (matches && element.dataset.command === 'switch') {
+          element.textContent = '切换中...';
+        } else if (matches && element.dataset.command === 'remove') {
+          element.textContent = '删除中...';
+        } else if (element.dataset.command === 'refreshQuota') {
+          element.textContent = '刷新额度';
+        } else if (element.dataset.command === 'switch') {
+          element.textContent = '切换';
+        } else if (element.dataset.command === 'remove') {
+          element.textContent = '删除';
+        }
+      });
+    }
+
     document.body.addEventListener('click', (event) => {
       const target = event.target;
-      if (!(target instanceof HTMLElement)) {
+      if (!(target instanceof HTMLButtonElement)) {
         return;
       }
 
       const command = target.dataset.command;
       if (command) {
-        vscode.postMessage({ command, id: target.dataset.id });
+        const id = target.dataset.id || '';
+
+        if (command === 'refreshQuota') {
+          pendingCommand = command;
+          pendingId = id;
+          syncPendingState();
+        }
+        vscode.postMessage({ command, id });
       }
     });
 
+    window.addEventListener('message', (event) => {
+      const message = event.data;
+      if (message?.type !== 'setPendingAction') {
+        return;
+      }
+      pendingCommand = typeof message.command === 'string' ? message.command : '';
+      pendingId = typeof message.id === 'string' ? message.id : '';
+      syncPendingState();
+    });
+
     renderProfiles();
+    syncPendingState();
   </script>
 </body>
 </html>`;
@@ -371,12 +421,39 @@ class CodexAccountManager {
     }
 
     if (message?.command === 'switch' && message.id) {
-      await this.switchToProfile(String(message.id));
+      const accepted = await this.confirmProfileAction(String(message.id), '切换');
+      if (!accepted) {
+        this.renderUi();
+        return;
+      }
+      await this.viewProvider.setPendingAction('switch', String(message.id));
+      try {
+        await this.switchToProfile(String(message.id));
+      } finally {
+        await this.viewProvider.setPendingAction();
+        this.renderUi();
+      }
       return;
     }
 
     if (message?.command === 'remove' && message.id) {
-      await this.removeProfile(String(message.id));
+      const accepted = await this.confirmProfileAction(String(message.id), '删除');
+      if (!accepted) {
+        this.renderUi();
+        return;
+      }
+      await this.viewProvider.setPendingAction('remove', String(message.id));
+      try {
+        await this.removeProfile(String(message.id));
+      } finally {
+        await this.viewProvider.setPendingAction();
+        this.renderUi();
+      }
+      return;
+    }
+
+    if (message?.command === 'refreshQuota') {
+      await this.refreshQuotaSnapshots();
     }
   }
 
@@ -410,7 +487,6 @@ class CodexAccountManager {
   private async addAccount(): Promise<void> {
     const codexCommand = await this.resolveCodexCommand();
     if (!codexCommand) {
-      void vscode.window.showErrorMessage('没有找到 codex CLI，无法拉起 OpenAI 登录。');
       return;
     }
 
@@ -423,7 +499,6 @@ class CodexAccountManager {
     this.codexTerminal.sendText(shellCommand, true);
     void this.waitForLoginResult(before);
 
-    void vscode.window.showInformationMessage('已拉起 OpenAI 登录，请在终端和浏览器中完成授权，成功后会自动保存账号。');
   }
 
   private async waitForLoginResult(previousText?: string): Promise<void> {
@@ -441,20 +516,17 @@ class CodexAccountManager {
       const saved = await this.saveCurrentAuthAsProfile(false);
       if (saved) {
         await this.refreshAllProfileSnapshots();
-        void vscode.window.showInformationMessage(`已添加账号 ${saved.profile.label}`);
         return;
       }
     }
 
     if (serial === this.loginWatcherSerial) {
       await this.reloadState();
-      void vscode.window.showWarningMessage('等待 OpenAI 登录结果超时，请确认登录是否完成后重试。');
     }
   }
 
   private async switchByPicker(): Promise<void> {
     if (!this.profiles.length) {
-      void vscode.window.showWarningMessage('还没有已保存的账号');
       return;
     }
 
@@ -469,13 +541,16 @@ class CodexAccountManager {
     );
 
     if (picked?.id) {
+      const accepted = await this.confirmProfileAction(picked.id, '切换');
+      if (!accepted) {
+        return;
+      }
       await this.switchToProfile(picked.id);
     }
   }
 
   private async removeByPicker(): Promise<void> {
     if (!this.profiles.length) {
-      void vscode.window.showWarningMessage('没有可删除的已保存账号');
       return;
     }
 
@@ -489,14 +564,31 @@ class CodexAccountManager {
     );
 
     if (picked?.id) {
+      const accepted = await this.confirmProfileAction(picked.id, '删除');
+      if (!accepted) {
+        return;
+      }
       await this.removeProfile(picked.id);
     }
+  }
+
+  private async confirmProfileAction(id: string, action: '切换' | '删除'): Promise<boolean> {
+    const target = this.findProfileById(id);
+    if (!target) {
+      return false;
+    }
+
+    const accepted = await vscode.window.showWarningMessage(
+      action === '切换' ? `确认切换到 ${target.profile.label} 吗？` : `确认删除 ${target.profile.label} 吗？`,
+      { modal: true },
+      action,
+    );
+    return accepted === action;
   }
 
   private async switchToProfile(id: string): Promise<void> {
     const target = this.findProfileById(id);
     if (!target) {
-      void vscode.window.showWarningMessage('没有找到对应的备份');
       return;
     }
 
@@ -506,32 +598,22 @@ class CodexAccountManager {
     this.renderUi();
 
     const strategy = this.getConfig('openaiExtensionRefreshStrategy', 'restartExtensionHost');
-    const refreshed = await this.refreshOpenAiExtensionState(strategy);
-    if (!refreshed) {
-      void vscode.window.showInformationMessage(`已切换到 ${target.profile.label}`);
-    }
+    await this.refreshOpenAiExtensionState(strategy);
+  }
+
+  private async refreshQuotaSnapshots(): Promise<void> {
+    await this.refreshAllProfileSnapshots(true);
   }
 
   private async removeProfile(id: string): Promise<void> {
     const target = this.findProfileById(id);
     if (!target) {
-      void vscode.window.showWarningMessage('没有找到可删除的备份');
-      return;
-    }
-
-    const confirmed = await vscode.window.showWarningMessage(
-      `确认删除 ${target.profile.label} 吗？`,
-      { modal: true },
-      '删除',
-    );
-    if (confirmed !== '删除') {
       return;
     }
 
     await fsp.unlink(path.join(await this.ensureStorageDirectory(), target.profile.fileName)).catch(() => undefined);
     this.profiles = this.profiles.filter((entry) => entry.profile.id !== id);
     this.renderUi();
-    void vscode.window.showInformationMessage(`已删除 ${target.profile.label}`);
   }
 
   private async backupCurrentProfileIfNeeded(): Promise<void> {
@@ -573,9 +655,7 @@ class CodexAccountManager {
     this.currentProfile = entry;
     this.renderUi();
 
-    if (showMessage) {
-      void vscode.window.showInformationMessage(`已保存 ${entry.profile.label}`);
-    }
+    void showMessage;
   }
 
   private async readCurrentProfile(): Promise<StoredProfile | undefined> {
@@ -811,9 +891,6 @@ class CodexAccountManager {
       return false;
     }
 
-    const description = strategy === 'reloadWindow' ? '并重新加载窗口' : '并重启扩展宿主';
-    void vscode.window.showInformationMessage(`已切换账号，正在刷新 Codex 扩展登录状态${description}。`);
-
     try {
       if (strategy === 'reloadWindow') {
         await vscode.commands.executeCommand('workbench.action.reloadWindow');
@@ -823,7 +900,6 @@ class CodexAccountManager {
       return true;
     } catch (error) {
       console.error('Failed to refresh OpenAI extension state', error);
-      void vscode.window.showWarningMessage('账号已切换，但刷新 Codex 扩展状态失败。你可以手动执行 “Developer: Restart Extension Host”。');
       return false;
     }
   }
@@ -882,13 +958,19 @@ class CodexAccountManager {
     return this.currentProfile.profile.label;
   }
 
-  private async refreshAllProfileSnapshots(): Promise<void> {
+  private async refreshAllProfileSnapshots(forceRender = false): Promise<void> {
     if (!this.profiles.length) {
+      if (forceRender) {
+        this.renderUi();
+      }
       return;
     }
 
     const codexCommand = await this.resolveCodexCommand();
     if (!codexCommand) {
+      if (forceRender) {
+        this.renderUi();
+      }
       return;
     }
 
@@ -925,6 +1007,9 @@ class CodexAccountManager {
       for (const entry of this.profiles) {
         await this.writeJson(path.join(storageDirectory, entry.profile.fileName), entry);
       }
+    }
+
+    if (changed || forceRender) {
       this.renderUi();
     }
   }
