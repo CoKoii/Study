@@ -286,11 +286,11 @@ function isFieldDisabled(fieldKey, mode) {
           </label>
         </div>
 
-        <div class="form-actions compact-actions">
+        <div class="form-actions compact-actions create-actions">
           <button type="button" class="primary-btn" :disabled="createSubmitting" @click="submitForm">
             {{ createSubmitting ? '提交中...' : '新增学生' }}
           </button>
-          <button type="button" class="secondary-btn" @click="resetCreateForm">清空</button>
+          <button type="button" class="secondary-btn create-reset-btn" @click="resetCreateForm">清空</button>
         </div>
       </article>
 
