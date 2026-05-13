@@ -1,5 +1,0 @@
-data/
-backend/target/
-frontend/node_modules/
-frontend/dist/
-.tmp-pdfenv/

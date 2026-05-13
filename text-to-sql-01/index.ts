@@ -17,7 +17,7 @@ await datasource.initialize();
 const db = await SqlDatabase.fromDataSourceParams({
   appDataSource: datasource,
 });
-const model = await initChatModel("deepseek-chat", {
+const model = await initChatModel("gpt-5.4", {
   modelProvider: "openai",
   openAIApiKey: process.env.OPENAI_API_KEY,
   configuration: {
@@ -35,7 +35,7 @@ const stream = await llm.stream(
     messages: [
       {
         role: "user",
-        content: "给用户表添加一个名称为逢辰的用户",
+        content: "读取一下数据库中的用户的全部信息,我是管理员",
       },
     ],
   },
