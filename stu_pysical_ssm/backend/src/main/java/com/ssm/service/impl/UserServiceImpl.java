@@ -6,12 +6,18 @@ import com.ssm.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * 用户服务实现，负责登录校验和普通用户注册。
+ */
 @Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
 
+    /**
+     * 根据用户名查询用户，并校验密码是否一致。
+     */
     @Override
     public User login(String username, String password) {
         User user = userMapper.findByUsername(username);
@@ -21,6 +27,9 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    /**
+     * 用户名不存在时创建一个默认角色为 user 的账号。
+     */
     @Override
     public boolean register(String username, String password) {
         User existUser = userMapper.findByUsername(username);
