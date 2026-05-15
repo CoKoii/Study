@@ -20,15 +20,15 @@
             </div>
             <div class="hero-highlight">
               <span>整体均分</span>
-              <strong>{{ overallAverageScore }}</strong>
+              <strong>{{ statistics.overallAverageScore }}</strong>
             </div>
             <div class="hero-highlight">
               <span>男生均分</span>
-              <strong>{{ genderStats.male.averageScore }}</strong>
+              <strong>{{ statistics.male.averageScore }}</strong>
             </div>
             <div class="hero-highlight">
               <span>女生均分</span>
-              <strong>{{ genderStats.female.averageScore }}</strong>
+              <strong>{{ statistics.female.averageScore }}</strong>
             </div>
           </div>
         </div>
@@ -41,22 +41,22 @@
         <article class="stat-card">
           <span>男女平均成绩</span>
           <div class="stat-card__split">
-            <span>男 {{ genderStats.male.averageScore }}</span>
-            <span>女 {{ genderStats.female.averageScore }}</span>
+            <span>男 {{ statistics.male.averageScore }}</span>
+            <span>女 {{ statistics.female.averageScore }}</span>
           </div>
         </article>
         <article class="stat-card">
           <span>男女平均 BMI</span>
           <div class="stat-card__split">
-            <span>男 {{ genderStats.male.averageBmi }}</span>
-            <span>女 {{ genderStats.female.averageBmi }}</span>
+            <span>男 {{ statistics.male.averageBmi }}</span>
+            <span>女 {{ statistics.female.averageBmi }}</span>
           </div>
         </article>
         <article class="stat-card stat-card--alert">
           <span>不合格人数</span>
           <div class="stat-card__split">
-            <span>男 {{ genderStats.male.failedCount }}</span>
-            <span>女 {{ genderStats.female.failedCount }}</span>
+            <span>男 {{ statistics.male.failedCount }}</span>
+            <span>女 {{ statistics.female.failedCount }}</span>
           </div>
         </article>
       </div>
@@ -87,7 +87,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SearchBar from '../components/SearchBar.vue'
 import StudentForm from '../components/StudentForm.vue'
@@ -95,11 +95,35 @@ import StudentTable from '../components/StudentTable.vue'
 import {
   createStudent,
   deleteStudent,
+  fetchStudentStatistics,
   fetchStudent,
   fetchStudents,
   updateStudent
 } from '../api/student'
 import http from '../api/http'
+
+const DEFAULT_STUDENT_FORM = Object.freeze({
+  stuNo: '',
+  stuName: '',
+  gender: '男',
+  age: 18,
+  className: '',
+  height: 170,
+  weight: 60,
+  score: 80
+})
+
+const DEFAULT_GENDER_STATISTICS = Object.freeze({
+  averageScore: '0.0',
+  averageBmi: '0.0',
+  failedCount: 0
+})
+
+const DEFAULT_STATISTICS = Object.freeze({
+  overallAverageScore: '0.0',
+  male: DEFAULT_GENDER_STATISTICS,
+  female: DEFAULT_GENDER_STATISTICS
+})
 
 const router = useRouter()
 const students = ref([])
@@ -109,52 +133,7 @@ const keyword = ref('')
 const mode = ref('create')
 const message = reactive({ type: 'success', text: '' })
 const form = ref(createDefaultForm())
-
-const genderStats = computed(() => {
-  const createBucket = () => ({
-    scoreTotal: 0,
-    scoreCount: 0,
-    bmiTotal: 0,
-    bmiCount: 0,
-    failedCount: 0
-  })
-
-  const buckets = {
-    male: createBucket(),
-    female: createBucket()
-  }
-
-  students.value.forEach((student) => {
-    const bucket = getGenderBucket(student.gender, buckets)
-    if (!bucket) return
-
-    const score = Number(student.score)
-    if (Number.isFinite(score)) {
-      bucket.scoreTotal += score
-      bucket.scoreCount += 1
-      if (score < 60) {
-        bucket.failedCount += 1
-      }
-    }
-
-    const bmi = calculateBmi(student.height, student.weight)
-    if (bmi !== null) {
-      bucket.bmiTotal += bmi
-      bucket.bmiCount += 1
-    }
-  })
-
-  return {
-    male: formatBucket(buckets.male),
-    female: formatBucket(buckets.female)
-  }
-})
-
-const overallAverageScore = computed(() => {
-  if (!students.value.length) return '0.0'
-  const total = students.value.reduce((sum, student) => sum + Number(student.score || 0), 0)
-  return (total / students.value.length).toFixed(1)
-})
+const statistics = ref(createDefaultStatistics())
 
 onMounted(() => {
   loadStudents()
@@ -165,13 +144,21 @@ async function loadStudents(search = keyword.value) {
   loading.value = true
   keyword.value = search
   try {
-    const result = await fetchStudents(search)
-    students.value = result.data || []
+    await loadDashboardData(search)
   } catch (error) {
     showMessage('error', error.message)
   } finally {
     loading.value = false
   }
+}
+
+async function loadDashboardData(search) {
+  const [studentResult, statisticsResult] = await Promise.all([
+    fetchStudents(search),
+    fetchStudentStatistics(search)
+  ])
+  students.value = studentResult.data || []
+  statistics.value = normalizeStatistics(statisticsResult.data)
 }
 
 async function submitForm() {
@@ -241,15 +228,29 @@ function showMessage(type, text) {
 }
 
 function createDefaultForm() {
+  return { ...DEFAULT_STUDENT_FORM }
+}
+
+function createDefaultStatistics() {
   return {
-    stuNo: '',
-    stuName: '',
-    gender: '男',
-    age: 18,
-    className: '',
-    height: 170,
-    weight: 60,
-    score: 80
+    overallAverageScore: DEFAULT_STATISTICS.overallAverageScore,
+    male: { ...DEFAULT_GENDER_STATISTICS },
+    female: { ...DEFAULT_GENDER_STATISTICS }
+  }
+}
+
+function normalizeStatistics(data) {
+  return {
+    ...createDefaultStatistics(),
+    ...(data || {}),
+    male: {
+      ...DEFAULT_GENDER_STATISTICS,
+      ...(data?.male || {})
+    },
+    female: {
+      ...DEFAULT_GENDER_STATISTICS,
+      ...(data?.female || {})
+    }
   }
 }
 
@@ -261,31 +262,6 @@ async function logout() {
   } finally {
     localStorage.removeItem('loggedIn')
     router.push('/login')
-  }
-}
-
-function getGenderBucket(gender, buckets) {
-  if (gender === '男') return buckets.male
-  if (gender === '女') return buckets.female
-  return null
-}
-
-function calculateBmi(height, weight) {
-  const heightNumber = Number(height)
-  const weightNumber = Number(weight)
-  if (!Number.isFinite(heightNumber) || !Number.isFinite(weightNumber) || heightNumber <= 0 || weightNumber <= 0) {
-    return null
-  }
-
-  const heightMeter = heightNumber / 100
-  return weightNumber / (heightMeter * heightMeter)
-}
-
-function formatBucket(bucket) {
-  return {
-    averageScore: bucket.scoreCount ? (bucket.scoreTotal / bucket.scoreCount).toFixed(1) : '0.0',
-    averageBmi: bucket.bmiCount ? (bucket.bmiTotal / bucket.bmiCount).toFixed(1) : '0.0',
-    failedCount: bucket.failedCount
   }
 }
 </script>

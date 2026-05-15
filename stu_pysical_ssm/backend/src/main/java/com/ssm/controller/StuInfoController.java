@@ -1,6 +1,7 @@
 package com.ssm.controller;
 
 import com.ssm.dto.ApiResponse;
+import com.ssm.dto.StudentStatisticsResponse;
 import com.ssm.po.StuInfo;
 import com.ssm.service.StuInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,21 @@ import java.util.List;
 @RequestMapping("/api/students")
 public class StuInfoController {
 
+    private final StuInfoService stuInfoService;
+
     @Autowired
-    private StuInfoService stuInfoService;
+    public StuInfoController(StuInfoService stuInfoService) {
+        this.stuInfoService = stuInfoService;
+    }
 
     @GetMapping
     public ApiResponse<List<StuInfo>> list(@RequestParam(required = false) String keyword) {
         return ApiResponse.success("查询成功", stuInfoService.findByKeyword(keyword));
+    }
+
+    @GetMapping("/statistics")
+    public ApiResponse<StudentStatisticsResponse> statistics(@RequestParam(required = false) String keyword) {
+        return ApiResponse.success("统计成功", stuInfoService.getStatistics(keyword));
     }
 
     @GetMapping("/{stuNo}")

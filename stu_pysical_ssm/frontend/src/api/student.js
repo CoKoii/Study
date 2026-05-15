@@ -4,6 +4,10 @@ export function fetchStudents(keyword = '') {
     return http.get('/students', { params: { keyword } })
 }
 
+export function fetchStudentStatistics(keyword = '') {
+    return http.get('/students/statistics', { params: { keyword } })
+}
+
 export function fetchStudent(stuNo) {
     return http.get(`/students/${stuNo}`)
 }

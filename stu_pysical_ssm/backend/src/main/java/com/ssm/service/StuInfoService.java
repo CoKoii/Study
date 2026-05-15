@@ -1,5 +1,6 @@
 package com.ssm.service;
 
+import com.ssm.dto.StudentStatisticsResponse;
 import com.ssm.po.StuInfo;
 import java.util.List;
 
@@ -10,4 +11,5 @@ public interface StuInfoService {
     StuInfo findByStuNo(String stuNo);
     List<StuInfo> findByKeyword(String keyword);
     List<StuInfo> findAll();
+    StudentStatisticsResponse getStatistics(String keyword);
 }
