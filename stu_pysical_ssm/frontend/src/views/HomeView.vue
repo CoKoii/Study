@@ -1,26 +1,68 @@
 <template>
   <div class="page-shell">
     <header class="hero">
-      <div class="hero_text">
-        <p class="eyebrow">vue 3 + vite + Axios + Spring MVC REST API</p>
-        <h1>学生体测信息管理系统</h1>
+      <div class="hero__text">
+        <div class="hero__headline">
+          <p class="eyebrow">Vue 3 + Vite + Axios + Spring MVC REST API</p>
+          <button @click="logout" class="button button-danger hero__logout">退出登录</button>
+        </div>
+        <div class="hero__content">
+          <div class="hero__intro">
+            <h1>学生体测信息管理系统</h1>
+            <p class="hero__desc">
+              管理学生基础信息、体测成绩和 BMI 指标，支持快速检索、录入和编辑。
+            </p>
+          </div>
+          <div class="hero__highlights">
+            <div class="hero-highlight">
+              <span>当前筛选</span>
+              <strong>{{ students.length }} 人</strong>
+            </div>
+            <div class="hero-highlight">
+              <span>整体均分</span>
+              <strong>{{ overallAverageScore }}</strong>
+            </div>
+            <div class="hero-highlight">
+              <span>男生均分</span>
+              <strong>{{ genderStats.male.averageScore }}</strong>
+            </div>
+            <div class="hero-highlight">
+              <span>女生均分</span>
+              <strong>{{ genderStats.female.averageScore }}</strong>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="hero_stats">
-        <article class="stat_card">
+      <div class="hero__stats">
+        <article class="stat-card">
           <span>学生总数</span>
           <strong>{{ students.length }}</strong>
         </article>
-        <article class="stat_card">
-          <span>平均体测成绩</span>
-          <strong>{{ averageScore }}</strong>
+        <article class="stat-card">
+          <span>男女平均成绩</span>
+          <div class="stat-card__split">
+            <span>男 {{ genderStats.male.averageScore }}</span>
+            <span>女 {{ genderStats.female.averageScore }}</span>
+          </div>
         </article>
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
-        <button @click="logout" class="button button-danger">退出登录</button>
+        <article class="stat-card">
+          <span>男女平均 BMI</span>
+          <div class="stat-card__split">
+            <span>男 {{ genderStats.male.averageBmi }}</span>
+            <span>女 {{ genderStats.female.averageBmi }}</span>
+          </div>
+        </article>
+        <article class="stat-card stat-card--alert">
+          <span>不合格人数</span>
+          <div class="stat-card__split">
+            <span>男 {{ genderStats.male.failedCount }}</span>
+            <span>女 {{ genderStats.female.failedCount }}</span>
+          </div>
+        </article>
       </div>
     </header>
 
-    <p v-if="message.text" :class="['message', `message--${message.type}`]">
+    <p v-if="message.text" :class="['message', `message-${message.type}`]">
       {{ message.text }}
     </p>
 
@@ -68,9 +110,49 @@ const mode = ref('create')
 const message = reactive({ type: 'success', text: '' })
 const form = ref(createDefaultForm())
 
-const averageScore = computed(() => {
+const genderStats = computed(() => {
+  const createBucket = () => ({
+    scoreTotal: 0,
+    scoreCount: 0,
+    bmiTotal: 0,
+    bmiCount: 0,
+    failedCount: 0
+  })
+
+  const buckets = {
+    male: createBucket(),
+    female: createBucket()
+  }
+
+  students.value.forEach((student) => {
+    const bucket = getGenderBucket(student.gender, buckets)
+    if (!bucket) return
+
+    const score = Number(student.score)
+    if (Number.isFinite(score)) {
+      bucket.scoreTotal += score
+      bucket.scoreCount += 1
+      if (score < 60) {
+        bucket.failedCount += 1
+      }
+    }
+
+    const bmi = calculateBmi(student.height, student.weight)
+    if (bmi !== null) {
+      bucket.bmiTotal += bmi
+      bucket.bmiCount += 1
+    }
+  })
+
+  return {
+    male: formatBucket(buckets.male),
+    female: formatBucket(buckets.female)
+  }
+})
+
+const overallAverageScore = computed(() => {
   if (!students.value.length) return '0.0'
-  const total = students.value.reduce((sum, item) => sum + Number(item.score || 0), 0)
+  const total = students.value.reduce((sum, student) => sum + Number(student.score || 0), 0)
   return (total / students.value.length).toFixed(1)
 })
 
@@ -181,10 +263,34 @@ async function logout() {
     router.push('/login')
   }
 }
+
+function getGenderBucket(gender, buckets) {
+  if (gender === '男') return buckets.male
+  if (gender === '女') return buckets.female
+  return null
+}
+
+function calculateBmi(height, weight) {
+  const heightNumber = Number(height)
+  const weightNumber = Number(weight)
+  if (!Number.isFinite(heightNumber) || !Number.isFinite(weightNumber) || heightNumber <= 0 || weightNumber <= 0) {
+    return null
+  }
+
+  const heightMeter = heightNumber / 100
+  return weightNumber / (heightMeter * heightMeter)
+}
+
+function formatBucket(bucket) {
+  return {
+    averageScore: bucket.scoreCount ? (bucket.scoreTotal / bucket.scoreCount).toFixed(1) : '0.0',
+    averageBmi: bucket.bmiCount ? (bucket.bmiTotal / bucket.bmiCount).toFixed(1) : '0.0',
+    failedCount: bucket.failedCount
+  }
+}
 </script>
 
 <style scoped>
-/* 原 style.css 中的全局样式已移至全局，此处仅保留组件特有样式（如果需要） */
 .button-danger {
   background: #dc2626;
   border: none;
@@ -195,5 +301,16 @@ async function logout() {
 }
 .button-danger:hover {
   background: #b91c1c;
+}
+
+.stat-card__split {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 0.95rem;
+}
+
+.stat-card--alert {
+  background: linear-gradient(135deg, #9f1239, #e11d48);
 }
 </style>
