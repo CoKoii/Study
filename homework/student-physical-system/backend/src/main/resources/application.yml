@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: student-physical-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/student?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:123456}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.study.studentphysical.domain.student.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.study.studentphysical: info
+
+auth:
+  jwt:
+    secret: ${AUTH_JWT_SECRET:student-physical-system-change-me-secret}
+    access-token-minutes: ${AUTH_ACCESS_TOKEN_MINUTES:30}
+    refresh-token-days: ${AUTH_REFRESH_TOKEN_DAYS:7}
