@@ -107,14 +107,26 @@ function requestScrollToBottom() {
 
   <a-modal
     v-model:open="open"
-    title="AI 数据分析"
-    width="780px"
+    width="760px"
     :footer="null"
-    :styles="{ body: { padding: 0 } }"
+    :styles="{ body: { padding: 0, overflow: 'hidden' } }"
   >
+    <template #title>
+      <a-flex vertical :gap="2">
+        <span>AI 数据分析</span>
+        <a-typography-text type="secondary" class="ai-chat__subtitle">
+          学生体质数据助手
+        </a-typography-text>
+      </a-flex>
+    </template>
+
     <section class="ai-chat">
       <div ref="chatBodyRef" class="ai-chat__body">
-        <a-empty v-if="!messages.length" description="开始提问" :image="null" class="ai-chat__empty" />
+        <div v-if="!messages.length" class="ai-chat__welcome">
+          <div class="ai-chat__welcome-icon">AI</div>
+          <div class="ai-chat__welcome-title">可以开始分析了</div>
+          <div class="ai-chat__welcome-text">例如：谁的 BMI 最高、成绩最低的是谁、导出不及格学生。</div>
+        </div>
         <div v-else class="ai-chat__messages">
           <div
             v-for="(item, index) in messages"
@@ -123,11 +135,25 @@ function requestScrollToBottom() {
             :class="{ 'ai-chat__row--user': item.role === 'user' }"
           >
             <span v-if="item.role === 'assistant'" class="ai-chat__avatar">AI</span>
-            <div class="ai-chat__bubble" :class="{ 'ai-chat__bubble--user': item.role === 'user' }">
+            <div
+              class="ai-chat__bubble"
+              :class="{
+                'ai-chat__bubble--user': item.role === 'user',
+                'ai-chat__bubble--loading': item.role === 'assistant' && !item.content && !item.toolCalls?.length
+              }"
+            >
               <div
-                v-if="item.role === 'assistant'"
+                v-if="item.role === 'assistant' && !item.content && !item.toolCalls?.length"
+                class="ai-chat__loading"
+                aria-label="AI 正在思考"
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+              <div
+                v-else-if="item.role === 'assistant'"
                 class="ai-chat__markdown"
-                :class="{ 'ai-chat__markdown--empty': !item.content }"
                 v-html="renderMarkdown(item.content)"
               />
               <span v-else>{{ item.content }}</span>
@@ -142,14 +168,14 @@ function requestScrollToBottom() {
       </div>
 
       <div class="ai-chat__composer">
-        <a-textarea
-          v-model:value="input"
-          :auto-size="{ minRows: 3, maxRows: 6 }"
-          placeholder="输入你的数据分析需求"
-          @keydown.enter.exact.prevent="sendMessage"
-        />
-        <a-flex justify="end">
-          <a-button type="primary" :loading="thinking" @click="sendMessage">
+        <a-flex align="flex-end" :gap="12" class="ai-chat__input-group">
+          <a-textarea
+            v-model:value="input"
+            :auto-size="{ minRows: 1, maxRows: 4 }"
+            placeholder="输入你的数据分析需求"
+            @keydown.enter.exact.prevent="sendMessage"
+          />
+          <a-button type="primary" :loading="thinking" :disabled="!input.trim()" @click="sendMessage">
             发送
           </a-button>
         </a-flex>
@@ -161,25 +187,65 @@ function requestScrollToBottom() {
 <style scoped>
 .ai-chat {
   display: flex;
-  height: 640px;
+  height: 600px;
   flex-direction: column;
-  background: #f7f8fa;
+  overflow: hidden;
+}
+
+.ai-chat__subtitle {
+  font-size: 12px;
 }
 
 .ai-chat__body {
   flex: 1;
   overflow: auto;
-  padding: 20px 24px 16px;
+  margin: 0 24px;
+  padding: 24px 0;
+  background: #ffffff;
 }
 
-.ai-chat__empty {
-  margin-top: 150px;
+.ai-chat__welcome {
+  display: flex;
+  height: 100%;
+  min-height: 360px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  text-align: center;
+}
+
+.ai-chat__welcome-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #1677ff;
+  color: #fff;
+  font-weight: 700;
+  line-height: 48px;
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.22);
+}
+
+.ai-chat__welcome-title {
+  margin-top: 16px;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ai-chat__welcome-text {
+  max-width: 360px;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .ai-chat__messages {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  min-height: 100%;
+  justify-content: flex-end;
 }
 
 .ai-chat__row {
@@ -208,38 +274,75 @@ function requestScrollToBottom() {
 }
 
 .ai-chat__bubble {
-  max-width: 70%;
-  min-height: 28px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  max-width: min(74%, 520px);
+  min-height: 0;
+  padding: 11px 14px;
+  border: 1px solid #edf0f5;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
   line-height: 1.65;
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
+.ai-chat__bubble--loading {
+  display: flex;
+  min-width: 64px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+}
+
 .ai-chat__bubble--user {
+  border-color: #1677ff;
   color: #ffffff;
   background: #1677ff;
+  box-shadow: 0 8px 18px rgba(22, 119, 255, 0.18);
 }
 
 .ai-chat__markdown :deep(p) {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
 }
 
 .ai-chat__markdown :deep(p:last-child) {
   margin-bottom: 0;
 }
 
-.ai-chat__markdown--empty::before {
-  content: '';
-  display: inline-block;
+.ai-chat__loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 16px;
+}
+
+.ai-chat__loading span {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #8c8c8c;
-  box-shadow: 10px 0 0 #c7c7c7, 20px 0 0 #e0e0e0;
+  background: #9ca3af;
+  animation: ai-loading-bounce 1s infinite ease-in-out;
+}
+
+.ai-chat__loading span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-chat__loading span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes ai-loading-bounce {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 
 .ai-chat__markdown :deep(ul),
@@ -253,13 +356,42 @@ function requestScrollToBottom() {
 }
 
 .ai-chat__composer {
+  flex: 0 0 auto;
   padding: 14px 24px 18px;
-  border-top: 1px solid #edf0f5;
   background: #ffffff;
 }
 
+.ai-chat__input-group {
+  padding: 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 12px;
+  background: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ai-chat__input-group:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.08);
+}
+
 .ai-chat__composer :deep(.ant-input) {
-  border-radius: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 2px;
+  border: 0;
+  line-height: 22px;
+  box-shadow: none;
   resize: none;
+}
+
+.ai-chat__composer :deep(.ant-input:focus) {
+  box-shadow: none;
+}
+
+.ai-chat__composer :deep(.ant-btn) {
+  flex: 0 0 auto;
+  height: 36px;
+  padding: 0 18px;
+  border-radius: 8px;
 }
 </style>

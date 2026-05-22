@@ -10,34 +10,74 @@ const emit = defineEmits(['logout'])
 </script>
 
 <template>
-  <a-layout :style="{ minHeight: '100vh' }">
-    <a-layout-sider width="240" theme="dark">
-      <a-flex vertical :gap="16" :style="{ height: '100%', padding: '24px 0' }">
-        <a-typography-title :level="4" :style="{ color: '#fff', margin: '0 24px 12px' }">
-          体测管理
-        </a-typography-title>
+  <a-layout class="app-shell">
+    <a-layout-sider class="app-shell__sider" width="240" theme="dark">
+      <a-flex vertical :gap="16" class="app-shell__sider-inner">
+        <div class="app-shell__brand">
+          学生体质信息管理系统
+        </div>
         <a-menu theme="dark" mode="inline" :selected-keys="['students']">
           <a-menu-item key="students">学生体质信息</a-menu-item>
         </a-menu>
+
+        <div class="app-shell__account">
+          <a-button block @click="emit('logout')">退出登录</a-button>
+        </div>
       </a-flex>
     </a-layout-sider>
 
-    <a-layout>
-      <a-layout-header :style="{ height: '72px', padding: '0 24px', background: '#fff' }">
-        <a-flex justify="space-between" align="center" :style="{ height: '72px' }">
-          <a-typography-title :level="4" :style="{ margin: 0 }">
-            学生体质信息管理系统
-          </a-typography-title>
-          <a-space>
-            <a-tag color="blue">{{ currentUser?.displayName || currentUser?.username }}</a-tag>
-            <a-button @click="emit('logout')">退出登录</a-button>
-          </a-space>
-        </a-flex>
-      </a-layout-header>
-
-      <a-layout-content :style="{ padding: '24px', overflow: 'auto' }">
+    <a-layout class="app-shell__main">
+      <a-layout-content class="app-shell__content">
         <slot />
       </a-layout-content>
     </a-layout>
   </a-layout>
 </template>
+
+<style scoped>
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell__sider {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  height: 100vh;
+  overflow: auto;
+}
+
+.app-shell__sider-inner {
+  height: 100%;
+  padding: 28px 0 24px;
+}
+
+.app-shell__brand {
+  margin: 0 24px 28px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.app-shell__account {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: 0 24px;
+}
+
+.app-shell__account :deep(.ant-btn) {
+  height: 40px;
+}
+
+.app-shell__main {
+  min-height: 100vh;
+  margin-left: 240px;
+}
+
+.app-shell__content {
+  padding: 24px;
+}
+</style>
