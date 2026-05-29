@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import brandIcon from '@/assets/icon.png'
 import { exploreItems, navItems } from '../../share/menu'
 </script>
 
@@ -10,7 +11,10 @@ import { exploreItems, navItems } from '../../share/menu'
         <AppIcon icon="lucide:x" size="20" />
       </label>
 
-      <div class="home-sidebar__brand"></div>
+      <div class="home-sidebar__brand">
+        <img class="home-sidebar__brand-icon" :src="brandIcon" alt="" />
+        <span class="home-sidebar__brand-text">苏应智汇港</span>
+      </div>
 
       <button class="home-sidebar__create" type="button">
         <AppIcon icon="lucide:plus" size="18" />
