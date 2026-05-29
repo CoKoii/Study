@@ -2,20 +2,21 @@
 import AppIcon from '@/components/AppIcon/index.vue'
 import { createAppControllerKey } from '@/components/AppLayout/share/create-app'
 import CreateAppModal from '@/views/personal-space/components/CreateAppModal/index.vue'
+import { APP_ACTION, APP_DELETE_WARNING } from '@/views/personal-space/share/app'
 import type { AppItem, CreateAppPayload } from '@/views/personal-space/share/app'
 import { useAppListStore } from '@/stores/app-list'
 import type { MenuItemType } from 'antdv-next'
-import { Dropdown, message } from 'antdv-next'
+import { Dropdown, message, Modal } from 'antdv-next'
 import { storeToRefs } from 'pinia'
 import { computed, inject, ref } from 'vue'
 
 const tabs = ['AI应用', '插件', '工作流', '知识库']
 
 const actionItems: MenuItemType[] = [
-  { key: 'edit', label: '编辑' },
-  { key: 'copy', label: '复制' },
-  { key: 'publish', label: '发布' },
-  { key: 'delete', label: '删除', danger: true },
+  { key: APP_ACTION.edit, label: '编辑' },
+  { key: APP_ACTION.copy, label: '复制' },
+  { key: APP_ACTION.publish, label: '发布' },
+  { key: APP_ACTION.delete, label: '删除', danger: true },
 ]
 
 const appListStore = useAppListStore()
@@ -24,27 +25,47 @@ const createAppController = inject(createAppControllerKey, {
   requestCreateApp: () => {},
 })
 const editModalOpen = ref(false)
-const editingAppName = ref('')
-const editingApp = computed(() => appItems.value.find(item => item.name === editingAppName.value) ?? null)
+const editingAppId = ref('')
+const editingApp = computed(() => appItems.value.find(item => item.id === editingAppId.value) ?? null)
 
 function openCreateModal() {
   createAppController.requestCreateApp()
 }
 
 function openEditModal(item: AppItem) {
-  editingAppName.value = item.name
+  editingAppId.value = item.id
   editModalOpen.value = true
 }
 
 function handleSubmitApp(payload: CreateAppPayload) {
-  if (appListStore.updateApp(editingAppName.value, payload)) {
+  if (appListStore.updateApp(editingAppId.value, payload)) {
     message.success('保存成功')
   }
 }
 
+function deleteApp(item: AppItem) {
+  Modal.confirm({
+    title: `删除应用「${item.name}」？`,
+    content: APP_DELETE_WARNING,
+    okText: '删除',
+    okType: 'danger',
+    cancelText: '取消',
+    onOk() {
+      if (appListStore.deleteApp(item.id)) {
+        message.success('删除成功')
+      }
+    },
+  })
+}
+
 function handleActionClick(item: AppItem, event: { key: string | number }) {
-  if (event.key === 'edit') {
+  if (event.key === APP_ACTION.edit) {
     openEditModal(item)
+    return
+  }
+
+  if (event.key === APP_ACTION.delete) {
+    deleteApp(item)
   }
 }
 </script>
@@ -79,7 +100,7 @@ function handleActionClick(item: AppItem, event: { key: string | number }) {
     </div>
 
     <div class="space-app-list__grid">
-      <article v-for="item in appItems" :key="item.name" class="space-app-list__card">
+      <article v-for="item in appItems" :key="item.id" class="space-app-list__card">
         <div class="space-app-list__card-head">
           <div
             class="space-app-list__app-icon"
