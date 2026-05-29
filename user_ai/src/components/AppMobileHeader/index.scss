@@ -1,4 +1,4 @@
-.home-mobile-header {
+.app-mobile-header {
   position: fixed;
   z-index: var(--z-fixed);
   top: 0;
@@ -14,13 +14,13 @@
   backdrop-filter: blur(16px);
 }
 
-.home-mobile-header span {
+.app-mobile-header span {
   color: var(--color-text-strong);
   font-size: 0.9375rem;
   font-weight: 600;
 }
 
-.home-mobile-header__button {
+.app-mobile-header__button {
   position: absolute;
   left: var(--space-3);
   display: grid;
@@ -35,13 +35,13 @@
     color 0.16s ease;
 }
 
-.home-mobile-header__button:active {
+.app-mobile-header__button:active {
   color: var(--color-primary);
   background: var(--color-bg-soft);
 }
 
 @media (max-width: 760px) {
-  .home-mobile-header {
+  .app-mobile-header {
     display: flex;
   }
 }

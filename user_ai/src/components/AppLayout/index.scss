@@ -1,0 +1,72 @@
+.app-layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-white);
+  font-family: var(--font-family);
+}
+
+.app-layout__menu-toggle {
+  display: none;
+}
+
+.app-layout__scrim {
+  display: none;
+}
+
+.app-layout__workspace {
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.route-fade-enter-active,
+.route-fade-leave-active {
+  transition: opacity 0.22s ease;
+}
+
+.route-fade-enter-from,
+.route-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 980px) {
+  .app-layout {
+    grid-template-columns: var(--sidebar-width-sm) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .app-layout {
+    display: block;
+    height: 100dvh;
+  }
+
+  .app-layout__scrim {
+    position: fixed;
+    z-index: var(--z-scrim);
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    background: transparent;
+    transition: background 0.2s ease;
+  }
+
+  .app-layout__menu-toggle:checked ~ .app-layout__scrim {
+    pointer-events: auto;
+    background: var(--color-scrim);
+  }
+
+  .app-layout__workspace {
+    position: fixed;
+    inset: var(--mobile-header-height) 0 0;
+    height: auto;
+    padding-bottom: var(--mobile-workspace-bottom);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}

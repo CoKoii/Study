@@ -1,0 +1,13 @@
+.personal-space {
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg-sidebar);
+}
+
+@media (max-width: 760px) {
+  .personal-space {
+    height: auto;
+    min-height: 100%;
+  }
+}

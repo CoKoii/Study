@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Home from '@/views/home/index.vue'
+import AppLayout from '@/components/AppLayout/index.vue'
 </script>
 
 <template>
-  <Home />
+  <AppLayout />
 </template>
