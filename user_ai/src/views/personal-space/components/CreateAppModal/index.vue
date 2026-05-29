@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import type { CreateAppPayload } from '@/views/personal-space/share/app'
+import type { AppFormMode, AppItem, CreateAppPayload } from '@/views/personal-space/share/app'
 import type { FormInstance, UploadEmits, UploadProps } from 'antdv-next'
 import { Form, FormItem, Input, message, Modal, TextArea, Upload } from 'antdv-next'
-import { reactive, ref, shallowRef } from 'vue'
+import { computed, reactive, ref, shallowRef, watch } from 'vue'
 
 type FileType = Parameters<NonNullable<UploadProps['beforeUpload']>>[0]
 
 const open = defineModel<boolean>('open', { required: true })
+const props = withDefaults(
+  defineProps<{
+    mode?: AppFormMode
+    initialValue?: AppItem | null
+  }>(),
+  {
+    mode: 'create',
+    initialValue: null,
+  },
+)
 const emit = defineEmits<{
-  create: [payload: CreateAppPayload]
+  submit: [payload: CreateAppPayload]
 }>()
 
 const formRef = shallowRef<FormInstance>()
@@ -19,6 +29,10 @@ const formModel = reactive<CreateAppPayload>({
   name: '',
   description: '',
 })
+const modalTitle = computed(() => (props.mode === 'edit' ? '编辑 AI 应用' : '创建 AI 应用'))
+const hasImageIcon = computed(() =>
+  /^(blob:|data:image\/|https?:\/\/)/.test(formModel.icon),
+)
 
 function resetForm() {
   formModel.icon = ''
@@ -31,6 +45,14 @@ function resetForm() {
 function closeModal() {
   open.value = false
   resetForm()
+}
+
+function syncFormModel(value?: AppItem | null) {
+  formModel.icon = value?.icon ?? ''
+  formModel.name = value?.name ?? ''
+  formModel.description = value?.description ?? ''
+  iconLoading.value = false
+  formRef.value?.clearValidate()
 }
 
 function getImagePreview(file: FileType) {
@@ -88,20 +110,26 @@ function submitForm() {
   formRef.value?.submit()
 }
 
-function handleCreate() {
-  emit('create', {
+function handleSubmit() {
+  emit('submit', {
     icon: formModel.icon,
     name: formModel.name.trim(),
     description: formModel.description.trim(),
   })
   closeModal()
 }
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    syncFormModel(props.initialValue)
+  }
+})
 </script>
 
 <template>
   <Modal
     v-model:open="open"
-    title="创建 AI 应用"
+    :title="modalTitle"
     width="494px"
     centered
     :mask="{ blur: false, closable: true }"
@@ -116,7 +144,7 @@ function handleCreate() {
       name="create_app"
       :model="formModel"
       clear-on-destroy
-      @finish="handleCreate"
+      @finish="handleSubmit"
     >
       <FormItem
         label="应用图标"
@@ -134,14 +162,14 @@ function handleCreate() {
           @change="handleIconChange"
         >
           <img
-            v-if="formModel.icon"
+            v-if="hasImageIcon"
             :src="formModel.icon"
             alt="avatar"
             :draggable="false"
             class="create-app-modal__icon-preview"
           />
           <button v-else class="create-app-modal__upload-trigger" type="button">
-            <AppIcon :icon="iconLoading ? 'lucide:loader-circle' : 'lucide:plus'" size="20" />
+            <AppIcon :icon="iconLoading ? 'lucide:loader-circle' : formModel.icon || 'lucide:plus'" size="20" />
             <div>上传图标</div>
           </button>
         </Upload>

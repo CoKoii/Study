@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import { createAppControllerKey } from '@/components/AppLayout/share/create-app'
 import brandIcon from '@/assets/icon.png'
 import { exploreItems, navItems } from './menu'
+import { inject } from 'vue'
+
+const createAppController = inject(createAppControllerKey, {
+  requestCreateApp: () => {},
+})
+
+function requestCreateApp() {
+  createAppController.requestCreateApp()
+}
 </script>
 
 <template>
@@ -16,7 +26,7 @@ import { exploreItems, navItems } from './menu'
         <span class="app-sidebar__brand-text">苏应智汇港</span>
       </div>
 
-      <button class="app-sidebar__create" type="button">
+      <button class="app-sidebar__create" type="button" @click="requestCreateApp">
         <AppIcon icon="lucide:plus" size="18" />
         <span>创建 AI 应用</span>
       </button>

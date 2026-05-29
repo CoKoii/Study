@@ -13,3 +13,5 @@ export interface CreateAppPayload {
   name: string
   description: string
 }
+
+export type AppFormMode = 'create' | 'edit'
