@@ -1,0 +1,62 @@
+.home {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-white);
+  font-family: var(--font-family);
+}
+
+.home__menu-toggle {
+  display: none;
+}
+
+.home__scrim {
+  display: none;
+}
+
+.home__workspace {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    url('@/assets/home/hero-bg.png') left top / 100% min(42.5rem, 66vh) no-repeat,
+    var(--color-bg-page);
+}
+
+@media (max-width: 980px) {
+  .home {
+    grid-template-columns: var(--sidebar-width-sm) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .home {
+    grid-template-columns: 1fr;
+    padding-top: var(--mobile-header-height);
+  }
+
+  .home__scrim {
+    position: fixed;
+    z-index: var(--z-scrim);
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    background: rgba(17, 24, 39, 0);
+    transition: background 0.2s ease;
+  }
+
+  .home__menu-toggle:checked ~ .home__scrim {
+    pointer-events: auto;
+    background: rgba(17, 24, 39, 0.35);
+  }
+
+  .home__workspace {
+    height: calc(100vh - var(--mobile-header-height));
+    padding-bottom: 6rem;
+  }
+}

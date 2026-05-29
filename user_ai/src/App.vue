@@ -1,7 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Home from '@/views/home/index.vue'
+</script>
 
 <template>
-  <div class="App">hello world</div>
+  <Home />
 </template>
-
-<style scoped lang="scss"></style>
