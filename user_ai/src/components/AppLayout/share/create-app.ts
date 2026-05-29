@@ -1,7 +1,5 @@
 import type { InjectionKey } from 'vue'
 
-export interface CreateAppController {
+export const createAppControllerKey: InjectionKey<{
   requestCreateApp: () => void
-}
-
-export const createAppControllerKey: InjectionKey<CreateAppController> = Symbol('create-app-controller')
+}> = Symbol('create-app-controller')

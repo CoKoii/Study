@@ -2,12 +2,24 @@
 import AppIcon from '@/components/AppIcon/index.vue'
 import { createAppControllerKey } from '@/components/AppLayout/share/create-app'
 import brandIcon from '@/assets/icon.png'
-import { exploreItems, navItems } from './menu'
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const createAppController = inject(createAppControllerKey, {
   requestCreateApp: () => {},
 })
+const sidebarItems = computed(() =>
+  router
+    .getRoutes()
+    .filter((route) => route.meta.sidebar)
+    .map((route) => ({
+      to: route.path,
+      ...route.meta.sidebar!,
+    })),
+)
+const navItems = computed(() => sidebarItems.value.filter((item) => item.group === 'main'))
+const exploreItems = computed(() => sidebarItems.value.filter((item) => item.group === 'explore'))
 
 function requestCreateApp() {
   createAppController.requestCreateApp()
@@ -53,15 +65,23 @@ function requestCreateApp() {
 
       <section class="app-sidebar__group" aria-label="探索">
         <div class="app-sidebar__title">探索</div>
-        <button
+        <RouterLink
           v-for="item in exploreItems"
           :key="item.label"
-          class="app-sidebar__item"
-          type="button"
+          v-slot="{ isActive, navigate }"
+          :to="item.to"
+          custom
         >
-          <AppIcon :icon="item.icon" size="20" />
-          <span>{{ item.label }}</span>
-        </button>
+          <button
+            class="app-sidebar__item"
+            :class="{ 'is-active': isActive }"
+            type="button"
+            @click="navigate"
+          >
+            <AppIcon :icon="item.icon" size="20" />
+            <span>{{ item.label }}</span>
+          </button>
+        </RouterLink>
       </section>
 
       <div class="app-sidebar__account">

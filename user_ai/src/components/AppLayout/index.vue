@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import CreateAppModal from '@/views/personal-space/components/CreateAppModal/index.vue'
-import type { CreateAppPayload } from '@/views/personal-space/share/app'
 import { createAppControllerKey } from '@/components/AppLayout/share/create-app'
 import { useAppListStore } from '@/stores/app-list'
+import type { SpaceAppForm } from '@/stores/app-list'
 import { message } from 'antdv-next'
 import { provide, ref } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
@@ -39,8 +39,8 @@ function handleRouteReady() {
   }
 }
 
-function handleCreateApp(payload: CreateAppPayload) {
-  appListStore.createApp(payload)
+function handleCreateApp(form: SpaceAppForm) {
+  appListStore.createApp(form)
   message.success('创建成功')
 }
 

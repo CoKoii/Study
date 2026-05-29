@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import type { AppFormMode, AppItem, CreateAppPayload } from '@/views/personal-space/share/app'
-import type { FormInstance, UploadEmits, UploadProps } from 'antdv-next'
-import { Form, FormItem, Input, message, Modal, TextArea, Upload } from 'antdv-next'
-import { computed, reactive, ref, shallowRef, watch } from 'vue'
-
-type FileType = Parameters<NonNullable<UploadProps['beforeUpload']>>[0]
+import { useAppIconUpload } from '@/views/personal-space/components/CreateAppModal/share/use-app-icon-upload'
+import type { SpaceApp, SpaceAppForm } from '@/stores/app-list'
+import type { FormInstance } from 'antdv-next'
+import { Form, FormItem, Input, Modal, TextArea, Upload } from 'antdv-next'
+import { computed, reactive, ref, shallowRef, toRef, watch } from 'vue'
 
 const open = defineModel<boolean>('open', { required: true })
 const props = withDefaults(
   defineProps<{
-    mode?: AppFormMode
-    initialValue?: AppItem | null
+    mode?: 'create' | 'edit'
+    initialValue?: SpaceApp | null
   }>(),
   {
     mode: 'create',
@@ -19,20 +18,18 @@ const props = withDefaults(
   },
 )
 const emit = defineEmits<{
-  submit: [payload: CreateAppPayload]
+  submit: [form: SpaceAppForm]
 }>()
 
 const formRef = shallowRef<FormInstance>()
 const iconLoading = ref(false)
-const formModel = reactive<CreateAppPayload>({
+const formModel = reactive<SpaceAppForm>({
   icon: '',
   name: '',
   description: '',
 })
 const modalTitle = computed(() => (props.mode === 'edit' ? '编辑 AI 应用' : '创建 AI 应用'))
-const hasImageIcon = computed(() =>
-  /^(blob:|data:image\/|https?:\/\/)/.test(formModel.icon),
-)
+const hasImageIcon = computed(() => /^(blob:|data:image\/|https?:\/\/)/.test(formModel.icon))
 
 function resetForm() {
   formModel.icon = ''
@@ -47,7 +44,7 @@ function closeModal() {
   resetForm()
 }
 
-function syncFormModel(value?: AppItem | null) {
+function syncFormModel(value?: SpaceApp | null) {
   formModel.icon = value?.icon ?? ''
   formModel.name = value?.name ?? ''
   formModel.description = value?.description ?? ''
@@ -55,56 +52,11 @@ function syncFormModel(value?: AppItem | null) {
   formRef.value?.clearValidate()
 }
 
-function getImagePreview(file: FileType) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = error => reject(error)
-  })
-}
-
-const beforeIconUpload: UploadProps['beforeUpload'] = (file) => {
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-
-  if (!isJpgOrPng) {
-    message.error('请上传 JPG/PNG 格式的图标')
-  }
-
-  const isLt2M = file.size / 1024 / 1024 < 2
-
-  if (!isLt2M) {
-    message.error('图标大小不能超过 2MB')
-  }
-
-  return isJpgOrPng && isLt2M
-}
-
-const requestIconUpload: UploadProps['customRequest'] = ({ onSuccess }) => {
-  onSuccess?.({})
-}
-
-const handleIconChange: UploadEmits['change'] = async (info) => {
-  if (info.file?.status === 'uploading') {
-    iconLoading.value = true
-    return
-  }
-
-  if (info.file?.status === 'done') {
-    try {
-      if (info.file.originFileObj) {
-        formModel.icon = await getImagePreview(info.file.originFileObj as FileType)
-        formRef.value?.clearValidate(['icon'])
-      }
-    }
-    finally {
-      iconLoading.value = false
-    }
-    return
-  }
-
-  iconLoading.value = false
-}
+const { beforeIconUpload, handleIconChange, requestIconUpload } = useAppIconUpload(
+  toRef(formModel, 'icon'),
+  iconLoading,
+  formRef,
+)
 
 function submitForm() {
   formRef.value?.submit()
@@ -113,8 +65,8 @@ function submitForm() {
 function handleSubmit() {
   emit('submit', {
     icon: formModel.icon,
-    name: formModel.name.trim(),
-    description: formModel.description.trim(),
+    name: formModel.name,
+    description: formModel.description,
   })
   closeModal()
 }
@@ -169,7 +121,10 @@ watch(open, (isOpen) => {
             class="create-app-modal__icon-preview"
           />
           <button v-else class="create-app-modal__upload-trigger" type="button">
-            <AppIcon :icon="iconLoading ? 'lucide:loader-circle' : formModel.icon || 'lucide:plus'" size="20" />
+            <AppIcon
+              :icon="iconLoading ? 'lucide:loader-circle' : formModel.icon || 'lucide:plus'"
+              size="20"
+            />
             <div>上传图标</div>
           </button>
         </Upload>
