@@ -31,7 +31,9 @@ import { suggestions } from '../../share/content'
       </article>
 
       <div class="home-welcome__suggestions">
-        <button v-for="item in suggestions" :key="item" type="button">{{ item }}</button>
+        <button v-for="item in suggestions" :key="item" type="button">
+          {{ item }}
+        </button>
       </div>
     </section>
   </div>

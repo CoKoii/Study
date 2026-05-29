@@ -36,8 +36,8 @@
 
 @media (max-width: 760px) {
   .home {
-    grid-template-columns: 1fr;
-    padding-top: var(--mobile-header-height);
+    display: block;
+    height: 100dvh;
   }
 
   .home__scrim {
@@ -46,17 +46,23 @@
     inset: 0;
     display: block;
     pointer-events: none;
-    background: rgba(17, 24, 39, 0);
+    background: transparent;
     transition: background 0.2s ease;
   }
 
   .home__menu-toggle:checked ~ .home__scrim {
     pointer-events: auto;
-    background: rgba(17, 24, 39, 0.35);
+    background: var(--color-scrim);
   }
 
   .home__workspace {
-    height: calc(100vh - var(--mobile-header-height));
-    padding-bottom: 6rem;
+    position: fixed;
+    inset: var(--mobile-header-height) 0 0;
+    display: block;
+    height: auto;
+    padding-bottom: var(--mobile-workspace-bottom);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }

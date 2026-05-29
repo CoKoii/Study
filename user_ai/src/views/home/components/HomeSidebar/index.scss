@@ -34,7 +34,11 @@
   border-radius: var(--radius-md);
   font-size: 1rem;
   white-space: nowrap;
-  cursor: default;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
 }
 
 .home-sidebar__create {
@@ -43,6 +47,16 @@
   margin-bottom: var(--space-5);
   color: var(--color-white);
   background: var(--color-primary);
+}
+
+.home-sidebar__create:hover,
+.home-sidebar__create:focus-visible {
+  background: var(--color-primary-hover);
+}
+
+.home-sidebar__create:active,
+.home-sidebar__item:active {
+  transform: scale(0.98);
 }
 
 .home-sidebar__nav,
@@ -64,6 +78,12 @@
 }
 
 .home-sidebar__item.is-active {
+  background: var(--color-bg-soft);
+}
+
+.home-sidebar__item:hover,
+.home-sidebar__item:focus-visible {
+  color: var(--color-primary);
   background: var(--color-bg-soft);
 }
 
