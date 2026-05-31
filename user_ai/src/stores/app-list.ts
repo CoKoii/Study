@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { getSpaceResourceByKind } from '@/views/personal-space/share/resources'
+import type { SpaceResourceKind } from '@/views/personal-space/share/resources'
+
+export type { SpaceResourceKind } from '@/views/personal-space/share/resources'
 
 export interface SpaceApp {
   id: string
@@ -9,6 +13,7 @@ export interface SpaceApp {
   accent: string
   updatedAt: string
   status: 'published' | 'draft'
+  kind: SpaceResourceKind
   type: string
 }
 
@@ -17,8 +22,6 @@ export interface SpaceAppForm {
   name: string
   description: string
 }
-
-const fallbackDescription = '暂无应用描述。'
 
 const appFixtures: SpaceApp[] = [
   {
@@ -29,6 +32,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#2563eb',
     updatedAt: '2024-06-18 12:00',
     status: 'published',
+    kind: 'app',
     type: '聊天助手',
   },
   {
@@ -39,7 +43,8 @@ const appFixtures: SpaceApp[] = [
     accent: '#7c3aed',
     updatedAt: '2024-06-17 18:30',
     status: 'published',
-    type: '工作流',
+    kind: 'app',
+    type: '流程应用',
   },
   {
     id: 'app-sales-coach',
@@ -49,6 +54,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#0891b2',
     updatedAt: '2024-06-16 09:42',
     status: 'draft',
+    kind: 'app',
     type: '智能体',
   },
   {
@@ -59,7 +65,8 @@ const appFixtures: SpaceApp[] = [
     accent: '#16a34a',
     updatedAt: '2024-06-15 21:10',
     status: 'published',
-    type: '知识库',
+    kind: 'app',
+    type: '知识问答',
   },
   {
     id: 'app-weekly-report',
@@ -69,6 +76,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#ea580c',
     updatedAt: '2024-06-14 15:26',
     status: 'published',
+    kind: 'app',
     type: '文本生成',
   },
   {
@@ -79,6 +87,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#db2777',
     updatedAt: '2024-06-13 11:08',
     status: 'draft',
+    kind: 'app',
     type: '招聘',
   },
   {
@@ -89,6 +98,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#0d9488',
     updatedAt: '2024-06-12 19:54',
     status: 'published',
+    kind: 'app',
     type: '数据分析',
   },
   {
@@ -99,6 +109,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#4f46e5',
     updatedAt: '2024-06-11 08:20',
     status: 'published',
+    kind: 'app',
     type: '行业助手',
   },
   {
@@ -109,6 +120,7 @@ const appFixtures: SpaceApp[] = [
     accent: '#9333ea',
     updatedAt: '2024-06-10 17:36',
     status: 'draft',
+    kind: 'app',
     type: '监测',
   },
   {
@@ -119,7 +131,107 @@ const appFixtures: SpaceApp[] = [
     accent: '#ca8a04',
     updatedAt: '2024-06-09 13:15',
     status: 'published',
+    kind: 'app',
     type: '产品',
+  },
+  {
+    id: 'plugin-weather-search',
+    name: '天气查询服务',
+    description: '通过城市名称获取实时天气、未来预报和空气质量数据，适用于客服和出行场景。',
+    icon: 'lucide:cloud-sun',
+    accent: '#0284c7',
+    updatedAt: '2024-06-18 10:16',
+    status: 'published',
+    kind: 'plugin',
+    type: 'HTTP 插件',
+  },
+  {
+    id: 'plugin-order-query',
+    name: '订单查询插件',
+    description: '连接业务订单系统，按手机号、订单号或用户 ID 查询订单状态和物流信息。',
+    icon: 'lucide:package-search',
+    accent: '#0d9488',
+    updatedAt: '2024-06-16 16:25',
+    status: 'draft',
+    kind: 'plugin',
+    type: '自定义插件',
+  },
+  {
+    id: 'plugin-mcp-crm',
+    name: 'CRM MCP 服务',
+    description: '封装客户资料、商机阶段和跟进记录查询能力，支持在应用编排中直接调用。',
+    icon: 'lucide:server-cog',
+    accent: '#4f46e5',
+    updatedAt: '2024-06-12 09:34',
+    status: 'published',
+    kind: 'plugin',
+    type: 'MCP 服务',
+  },
+  {
+    id: 'workflow-contract-review',
+    name: '合同审阅流程',
+    description: '上传合同后自动提取关键条款、识别风险项，并生成审阅摘要与修改建议。',
+    icon: 'lucide:workflow',
+    accent: '#7c3aed',
+    updatedAt: '2024-06-18 14:50',
+    status: 'published',
+    kind: 'workflow',
+    type: '审核流程',
+  },
+  {
+    id: 'workflow-lead-followup',
+    name: '线索跟进编排',
+    description: '根据线索来源、意向等级和历史沟通记录，自动生成下一步跟进任务。',
+    icon: 'lucide:route',
+    accent: '#db2777',
+    updatedAt: '2024-06-15 20:18',
+    status: 'draft',
+    kind: 'workflow',
+    type: '销售流程',
+  },
+  {
+    id: 'workflow-report-digest',
+    name: '运营日报生成',
+    description: '汇总多张报表指标，识别异常波动并输出日报正文、结论和待办事项。',
+    icon: 'lucide:chart-no-axes-combined',
+    accent: '#ea580c',
+    updatedAt: '2024-06-11 18:07',
+    status: 'published',
+    kind: 'workflow',
+    type: '数据流程',
+  },
+  {
+    id: 'knowledge-product-manual',
+    name: '产品手册知识库',
+    description: '沉淀产品功能说明、配置指南和常见问题，供客服与售前助手检索引用。',
+    icon: 'lucide:book-open',
+    accent: '#16a34a',
+    updatedAt: '2024-06-18 11:42',
+    status: 'published',
+    kind: 'knowledge',
+    type: '产品资料',
+  },
+  {
+    id: 'knowledge-policy-center',
+    name: '企业制度知识库',
+    description: '收录人事、财务、采购和行政制度文档，为内部员工问答提供标准依据。',
+    icon: 'lucide:library-big',
+    accent: '#0d9488',
+    updatedAt: '2024-06-13 15:05',
+    status: 'published',
+    kind: 'knowledge',
+    type: '内部资料',
+  },
+  {
+    id: 'knowledge-course-content',
+    name: '课程内容知识库',
+    description: '管理课程讲义、案例素材和练习说明，支持教学答疑应用精准召回。',
+    icon: 'lucide:files',
+    accent: '#ca8a04',
+    updatedAt: '2024-06-10 12:30',
+    status: 'draft',
+    kind: 'knowledge',
+    type: '教学资料',
   },
 ]
 
@@ -130,8 +242,8 @@ export const useAppListStore = defineStore('app-list', () => {
     return appItems.value.findIndex((item) => item.id === id)
   }
 
-  function createApp(form: SpaceAppForm) {
-    appItems.value.unshift(createSpaceApp(form))
+  function createApp(form: SpaceAppForm, kind: SpaceResourceKind = 'app') {
+    appItems.value.unshift(createSpaceApp(form, kind))
   }
 
   function updateApp(id: string, form: SpaceAppForm) {
@@ -144,7 +256,7 @@ export const useAppListStore = defineStore('app-list', () => {
 
     appItems.value[targetIndex] = {
       ...targetItem,
-      ...normalizeAppForm(form),
+      ...normalizeAppForm(form, targetItem.kind),
       updatedAt: formatUpdatedAt(),
     }
     return true
@@ -169,24 +281,28 @@ export const useAppListStore = defineStore('app-list', () => {
   }
 })
 
-function normalizeAppForm(form: SpaceAppForm) {
+function normalizeAppForm(form: SpaceAppForm, kind: SpaceResourceKind = 'app') {
+  const resource = getSpaceResourceByKind(kind)
+
   return {
     icon: form.icon,
     name: form.name.trim(),
-    description: form.description.trim() || fallbackDescription,
+    description: form.description.trim() || resource.fallbackDescription,
   }
 }
 
-function createSpaceApp(form: SpaceAppForm): SpaceApp {
-  const normalizedForm = normalizeAppForm(form)
+function createSpaceApp(form: SpaceAppForm, kind: SpaceResourceKind): SpaceApp {
+  const normalizedForm = normalizeAppForm(form, kind)
+  const resource = getSpaceResourceByKind(kind)
 
   return {
     id: crypto.randomUUID(),
     ...normalizedForm,
-    accent: '#2563eb',
+    accent: resource.accent,
     updatedAt: formatUpdatedAt(),
     status: 'draft',
-    type: 'AI应用',
+    kind,
+    type: resource.type,
   }
 }
 

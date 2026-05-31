@@ -2,6 +2,8 @@
 import AppIcon from '@/components/AppIcon/index.vue'
 import { useAppIconUpload } from '@/views/personal-space/components/CreateAppModal/share/use-app-icon-upload'
 import type { SpaceApp, SpaceAppForm } from '@/stores/app-list'
+import { getSpaceResourceByKind } from '@/views/personal-space/share/resources'
+import type { SpaceResourceKind } from '@/views/personal-space/share/resources'
 import type { FormInstance } from 'antdv-next'
 import { Form, FormItem, Input, Modal, TextArea, Upload } from 'antdv-next'
 import { computed, reactive, ref, shallowRef, toRef, watch } from 'vue'
@@ -10,10 +12,12 @@ const open = defineModel<boolean>('open', { required: true })
 const props = withDefaults(
   defineProps<{
     mode?: 'create' | 'edit'
+    resourceKind?: SpaceResourceKind
     initialValue?: SpaceApp | null
   }>(),
   {
     mode: 'create',
+    resourceKind: 'app',
     initialValue: null,
   },
 )
@@ -28,7 +32,10 @@ const formModel = reactive<SpaceAppForm>({
   name: '',
   description: '',
 })
-const modalTitle = computed(() => (props.mode === 'edit' ? '编辑 AI 应用' : '创建 AI 应用'))
+const resource = computed(() => getSpaceResourceByKind(props.resourceKind))
+const modalTitle = computed(
+  () => `${props.mode === 'edit' ? '编辑' : '创建'} ${resource.value.modal.name}`,
+)
 const hasImageIcon = computed(() => /^(blob:|data:image\/|https?:\/\/)/.test(formModel.icon))
 
 function resetForm() {
@@ -99,9 +106,9 @@ watch(open, (isOpen) => {
       @finish="handleSubmit"
     >
       <FormItem
-        label="应用图标"
+        :label="resource.modal.iconLabel"
         name="icon"
-        :rules="[{ required: true, message: '请上传应用图标' }]"
+        :rules="[{ required: true, message: `请上传${resource.modal.iconLabel}` }]"
       >
         <Upload
           name="avatar"
@@ -131,22 +138,24 @@ watch(open, (isOpen) => {
       </FormItem>
 
       <FormItem
-        label="应用名称"
+        :label="resource.modal.nameLabel"
         name="name"
-        :rules="[{ required: true, whitespace: true, message: '应用名称不能为空' }]"
+        :rules="[
+          { required: true, whitespace: true, message: `${resource.modal.nameLabel}不能为空` },
+        ]"
       >
         <Input
           v-model:value="formModel.name"
-          placeholder="应用名称不能为空"
+          :placeholder="`${resource.modal.nameLabel}不能为空`"
           :maxlength="40"
           :show-count="true"
         />
       </FormItem>
 
-      <FormItem label="应用描述" name="description">
+      <FormItem :label="resource.modal.descriptionLabel" name="description">
         <TextArea
           v-model:value="formModel.description"
-          placeholder="请输入关于该应用的描述信息"
+          :placeholder="`请输入关于该${resource.modal.name}的描述信息`"
           :maxlength="800"
           :show-count="true"
           :auto-size="{ minRows: 2, maxRows: 4 }"

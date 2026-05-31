@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import { createAppControllerKey } from '@/components/AppLayout/share/create-app'
 import brandIcon from '@/assets/icon.png'
-import { computed, inject } from 'vue'
-import { useRouter } from 'vue-router'
+import { useCreateAppStore } from '@/stores/create-app'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
-const createAppController = inject(createAppControllerKey, {
-  requestCreateApp: () => {},
-})
+const route = useRoute()
+const createAppStore = useCreateAppStore()
 const sidebarItems = computed(() =>
   router
     .getRoutes()
@@ -22,7 +21,15 @@ const navItems = computed(() => sidebarItems.value.filter((item) => item.group =
 const exploreItems = computed(() => sidebarItems.value.filter((item) => item.group === 'explore'))
 
 function requestCreateApp() {
-  createAppController.requestCreateApp()
+  createAppStore.requestCreateApp('app')
+}
+
+function isActivePath(path: string) {
+  if (path === '/') {
+    return route.path === path
+  }
+
+  return route.path === path || route.path.startsWith(`${path}/`)
 }
 </script>
 
@@ -47,13 +54,13 @@ function requestCreateApp() {
         <RouterLink
           v-for="item in navItems"
           :key="item.label"
-          v-slot="{ isActive, navigate }"
+          v-slot="{ navigate }"
           :to="item.to"
           custom
         >
           <button
             class="app-sidebar__item"
-            :class="{ 'is-active': isActive }"
+            :class="{ 'is-active': isActivePath(item.to) }"
             type="button"
             @click="navigate"
           >
@@ -68,13 +75,13 @@ function requestCreateApp() {
         <RouterLink
           v-for="item in exploreItems"
           :key="item.label"
-          v-slot="{ isActive, navigate }"
+          v-slot="{ navigate }"
           :to="item.to"
           custom
         >
           <button
             class="app-sidebar__item"
-            :class="{ 'is-active': isActive }"
+            :class="{ 'is-active': isActivePath(item.to) }"
             type="button"
             @click="navigate"
           >

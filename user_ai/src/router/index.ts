@@ -1,11 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from '@/views/home/index.vue'
-import PersonalSpace from '@/views/personal-space/index.vue'
+import { appResource } from '@/views/personal-space/share/resources'
+
+const Home = () => import('@/views/home/index.vue')
+const PersonalSpace = () => import('@/views/personal-space/index.vue')
 
 declare module 'vue-router' {
   interface RouteMeta {
+    workspaceKey?: string
     sidebar?: {
       group: 'main' | 'explore'
       icon: string
@@ -30,13 +33,45 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/personal-space',
     name: 'personal-space',
-    component: PersonalSpace,
+    redirect: { name: appResource.routeName },
     meta: {
       sidebar: {
         group: 'main',
         icon: 'lucide:user-round',
         label: '个人空间',
       },
+    },
+  },
+  {
+    path: '/personal-space/apps',
+    name: 'personal-space-apps',
+    component: PersonalSpace,
+    meta: {
+      workspaceKey: 'personal-space',
+    },
+  },
+  {
+    path: '/personal-space/plugins',
+    name: 'personal-space-plugins',
+    component: PersonalSpace,
+    meta: {
+      workspaceKey: 'personal-space',
+    },
+  },
+  {
+    path: '/personal-space/workflows',
+    name: 'personal-space-workflows',
+    component: PersonalSpace,
+    meta: {
+      workspaceKey: 'personal-space',
+    },
+  },
+  {
+    path: '/personal-space/knowledge',
+    name: 'personal-space-knowledge',
+    component: PersonalSpace,
+    meta: {
+      workspaceKey: 'personal-space',
     },
   },
   {
