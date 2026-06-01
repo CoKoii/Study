@@ -10,6 +10,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     workspaceKey?: string
     sidebar?: {
+      activeIcon?: string
       group: 'main' | 'explore'
       icon: string
       label: string
@@ -24,6 +25,7 @@ const routes: RouteRecordRaw[] = [
     component: Home,
     meta: {
       sidebar: {
+        activeIcon: 'material-symbols:home-rounded',
         group: 'main',
         icon: 'lucide:house',
         label: '主页',
@@ -36,6 +38,7 @@ const routes: RouteRecordRaw[] = [
     redirect: { name: appResource.routeName },
     meta: {
       sidebar: {
+        activeIcon: 'material-symbols:person-rounded',
         group: 'main',
         icon: 'lucide:user-round',
         label: '个人空间',
@@ -80,6 +83,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/',
     meta: {
       sidebar: {
+        activeIcon: 'material-symbols:smart-toy-rounded',
         group: 'explore',
         icon: 'lucide:bot',
         label: '应用广场',
@@ -92,6 +96,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/',
     meta: {
       sidebar: {
+        activeIcon: 'material-symbols:inventory-2-rounded',
         group: 'explore',
         icon: 'lucide:box',
         label: '插件广场',
@@ -104,6 +109,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/',
     meta: {
       sidebar: {
+        activeIcon: 'material-symbols:add-link-rounded',
         group: 'explore',
         icon: 'lucide:link',
         label: '开放 API',

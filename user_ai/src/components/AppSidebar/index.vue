@@ -31,6 +31,10 @@ function isActivePath(path: string) {
 
   return route.path === path || route.path.startsWith(`${path}/`)
 }
+
+function getMenuIcon(item: { activeIcon?: string; icon: string; to: string }) {
+  return isActivePath(item.to) ? item.activeIcon || item.icon : item.icon
+}
 </script>
 
 <template>
@@ -64,7 +68,7 @@ function isActivePath(path: string) {
             type="button"
             @click="navigate"
           >
-            <AppIcon :icon="item.icon" size="20" />
+            <AppIcon :icon="getMenuIcon(item)" size="20" />
             <span>{{ item.label }}</span>
           </button>
         </RouterLink>
@@ -85,7 +89,7 @@ function isActivePath(path: string) {
             type="button"
             @click="navigate"
           >
-            <AppIcon :icon="item.icon" size="20" />
+            <AppIcon :icon="getMenuIcon(item)" size="20" />
             <span>{{ item.label }}</span>
           </button>
         </RouterLink>
