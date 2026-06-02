@@ -7,11 +7,7 @@
 
 @media (max-width: 760px) {
   .home-composer {
-    position: fixed;
-    right: var(--space-3);
-    bottom: var(--space-3);
-    left: var(--space-3);
-    width: auto;
-    margin: 0;
+    width: calc(100% - var(--space-6));
+    margin-bottom: var(--space-3);
   }
 }

@@ -18,6 +18,7 @@ const exploreItems = sidebarItems.filter((item) => item.group === 'explore')
 
 function requestCreateApp() {
   router.push({ name: appResource.routeName, query: { create: '1' } })
+  closeMenu()
 }
 
 function isActivePath(path: string) {
@@ -30,6 +31,18 @@ function isActivePath(path: string) {
 
 function getMenuIcon(item: (typeof sidebarItems)[number]) {
   return isActivePath(item.to) ? item.activeIcon || item.icon : item.icon
+}
+
+function closeMenu() {
+  const menuToggle = document.getElementById('appMenu') as HTMLInputElement | null
+  if (menuToggle) {
+    menuToggle.checked = false
+  }
+}
+
+function navigateAndClose(navigate: () => void) {
+  navigate()
+  closeMenu()
 }
 </script>
 
@@ -62,7 +75,7 @@ function getMenuIcon(item: (typeof sidebarItems)[number]) {
             class="app-sidebar__item"
             :class="{ 'is-active': isActivePath(item.to) }"
             type="button"
-            @click="navigate"
+            @click="navigateAndClose(navigate)"
           >
             <AppIcon :icon="getMenuIcon(item)" size="20" />
             <span>{{ item.label }}</span>
@@ -83,7 +96,7 @@ function getMenuIcon(item: (typeof sidebarItems)[number]) {
             class="app-sidebar__item"
             :class="{ 'is-active': isActivePath(item.to) }"
             type="button"
-            @click="navigate"
+            @click="navigateAndClose(navigate)"
           >
             <AppIcon :icon="getMenuIcon(item)" size="20" />
             <span>{{ item.label }}</span>

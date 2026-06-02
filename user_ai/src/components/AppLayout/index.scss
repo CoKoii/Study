@@ -64,7 +64,6 @@
     position: fixed;
     inset: var(--mobile-header-height) 0 0;
     height: auto;
-    padding-bottom: var(--mobile-workspace-bottom);
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
