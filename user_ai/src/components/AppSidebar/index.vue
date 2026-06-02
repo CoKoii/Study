@@ -1,27 +1,23 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
 import brandIcon from '@/assets/icon.png'
-import { useCreateAppStore } from '@/stores/create-app'
-import { computed } from 'vue'
+import { appResource } from '@/views/personal-space/share/resources'
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
-const createAppStore = useCreateAppStore()
-const sidebarItems = computed(() =>
-  router
-    .getRoutes()
-    .filter((route) => route.meta.sidebar)
-    .map((route) => ({
-      to: route.path,
-      ...route.meta.sidebar!,
-    })),
-)
-const navItems = computed(() => sidebarItems.value.filter((item) => item.group === 'main'))
-const exploreItems = computed(() => sidebarItems.value.filter((item) => item.group === 'explore'))
+const sidebarItems = router
+  .getRoutes()
+  .filter((route) => route.meta.sidebar)
+  .map((route) => ({
+    to: route.path,
+    ...route.meta.sidebar!,
+  }))
+const navItems = sidebarItems.filter((item) => item.group === 'main')
+const exploreItems = sidebarItems.filter((item) => item.group === 'explore')
 
 function requestCreateApp() {
-  createAppStore.requestCreateApp('app')
+  router.push({ name: appResource.routeName, query: { create: '1' } })
 }
 
 function isActivePath(path: string) {
@@ -32,7 +28,7 @@ function isActivePath(path: string) {
   return route.path === path || route.path.startsWith(`${path}/`)
 }
 
-function getMenuIcon(item: { activeIcon?: string; icon: string; to: string }) {
+function getMenuIcon(item: (typeof sidebarItems)[number]) {
   return isActivePath(item.to) ? item.activeIcon || item.icon : item.icon
 }
 </script>

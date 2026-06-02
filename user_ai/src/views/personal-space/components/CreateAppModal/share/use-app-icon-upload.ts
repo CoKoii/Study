@@ -1,4 +1,4 @@
-import type { FormInstance, UploadEmits, UploadProps } from 'antdv-next'
+import type { FormInstance, UploadProps } from 'antdv-next'
 import { message } from 'antdv-next'
 import type { Ref, ShallowRef } from 'vue'
 
@@ -9,7 +9,7 @@ export function useAppIconUpload(
   iconLoading: Ref<boolean>,
   formRef: ShallowRef<FormInstance | undefined>,
 ) {
-  const beforeIconUpload: UploadProps['beforeUpload'] = (file) => {
+  const beforeIconUpload: UploadProps['beforeUpload'] = async (file) => {
     const isImage = file.type === 'image/jpeg' || file.type === 'image/png'
     const isLt2M = file.size / 1024 / 1024 < 2
 
@@ -21,38 +21,23 @@ export function useAppIconUpload(
       message.error('图标大小不能超过 2MB')
     }
 
-    return isImage && isLt2M
-  }
-
-  const requestIconUpload: UploadProps['customRequest'] = ({ onSuccess }) => {
-    onSuccess?.({})
-  }
-
-  const handleIconChange: UploadEmits['change'] = async (info) => {
-    if (info.file?.status === 'uploading') {
-      iconLoading.value = true
-      return
-    }
-
-    if (info.file?.status !== 'done') {
-      iconLoading.value = false
-      return
+    if (!isImage || !isLt2M) {
+      return false
     }
 
     try {
-      if (info.file.originFileObj) {
-        icon.value = await readImageAsDataUrl(info.file.originFileObj as FileType)
-        formRef.value?.clearValidate(['icon'])
-      }
+      iconLoading.value = true
+      icon.value = await readImageAsDataUrl(file)
+      formRef.value?.clearValidate(['icon'])
     } finally {
       iconLoading.value = false
     }
+
+    return false
   }
 
   return {
     beforeIconUpload,
-    handleIconChange,
-    requestIconUpload,
   }
 }
 

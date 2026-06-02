@@ -34,3 +34,12 @@ test('switches personal space resource lists', async ({ page }) => {
   await expect(page.getByRole('complementary').getByRole('button', { name: '创建 AI 应用' })).toBeVisible()
   await expect(page.getByText('产品手册知识库')).toBeVisible()
 })
+
+test('opens create modal from the sidebar create action', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('complementary').getByRole('button', { name: '创建 AI 应用' }).click()
+
+  await expect(page).toHaveURL(/\/personal-space\/apps$/)
+  await expect(page.getByRole('dialog', { name: '创建 AI 应用' })).toBeVisible()
+})

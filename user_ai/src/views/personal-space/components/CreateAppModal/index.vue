@@ -59,7 +59,7 @@ function syncFormModel(value?: SpaceApp | null) {
   formRef.value?.clearValidate()
 }
 
-const { beforeIconUpload, handleIconChange, requestIconUpload } = useAppIconUpload(
+const { beforeIconUpload } = useAppIconUpload(
   toRef(formModel, 'icon'),
   iconLoading,
   formRef,
@@ -115,10 +115,7 @@ watch(open, (isOpen) => {
           accept="image/jpeg,image/png"
           list-type="picture-card"
           :show-upload-list="false"
-          action="/api/upload"
           :before-upload="beforeIconUpload"
-          :custom-request="requestIconUpload"
-          @change="handleIconChange"
         >
           <img
             v-if="hasImageIcon"

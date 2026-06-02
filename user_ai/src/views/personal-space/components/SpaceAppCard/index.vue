@@ -16,8 +16,6 @@ const emit = defineEmits<{
 
 const actions: MenuItemType[] = [
   { key: 'edit', label: '编辑' },
-  { key: 'copy', label: '复制' },
-  { key: 'publish', label: '发布' },
   { key: 'delete', label: '删除', danger: true },
 ]
 
@@ -25,13 +23,13 @@ const isImageIcon = computed(() => props.app.icon.startsWith('data:'))
 const statusText = computed(() => (props.app.status === 'published' ? '已发布' : '草稿'))
 
 function handleActionClick(event: { key: string | number }) {
-  if (event.key === 'edit') {
-    emit('edit', props.app)
-    return
-  }
-
-  if (event.key === 'delete') {
-    emit('delete', props.app)
+  switch (event.key) {
+    case 'edit':
+      emit('edit', props.app)
+      break
+    case 'delete':
+      emit('delete', props.app)
+      break
   }
 }
 </script>

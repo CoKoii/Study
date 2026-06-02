@@ -3,24 +3,31 @@ import AppIcon from '@/components/AppIcon/index.vue'
 import CreateAppModal from '@/views/personal-space/components/CreateAppModal/index.vue'
 import SpaceAppCard from '@/views/personal-space/components/SpaceAppCard/index.vue'
 import { useAppListStore } from '@/stores/app-list'
-import { useCreateAppStore } from '@/stores/create-app'
 import type { SpaceApp, SpaceAppForm } from '@/stores/app-list'
 import { getSpaceResourceByRouteName, spaceResources } from '@/views/personal-space/share/resources'
 import { message, Modal } from 'antdv-next'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const appListStore = useAppListStore()
-const createAppStore = useCreateAppStore()
 const { appItems } = storeToRefs(appListStore)
 const route = useRoute()
 const router = useRouter()
 const tabs = spaceResources
-const editModalOpen = ref(false)
-const editingAppId = ref('')
+const modalMode = ref<'create' | 'edit' | null>(null)
+const editingApp = ref<SpaceApp | null>(null)
 const query = ref('')
 const activeResource = computed(() => getSpaceResourceByRouteName(route.name))
+const modalOpen = computed({
+  get: () => modalMode.value !== null,
+  set: (open) => {
+    if (!open) {
+      closeModal()
+    }
+  },
+})
+const modalResourceKind = computed(() => editingApp.value?.kind ?? activeResource.value.kind)
 const filteredItems = computed(() => {
   const keyword = query.value.trim().toLowerCase()
 
@@ -38,12 +45,10 @@ const filteredItems = computed(() => {
     )
   })
 })
-const editingApp = computed(
-  () => appItems.value.find((item) => item.id === editingAppId.value) ?? null,
-)
 
 function openCreateModal() {
-  createAppStore.requestCreateApp(activeResource.value.kind)
+  editingApp.value = null
+  modalMode.value = 'create'
 }
 
 function switchTab(routeName: string) {
@@ -55,12 +60,28 @@ function switchTab(routeName: string) {
 }
 
 function openEditModal(app: SpaceApp) {
-  editingAppId.value = app.id
-  editModalOpen.value = true
+  editingApp.value = app
+  modalMode.value = 'edit'
+}
+
+function closeModal() {
+  modalMode.value = null
+  editingApp.value = null
 }
 
 function handleSubmitApp(form: SpaceAppForm) {
-  if (appListStore.updateApp(editingAppId.value, form)) {
+  if (modalMode.value === 'edit') {
+    handleUpdateApp(form)
+    return
+  }
+
+  appListStore.createApp(form, activeResource.value.kind)
+  closeModal()
+  message.success('创建成功')
+}
+
+function handleUpdateApp(form: SpaceAppForm) {
+  if (editingApp.value && appListStore.updateApp(editingApp.value.id, form)) {
     message.success('保存成功')
   }
 }
@@ -79,6 +100,19 @@ function deleteApp(app: SpaceApp) {
     },
   })
 }
+
+watch(
+  () => route.query.create,
+  (create) => {
+    if (create !== '1') {
+      return
+    }
+
+    openCreateModal()
+    router.replace({ name: route.name ?? undefined, query: { ...route.query, create: undefined } })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -131,9 +165,9 @@ function deleteApp(app: SpaceApp) {
     </Transition>
 
     <CreateAppModal
-      v-model:open="editModalOpen"
-      mode="edit"
-      :resource-kind="activeResource.kind"
+      v-model:open="modalOpen"
+      :mode="modalMode ?? 'create'"
+      :resource-kind="modalResourceKind"
       :initial-value="editingApp"
       @submit="handleSubmitApp"
     />

@@ -84,27 +84,9 @@ const knowledgeResource = {
 export const spaceResources = [appResource, pluginResource, workflowResource, knowledgeResource]
 
 export function getSpaceResourceByKind(kind: SpaceResourceKind) {
-  switch (kind) {
-    case 'plugin':
-      return pluginResource
-    case 'workflow':
-      return workflowResource
-    case 'knowledge':
-      return knowledgeResource
-    default:
-      return appResource
-  }
+  return spaceResources.find((resource) => resource.kind === kind) ?? appResource
 }
 
 export function getSpaceResourceByRouteName(routeName: unknown) {
-  switch (routeName) {
-    case 'personal-space-plugins':
-      return pluginResource
-    case 'personal-space-workflows':
-      return workflowResource
-    case 'personal-space-knowledge':
-      return knowledgeResource
-    default:
-      return appResource
-  }
+  return spaceResources.find((resource) => resource.routeName === routeName) ?? appResource
 }
