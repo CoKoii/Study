@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CloudUploadOutlined, LinkOutlined } from '@ant-design/icons-vue'
-import { Badge, Button } from 'ant-design-vue'
+import { Badge, Button } from 'antdv-next'
 import { Attachments, Sender, type Attachment } from 'ant-design-x-vue'
 import { h, onUnmounted, ref } from 'vue'
 
