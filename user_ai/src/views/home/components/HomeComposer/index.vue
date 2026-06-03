@@ -13,6 +13,7 @@ const message = ref('')
 const attachmentsOpen = ref(false)
 const attachments = ref<Attachment[]>([])
 const senderRef = ref<InstanceType<typeof Sender> | null>(null)
+const attachmentsRef = ref<InstanceType<typeof Attachments> | null>(null)
 
 const revokeObjectUrl = (url?: string) => {
   if (url?.startsWith('blob:')) {
@@ -64,6 +65,11 @@ const handleSubmit = () => {
 const toggleAttachments = () => {
   attachmentsOpen.value = !attachmentsOpen.value
 }
+
+const handlePasteFile = (_firstFile: File, files: FileList) => {
+  attachmentsRef.value?.upload(files)
+  attachmentsOpen.value = true
+}
 </script>
 
 <template>
@@ -75,6 +81,7 @@ const toggleAttachments = () => {
       :auto-size="{ minRows: 1, maxRows: 6 }"
       :style="{ background: '#fff' }"
       placeholder="发送消息或创建 AI 应用..."
+      @paste-file="handlePasteFile"
       @submit="handleSubmit"
     >
       <template #header>
@@ -86,6 +93,7 @@ const toggleAttachments = () => {
           @open-change="attachmentsOpen = $event"
         >
           <Attachments
+            ref="attachmentsRef"
             :before-upload="() => false"
             :items="attachments"
             overflow="wrap"
