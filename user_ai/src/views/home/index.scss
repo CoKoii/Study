@@ -1,0 +1,17 @@
+.home {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    url('@/assets/home/hero-bg.png') left top / 100% min(42.5rem, 66vh) no-repeat,
+    var(--color-bg-page);
+}
+
+@media (max-width: 760px) {
+  .home {
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
