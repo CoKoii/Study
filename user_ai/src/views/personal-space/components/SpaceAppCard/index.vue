@@ -4,10 +4,12 @@ import type { SpaceApp } from '@/stores/app-list'
 import type { MenuItemType } from 'antdv-next'
 import { Dropdown } from 'antdv-next'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   app: SpaceApp
 }>()
+const router = useRouter()
 
 const emit = defineEmits<{
   edit: [app: SpaceApp]
@@ -20,7 +22,16 @@ const actions: MenuItemType[] = [
 ]
 
 const isImageIcon = computed(() => props.app.icon.startsWith('data:'))
+const isOrchestrationApp = computed(() => props.app.kind === 'app')
 const statusText = computed(() => (props.app.status === 'published' ? '已发布' : '草稿'))
+
+function openOrchestration() {
+  if (!isOrchestrationApp.value) {
+    return
+  }
+
+  router.push({ name: 'app-orchestration', params: { appId: props.app.id } })
+}
 
 function handleActionClick(event: { key: string | number }) {
   switch (event.key) {
@@ -35,7 +46,15 @@ function handleActionClick(event: { key: string | number }) {
 </script>
 
 <template>
-  <article class="space-app-card">
+  <article
+    class="space-app-card"
+    :class="{ 'is-clickable': isOrchestrationApp }"
+    :tabindex="isOrchestrationApp ? 0 : undefined"
+    :role="isOrchestrationApp ? 'button' : undefined"
+    @click="openOrchestration"
+    @keydown.enter.prevent="openOrchestration"
+    @keydown.space.prevent="openOrchestration"
+  >
     <div class="space-app-card__head">
       <div
         class="space-app-card__icon"
@@ -56,7 +75,13 @@ function handleActionClick(event: { key: string | number }) {
         :trigger="['click']"
         placement="bottomRight"
       >
-        <button class="space-app-card__more" type="button" aria-label="更多操作">
+        <button
+          class="space-app-card__more"
+          type="button"
+          aria-label="更多操作"
+          @click.stop
+          @keydown.stop
+        >
           <AppIcon icon="lucide:ellipsis" size="20" />
         </button>
       </Dropdown>

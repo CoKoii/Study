@@ -5,7 +5,15 @@
   padding: var(--space-4);
   background: var(--color-bg-panel);
   border-radius: var(--radius-md);
+}
+
+.space-app-card.is-clickable {
   cursor: pointer;
+}
+
+.space-app-card.is-clickable:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .space-app-card__head {
