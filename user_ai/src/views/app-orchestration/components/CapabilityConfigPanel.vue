@@ -1,0 +1,347 @@
+<script setup lang="ts">
+import AppIcon from '@/components/AppIcon/index.vue'
+import type { CapabilityItem, PluginMarketItem } from '../share/orchestration-data'
+import {
+  initialCapabilities,
+  knowledgeItems,
+  pluginMarketItems,
+  pluginSources,
+  settingSections,
+  workflowItems,
+} from '../share/orchestration-data'
+import PluginPickerModal from './PluginPickerModal.vue'
+import RelationPickerModal from './RelationPickerModal.vue'
+import { Button, Input, Switch, TextArea } from 'antdv-next'
+import { computed, ref } from 'vue'
+
+const openingText = ref('')
+const openingQuestion = ref('')
+const pluginModalOpen = ref(false)
+const relationModalOpen = ref(false)
+const relationMode = ref<'knowledge' | 'workflow'>('knowledge')
+const selectedPluginSource = ref<'custom' | 'builtin'>('builtin')
+const selectedPluginCategory = ref('all')
+const selectedKnowledgeKeys = ref<string[]>([])
+const selectedWorkflowKeys = ref<string[]>([])
+const linkedKnowledgeKeys = ref<string[]>([])
+const linkedWorkflowKeys = ref<string[]>([])
+const capabilities = ref<CapabilityItem[]>([...initialCapabilities])
+const removeKey = (keys: string[], key: string) => keys.filter((item) => item !== key)
+
+const filteredPluginItems = computed(() =>
+  pluginMarketItems.filter(
+    (plugin) =>
+      plugin.source === selectedPluginSource.value &&
+      (selectedPluginCategory.value === 'all' || plugin.category === selectedPluginCategory.value),
+  ),
+)
+const capabilityKeys = computed(
+  () => new Set(capabilities.value.map((capability) => capability.key)),
+)
+const selectedPluginSourceLabel = computed(
+  () =>
+    pluginSources.find((source) => source.key === selectedPluginSource.value)?.label ?? '内置插件',
+)
+const pluginGroups = computed(() => {
+  const groups = new Map<string, PluginMarketItem[]>()
+
+  filteredPluginItems.value.forEach((plugin) => {
+    groups.set(plugin.provider, [...(groups.get(plugin.provider) ?? []), plugin])
+  })
+
+  return Array.from(groups, ([provider, items]) => ({ provider, items }))
+})
+const relationTitle = computed(() =>
+  relationMode.value === 'knowledge' ? '选择引用知识库' : '选择关联工作流',
+)
+const relationItems = computed(() =>
+  relationMode.value === 'knowledge' ? knowledgeItems : workflowItems,
+)
+const selectedRelationKeys = computed({
+  get: () =>
+    relationMode.value === 'knowledge' ? selectedKnowledgeKeys.value : selectedWorkflowKeys.value,
+  set: (keys: string[]) => {
+    if (relationMode.value === 'knowledge') {
+      selectedKnowledgeKeys.value = keys
+      return
+    }
+
+    selectedWorkflowKeys.value = keys
+  },
+})
+const linkedKnowledgeItems = computed(() => {
+  const linkedKeys = new Set(linkedKnowledgeKeys.value)
+
+  return knowledgeItems.filter((item) => linkedKeys.has(item.key))
+})
+const linkedWorkflowItems = computed(() => {
+  const linkedKeys = new Set(linkedWorkflowKeys.value)
+
+  return workflowItems.filter((item) => linkedKeys.has(item.key))
+})
+
+function isPluginAdded(pluginKey: string) {
+  return capabilityKeys.value.has(pluginKey)
+}
+
+function addPlugin(plugin: PluginMarketItem) {
+  if (isPluginAdded(plugin.key)) {
+    return
+  }
+
+  capabilities.value.push({
+    key: plugin.key,
+    title: plugin.title,
+    description: plugin.description,
+    icon: plugin.icon,
+    tone: plugin.tone,
+  })
+}
+
+function removePlugin(pluginKey: string) {
+  capabilities.value = capabilities.value.filter((capability) => capability.key !== pluginKey)
+}
+
+function openRelationModal(mode: 'knowledge' | 'workflow') {
+  relationMode.value = mode
+
+  if (mode === 'knowledge') {
+    selectedKnowledgeKeys.value = [...linkedKnowledgeKeys.value]
+  } else {
+    selectedWorkflowKeys.value = [...linkedWorkflowKeys.value]
+  }
+
+  relationModalOpen.value = true
+}
+
+function toggleRelationItem(key: string) {
+  selectedRelationKeys.value = selectedRelationKeys.value.includes(key)
+    ? selectedRelationKeys.value.filter((item) => item !== key)
+    : [...selectedRelationKeys.value, key]
+}
+
+function confirmRelationSelection() {
+  if (relationMode.value === 'knowledge') {
+    linkedKnowledgeKeys.value = [...selectedKnowledgeKeys.value]
+  } else {
+    linkedWorkflowKeys.value = [...selectedWorkflowKeys.value]
+  }
+
+  relationModalOpen.value = false
+}
+
+function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
+  if (mode === 'knowledge') {
+    linkedKnowledgeKeys.value = removeKey(linkedKnowledgeKeys.value, key)
+    selectedKnowledgeKeys.value = removeKey(selectedKnowledgeKeys.value, key)
+    return
+  }
+
+  linkedWorkflowKeys.value = removeKey(linkedWorkflowKeys.value, key)
+  selectedWorkflowKeys.value = removeKey(selectedWorkflowKeys.value, key)
+}
+</script>
+
+<template>
+  <section class="app-orchestration__config">
+    <div class="orchestration-panel__header">
+      <h2>应用能力</h2>
+    </div>
+
+    <div class="app-orchestration__config-scroll">
+      <section class="config-section">
+        <div class="config-section__head">
+          <div>
+            <AppIcon icon="lucide:chevron-down" size="16" />
+            <h3>扩展插件</h3>
+          </div>
+          <Button
+            type="text"
+            shape="circle"
+            size="small"
+            aria-label="添加扩展插件"
+            @click="pluginModalOpen = true"
+          >
+            <template #icon>
+              <AppIcon icon="lucide:plus" size="16" />
+            </template>
+          </Button>
+        </div>
+
+        <div class="capability-list">
+          <article v-for="capability in capabilities" :key="capability.key" class="capability-item">
+            <div class="capability-item__icon" :style="{ background: capability.tone }">
+              <AppIcon :icon="capability.icon" size="22" />
+            </div>
+            <div>
+              <h4>{{ capability.title }}</h4>
+              <p>{{ capability.description }}</p>
+            </div>
+            <div class="capability-item__actions">
+              <Button type="text" shape="circle" size="small" aria-label="插件设置">
+                <template #icon>
+                  <AppIcon icon="lucide:settings" size="15" />
+                </template>
+              </Button>
+              <Button
+                type="text"
+                shape="circle"
+                size="small"
+                aria-label="删除插件"
+                @click="removePlugin(capability.key)"
+              >
+                <template #icon>
+                  <AppIcon icon="lucide:trash-2" size="15" />
+                </template>
+              </Button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="config-section">
+        <div class="config-section__head">
+          <div>
+            <AppIcon icon="lucide:chevron-down" size="16" />
+            <h3>工作流组件</h3>
+          </div>
+          <Button
+            type="text"
+            shape="circle"
+            size="small"
+            aria-label="添加工作流"
+            @click="openRelationModal('workflow')"
+          >
+            <template #icon>
+              <AppIcon icon="lucide:plus" size="16" />
+            </template>
+          </Button>
+        </div>
+        <p class="config-section__description">
+          工作流支持通过可视化的方式，对插件、大语言模型、代码块等功能进行组合，从而实现复杂、稳定的业务流程编排。
+        </p>
+        <div v-if="linkedWorkflowItems.length" class="relation-list">
+          <article v-for="item in linkedWorkflowItems" :key="item.key" class="relation-item">
+            <div class="relation-item__icon" :style="{ background: item.tone }">
+              <AppIcon :icon="item.icon" size="18" />
+            </div>
+            <span>{{ item.title }}</span>
+            <Button
+              type="text"
+              shape="circle"
+              size="small"
+              aria-label="移除工作流"
+              @click="removeRelationItem('workflow', item.key)"
+            >
+              <template #icon>
+                <AppIcon icon="lucide:trash-2" size="14" />
+              </template>
+            </Button>
+          </article>
+        </div>
+      </section>
+
+      <section class="config-section">
+        <div class="config-section__head">
+          <div>
+            <AppIcon icon="lucide:chevron-down" size="16" />
+            <h3>知识库</h3>
+          </div>
+          <Button
+            type="text"
+            shape="circle"
+            size="small"
+            aria-label="添加知识库"
+            @click="openRelationModal('knowledge')"
+          >
+            <template #icon>
+              <AppIcon icon="lucide:plus" size="16" />
+            </template>
+          </Button>
+        </div>
+        <p class="config-section__description">
+          引用文本类型的数据，实现知识问答，应用最多支持关联 5 个知识库。
+        </p>
+        <div v-if="linkedKnowledgeItems.length" class="relation-list">
+          <article v-for="item in linkedKnowledgeItems" :key="item.key" class="relation-item">
+            <div class="relation-item__icon" :style="{ background: item.tone }">
+              <AppIcon :icon="item.icon" size="18" />
+            </div>
+            <span>{{ item.title }}</span>
+            <Button
+              type="text"
+              shape="circle"
+              size="small"
+              aria-label="移除知识库"
+              @click="removeRelationItem('knowledge', item.key)"
+            >
+              <template #icon>
+                <AppIcon icon="lucide:trash-2" size="14" />
+              </template>
+            </Button>
+          </article>
+        </div>
+      </section>
+
+      <section v-for="section in settingSections" :key="section.title" class="config-section">
+        <div class="config-section__head">
+          <div>
+            <AppIcon icon="lucide:chevron-down" size="16" />
+            <h3>{{ section.title }}</h3>
+          </div>
+          <Switch
+            v-if="section.enabled !== undefined"
+            :checked="section.enabled"
+            checked-children="开启"
+            un-checked-children="关闭"
+          />
+        </div>
+
+        <template v-if="section.type === 'textarea'">
+          <label class="config-section__label">
+            开场白文案
+            <AppIcon icon="lucide:info" size="14" />
+          </label>
+          <TextArea
+            v-model:value="openingText"
+            placeholder="在此处填写 AI 应用的开场白"
+            :auto-size="{ minRows: 3, maxRows: 4 }"
+          />
+          <label class="config-section__label">
+            开场白预设问题
+            <AppIcon icon="lucide:info" size="14" />
+          </label>
+          <Input v-model:value="openingQuestion" placeholder="输入开场白引导问题">
+            <template #suffix>
+              <AppIcon icon="lucide:circle-minus" size="16" />
+            </template>
+          </Input>
+        </template>
+
+        <p v-else-if="section.description" class="config-section__description">
+          {{ section.description }}
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <PluginPickerModal
+    v-model:open="pluginModalOpen"
+    v-model:source="selectedPluginSource"
+    v-model:category="selectedPluginCategory"
+    :groups="pluginGroups"
+    :source-label="selectedPluginSourceLabel"
+    :is-plugin-added="isPluginAdded"
+    @add-plugin="addPlugin"
+  />
+
+  <RelationPickerModal
+    v-model:open="relationModalOpen"
+    :title="relationTitle"
+    :mode="relationMode"
+    :items="relationItems"
+    :selected-keys="selectedRelationKeys"
+    @toggle-item="toggleRelationItem"
+    @confirm="confirmRelationSelection"
+  />
+</template>

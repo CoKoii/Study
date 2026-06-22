@@ -425,7 +425,7 @@
   padding-left: calc(1.75rem + var(--space-3));
 }
 
-:global(.chat-message-footer) {
+.chat-message-footer {
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -435,7 +435,7 @@
   white-space: nowrap;
 }
 
-:global(.chat-message-footer__actions) {
+.chat-message-footer__actions {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -443,7 +443,7 @@
   transition: opacity 0.16s ease;
 }
 
-:global(.chat-message-footer__button) {
+.chat-message-footer__button {
   display: grid;
   width: 1.25rem;
   height: 1.25rem;
@@ -455,16 +455,16 @@
   cursor: pointer;
 }
 
-:global(.chat-message-footer__button:hover),
-:global(.chat-message-footer__button:focus-visible) {
+.chat-message-footer__button:hover,
+.chat-message-footer__button:focus-visible {
   color: var(--color-primary);
   outline: 0;
 }
 
-:global(.chat-message-item:hover .chat-message-footer__actions),
-:global(.chat-message-item:focus-within .chat-message-footer__actions),
-:global(.chat-message-footer:hover .chat-message-footer__actions),
-:global(.chat-message-footer:focus-within .chat-message-footer__actions) {
+.chat-message-item:hover .chat-message-footer__actions,
+.chat-message-item:focus-within .chat-message-footer__actions,
+.chat-message-footer:hover .chat-message-footer__actions,
+.chat-message-footer:focus-within .chat-message-footer__actions {
   opacity: 1;
 }
 
@@ -479,7 +479,7 @@
   text-align: center;
 }
 
-:global(.model-settings-popover) {
+.model-settings-popover {
   width: 34rem;
 }
 
