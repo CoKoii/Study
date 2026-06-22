@@ -1,15 +1,35 @@
 <script setup lang="ts">
 import AppChatComposer from '@/components/AppChatComposer/index.vue'
 import AppIcon from '@/components/AppIcon/index.vue'
-import { useAppListStore } from '@/stores/app-list'
 import type { SpaceApp } from '@/stores/app-list'
-import { Button, Input, Select, Switch, TabPane, Tabs, Tag, TextArea } from 'antdv-next'
-import { Bubble, Prompts } from 'ant-design-x-vue'
+import { useAppListStore } from '@/stores/app-list'
 import type { BubbleListProps, PromptsProps } from 'ant-design-x-vue'
+import { Bubble, Prompts } from 'ant-design-x-vue'
+import {
+  Button,
+  Drawer,
+  Dropdown,
+  Input,
+  InputNumber,
+  Modal,
+  Popover,
+  Select,
+  Slider,
+  Switch,
+  TabPane,
+  Tabs,
+  Tag,
+  TextArea,
+} from 'antdv-next'
 import { storeToRefs } from 'pinia'
-import { computed, h, ref } from 'vue'
 import type { VNode } from 'vue'
+import { computed, defineAsyncComponent, h, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+const PublishConfig = defineAsyncComponent(() => import('./components/PublishConfig.vue'))
+const StatsAnalysis = defineAsyncComponent(() => import('./components/StatsAnalysis.vue'))
+const hiddenTabIndicator = { size: 0 }
+type OrchestrationTab = 'edit' | 'publish' | 'stats'
 
 interface CapabilityItem {
   description: string
@@ -47,14 +67,50 @@ interface PreviewMessage {
   rootClassName: string
 }
 
+interface PublishHistoryItem {
+  current?: boolean
+  key: string
+  publishedAt: string
+}
+
+type ModelSettingKey = keyof typeof defaultModelSettings
+
+interface ModelSettingItem {
+  key: ModelSettingKey
+  label: string
+  max: number
+  min: number
+  step: number
+}
+
+interface ModelSettingGroup {
+  items: ModelSettingItem[]
+  title: string
+}
+
+const defaultModelSettings = {
+  contextMessages: 10,
+  frequencyPenalty: 0.1,
+  maxTokens: 8192,
+  presencePenalty: 0.1,
+  temperature: 1,
+  topP: 0.48,
+}
+
 const route = useRoute()
 const router = useRouter()
 const appListStore = useAppListStore()
 const { appItems } = storeToRefs(appListStore)
-const activeTab = ref('edit')
+const activeTab = ref<OrchestrationTab>('edit')
 const selectedModel = ref('gpt-4o')
+const modelSettingsOpen = ref(false)
+const publishHistoryOpen = ref(false)
+const longMemoryOpen = ref(false)
 const openingText = ref('')
 const openingQuestion = ref('')
+const longMemoryContent = ref(
+  '从角色身份已知为慕小课，并要求人工智能解释LLM（大型语言模型）的概念。人已掌握将LLM描述为一种基于深度学习的模型，通常建立在Transformer架构上，用于自然语言处理任务。LLM经历了一个预训练阶段，在那里他们从大量的文本数据中学习语言结构，比如维基百科的文章和书籍。它们利用自我注意机制将有效地处理长程依赖关系。经过预训练后，LLM可以针对特定的应用程序进行微调，使其功能适应文本生成、理解和分类等任务。LLM由于其多功能性和强大的语言理解和生成能力，被广泛应用于虚拟助理、翻译、情绪分析、医疗保健、金融等领域，代表了自然语言处理的前沿技术。',
+)
 const promptsVisible = ref(true)
 const pluginModalOpen = ref(false)
 const relationModalOpen = ref(false)
@@ -126,6 +182,42 @@ const modelOptions = [
   { label: 'GPT-4o', value: 'gpt-4o' },
   { label: 'GPT-4.1', value: 'gpt-4.1' },
   { label: 'Claude 3.5', value: 'claude-3.5' },
+]
+
+const modelSettings = ref({ ...defaultModelSettings })
+
+const modelSettingGroups: ModelSettingGroup[] = [
+  {
+    title: '参数',
+    items: [
+      { key: 'temperature', label: '温度', min: 0, max: 2, step: 0.01 },
+      { key: 'topP', label: 'Top P', min: 0, max: 1, step: 0.01 },
+      { key: 'presencePenalty', label: '存在惩罚', min: 0, max: 2, step: 0.01 },
+      { key: 'frequencyPenalty', label: '频率惩罚', min: 0, max: 2, step: 0.01 },
+    ],
+  },
+  {
+    title: '输入及输出设置',
+    items: [
+      { key: 'contextMessages', label: '携带上下文轮数', min: 0, max: 20, step: 1 },
+      { key: 'maxTokens', label: '最大回复长度', min: 1024, max: 8192, step: 1 },
+    ],
+  },
+]
+
+const publishHistoryItems: PublishHistoryItem[] = [
+  { key: '009', publishedAt: '2024-08-15 17:54', current: true },
+  { key: '008', publishedAt: '2024-08-14 11:41' },
+  { key: '007', publishedAt: '2024-08-14 08:34' },
+  { key: '006', publishedAt: '2024-08-11 23:11' },
+]
+
+const publishActions = [
+  {
+    key: 'unpublish',
+    label: '取消发布',
+    danger: true,
+  },
 ]
 
 const capabilities = ref<CapabilityItem[]>([
@@ -371,8 +463,13 @@ const currentApp = computed<SpaceApp | undefined>(() => {
 
 const isImageIcon = computed(() => currentApp.value?.icon.startsWith('data:') ?? false)
 const appName = computed(() => currentApp.value?.name ?? '聊天机器人')
-const appDescription = computed(() => currentApp.value?.description ?? '配置 AI 应用的人设、能力和调试对话。')
+const appDescription = computed(
+  () => currentApp.value?.description ?? '配置 AI 应用的人设、能力和调试对话。',
+)
 const statusText = computed(() => (currentApp.value?.status === 'published' ? '已发布' : '草稿'))
+const selectedModelLabel = computed(
+  () => modelOptions.find((item) => item.value === selectedModel.value)?.label ?? 'GPT-4o',
+)
 const chatRoles = computed<BubbleListProps['roles']>(() => ({
   assistant: {
     avatar: assistantAvatar,
@@ -395,11 +492,12 @@ const filteredPluginItems = computed(() =>
       (selectedPluginCategory.value === 'all' || plugin.category === selectedPluginCategory.value),
   ),
 )
-const capabilityKeys = computed(() => new Set(capabilities.value.map((capability) => capability.key)))
+const capabilityKeys = computed(
+  () => new Set(capabilities.value.map((capability) => capability.key)),
+)
 const selectedPluginSourceLabel = computed(
   () =>
-    pluginSources.find((source) => source.key === selectedPluginSource.value)?.label ??
-    '内置插件',
+    pluginSources.find((source) => source.key === selectedPluginSource.value)?.label ?? '内置插件',
 )
 const pluginGroups = computed(() => {
   const groups = new Map<string, PluginMarketItem[]>()
@@ -428,12 +526,16 @@ const selectedRelationKeys = computed({
     selectedWorkflowKeys.value = keys
   },
 })
-const linkedKnowledgeItems = computed(() =>
-  knowledgeItems.filter((item) => linkedKnowledgeKeys.value.includes(item.key)),
-)
-const linkedWorkflowItems = computed(() =>
-  workflowItems.filter((item) => linkedWorkflowKeys.value.includes(item.key)),
-)
+const linkedKnowledgeItems = computed(() => {
+  const linkedKeys = new Set(linkedKnowledgeKeys.value)
+
+  return knowledgeItems.filter((item) => linkedKeys.has(item.key))
+})
+const linkedWorkflowItems = computed(() => {
+  const linkedKeys = new Set(linkedWorkflowKeys.value)
+
+  return workflowItems.filter((item) => linkedKeys.has(item.key))
+})
 
 function goBack() {
   router.push({ name: 'personal-space-apps' })
@@ -539,6 +641,41 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
   linkedWorkflowKeys.value = removeKey(linkedWorkflowKeys.value, key)
   selectedWorkflowKeys.value = removeKey(selectedWorkflowKeys.value, key)
 }
+
+function updateLongMemory() {
+  longMemoryOpen.value = false
+}
+
+function updatePublishStatus(status: SpaceApp['status']) {
+  if (currentApp.value) {
+    appListStore.updateAppStatus(currentApp.value.id, status)
+  }
+}
+
+function updatePublish() {
+  updatePublishStatus('published')
+}
+
+function handlePublishAction(event: { key: string | number }) {
+  if (event.key === 'unpublish' && currentApp.value?.status === 'published') {
+    confirmUnpublish()
+  }
+}
+
+function confirmUnpublish() {
+  Modal.confirm({
+    title: '要取消发布该Agent应用吗?',
+    content:
+      '取消发布后，WebApp以及发布的社交媒体平台均无法使用该Agent，如需更新WebApp地址，请使用地址重生成功能。',
+    centered: true,
+    width: 500,
+    okText: '确认',
+    cancelText: '取消',
+    onOk() {
+      updatePublishStatus('draft')
+    },
+  })
+}
 </script>
 
 <template>
@@ -578,33 +715,92 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
         </div>
       </div>
 
-      <Tabs v-model:active-key="activeTab" class="app-orchestration__tabs" centered>
+      <Tabs
+        v-model:active-key="activeTab"
+        class="app-orchestration__tabs"
+        centered
+        :indicator="hiddenTabIndicator"
+      >
         <TabPane key="edit" tab="编辑" />
         <TabPane key="publish" tab="发布配置" />
         <TabPane key="stats" tab="统计分析" />
       </Tabs>
 
-      <div class="app-orchestration__actions">
-        <Button shape="circle" aria-label="发布历史">
+      <div v-if="activeTab === 'edit'" class="app-orchestration__actions">
+        <Button shape="circle" aria-label="发布历史" @click="publishHistoryOpen = true">
           <template #icon>
             <AppIcon icon="lucide:history" size="18" />
           </template>
         </Button>
-        <Button type="primary">更新发布</Button>
+        <div class="publish-action">
+          <Button class="publish-action__main" type="primary" @click="updatePublish">
+            更新发布
+          </Button>
+          <Dropdown
+            :menu="{ items: publishActions, onClick: handlePublishAction }"
+            :trigger="['click']"
+            placement="bottomRight"
+          >
+            <Button class="publish-action__toggle" type="primary" aria-label="发布操作">
+              <AppIcon icon="lucide:chevron-down" size="14" />
+            </Button>
+          </Dropdown>
+        </div>
       </div>
     </header>
 
-    <section class="app-orchestration__body">
+    <section v-if="activeTab === 'edit'" class="app-orchestration__body">
       <section class="app-orchestration__prompt">
         <div class="orchestration-panel__header">
           <div class="app-orchestration__title-row">
             <h2>应用编排</h2>
-            <Select
-              v-model:value="selectedModel"
-              class="app-orchestration__model"
-              :bordered="false"
-              :options="modelOptions"
-            />
+            <Popover
+              v-model:open="modelSettingsOpen"
+              trigger="click"
+              placement="bottomLeft"
+              overlay-class-name="model-settings-popover"
+            >
+              <button class="app-orchestration__model-trigger" type="button">
+                <AppIcon icon="lucide:brain-circuit" size="14" />
+                <span>{{ selectedModelLabel }}</span>
+                <AppIcon icon="lucide:chevron-down" size="14" />
+              </button>
+
+              <template #content>
+                <section class="model-settings">
+                  <h3>模型设置</h3>
+
+                  <label class="model-settings__field">
+                    <span>模型</span>
+                    <Select v-model:value="selectedModel" :options="modelOptions" />
+                  </label>
+
+                  <div
+                    v-for="group in modelSettingGroups"
+                    :key="group.title"
+                    class="model-settings__group"
+                  >
+                    <span>{{ group.title }}</span>
+                    <label v-for="item in group.items" :key="item.key" class="model-settings__row">
+                      <span>{{ item.label }}</span>
+                      <Slider
+                        v-model:value="modelSettings[item.key]"
+                        :min="item.min"
+                        :max="item.max"
+                        :step="item.step"
+                        :tooltip="{ formatter: null }"
+                      />
+                      <InputNumber
+                        v-model:value="modelSettings[item.key]"
+                        :min="item.min"
+                        :max="item.max"
+                        :step="item.step"
+                      />
+                    </label>
+                  </div>
+                </section>
+              </template>
+            </Popover>
           </div>
         </div>
 
@@ -622,7 +818,9 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
           <div class="app-orchestration__prompt-text">
             <p># 角色</p>
             <p>{{ appDescription }}</p>
-            <p>你是一个智能聊天机器人，能够与用户进行各种话题的交流，包括但不限于生活、工作、学习、娱乐等。</p>
+            <p>
+              你是一个智能聊天机器人，能够与用户进行各种话题的交流，包括但不限于生活、工作、学习、娱乐等。
+            </p>
 
             <p>## 技能</p>
             <p>### 技能 1: 日常交流</p>
@@ -789,11 +987,7 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
             </div>
           </section>
 
-          <section
-            v-for="section in settingSections"
-            :key="section.title"
-            class="config-section"
-          >
+          <section v-for="section in settingSections" :key="section.title" class="config-section">
             <div class="config-section__head">
               <div>
                 <AppIcon icon="lucide:chevron-down" size="16" />
@@ -845,7 +1039,7 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
               </template>
               清空对话
             </Button>
-            <Button type="link" size="small">
+            <Button type="link" size="small" @click="longMemoryOpen = true">
               <template #icon>
                 <AppIcon icon="lucide:save" size="15" />
               </template>
@@ -873,10 +1067,19 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
       </section>
     </section>
 
+    <PublishConfig v-else-if="activeTab === 'publish'" />
+
+    <StatsAnalysis v-else-if="activeTab === 'stats'" />
+
     <Teleport to="body">
       <Transition name="side-modal">
         <div v-if="pluginModalOpen" class="plugin-modal-mask" @click.self="pluginModalOpen = false">
-          <div class="plugin-modal" role="dialog" aria-modal="true" aria-labelledby="pluginModalTitle">
+          <div
+            class="plugin-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pluginModalTitle"
+          >
             <aside class="plugin-modal__sidebar">
               <h2 id="pluginModalTitle">添加插件</h2>
               <Button type="primary" block>
@@ -919,7 +1122,12 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
             <section class="plugin-modal__content">
               <div class="plugin-modal__header">
                 <h3>{{ selectedPluginSourceLabel }}</h3>
-                <button class="plugin-modal__close" type="button" aria-label="关闭" @click="pluginModalOpen = false">
+                <button
+                  class="plugin-modal__close"
+                  type="button"
+                  aria-label="关闭"
+                  @click="pluginModalOpen = false"
+                >
                   <AppIcon icon="lucide:x" size="18" />
                 </button>
               </div>
@@ -974,7 +1182,12 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
           <div class="relation-modal" role="dialog" aria-modal="true">
             <header class="relation-modal__header">
               <h2>{{ relationTitle }}</h2>
-              <button class="plugin-modal__close" type="button" aria-label="关闭" @click="relationModalOpen = false">
+              <button
+                class="plugin-modal__close"
+                type="button"
+                aria-label="关闭"
+                @click="relationModalOpen = false"
+              >
                 <AppIcon icon="lucide:x" size="18" />
               </button>
             </header>
@@ -1009,6 +1222,72 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
         </div>
       </Transition>
     </Teleport>
+
+    <Drawer
+      v-model:open="publishHistoryOpen"
+      title="发布历史"
+      placement="right"
+      :width="420"
+      :closable="{ placement: 'end' }"
+    >
+      <section class="publish-history">
+        <div class="publish-history__app">
+          <div
+            class="publish-history__icon"
+            :class="{ 'has-image': isImageIcon }"
+            :style="{ backgroundColor: currentApp?.accent }"
+          >
+            <img v-if="isImageIcon" :src="currentApp?.icon" alt="" :draggable="false" />
+            <AppIcon v-else :icon="currentApp?.icon ?? 'lucide:bot'" size="22" />
+          </div>
+          <div>
+            <strong>{{ appName }}</strong>
+            <span>最近编辑 · 2024-08-15 17:54</span>
+          </div>
+        </div>
+
+        <p class="publish-history__description">
+          采用最智能的大模型，自动化 AI 编程。精通
+          Java、C、C++、Python、Rust、Go等编程语言，有很深的造诣，能帮回答各种复杂的与编程相关的问题。
+        </p>
+
+        <p class="publish-history__count">共计 26 条发布记录</p>
+
+        <div class="publish-history__list">
+          <article
+            v-for="item in publishHistoryItems"
+            :key="item.key"
+            class="publish-history__item"
+          >
+            <div class="publish-history__item-main">
+              <div>
+                <strong>版本</strong>
+                <Tag># {{ item.key }}</Tag>
+                <Tag v-if="item.current">当前版本</Tag>
+              </div>
+              <span>发布时间: {{ item.publishedAt }}</span>
+            </div>
+            <Button size="small">回退</Button>
+          </article>
+        </div>
+      </section>
+    </Drawer>
+
+    <Modal
+      v-model:open="longMemoryOpen"
+      title="长期记忆"
+      centered
+      width="640px"
+      ok-text="更新记忆"
+      cancel-text="取消"
+      @ok="updateLongMemory"
+    >
+      <TextArea
+        v-model:value="longMemoryContent"
+        class="long-memory-editor"
+        :auto-size="{ minRows: 6, maxRows: 8 }"
+      />
+    </Modal>
   </main>
 </template>
 

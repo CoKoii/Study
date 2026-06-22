@@ -273,11 +273,28 @@ export const useAppListStore = defineStore('app-list', () => {
     return true
   }
 
+  function updateAppStatus(id: string, status: SpaceApp['status']) {
+    const targetIndex = findAppIndex(id)
+    const targetItem = appItems.value[targetIndex]
+
+    if (!targetItem) {
+      return false
+    }
+
+    appItems.value[targetIndex] = {
+      ...targetItem,
+      status,
+      updatedAt: formatUpdatedAt(),
+    }
+    return true
+  }
+
   return {
     appItems,
     createApp,
     deleteApp,
     updateApp,
+    updateAppStatus,
   }
 })
 
