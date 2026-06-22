@@ -28,7 +28,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 const PublishConfig = defineAsyncComponent(() => import('./components/PublishConfig.vue'))
 const StatsAnalysis = defineAsyncComponent(() => import('./components/StatsAnalysis.vue'))
-const hiddenTabIndicator = { size: 0 }
 type OrchestrationTab = 'edit' | 'publish' | 'stats'
 
 interface CapabilityItem {
@@ -719,7 +718,6 @@ function confirmUnpublish() {
         v-model:active-key="activeTab"
         class="app-orchestration__tabs"
         centered
-        :indicator="hiddenTabIndicator"
       >
         <TabPane key="edit" tab="编辑" />
         <TabPane key="publish" tab="发布配置" />
