@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
 import type { SpaceApp } from '@/stores/app-list'
-import { publishActions, type OrchestrationTab } from '../share/orchestration-data'
+import { publishActions } from '../../share/constants'
+import type { OrchestrationTab } from '../../share/types'
 import { Button, Dropdown, TabPane, Tabs, Tag } from 'antdv-next'
 
 const activeTab = defineModel<OrchestrationTab>('activeTab', { required: true })
@@ -86,3 +87,7 @@ const emit = defineEmits<{
     </div>
   </header>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

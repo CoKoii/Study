@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import type { RelationItem } from '../share/orchestration-data'
+import type { RelationItem, RelationMode } from '../../share/types'
 import { Button } from 'antdv-next'
 
 defineProps<{
   items: RelationItem[]
-  mode: 'knowledge' | 'workflow'
+  mode: RelationMode
   open: boolean
   selectedKeys: string[]
   title: string
@@ -26,7 +26,7 @@ const emit = defineEmits<{
           <header class="relation-modal__header">
             <h2>{{ title }}</h2>
             <button
-              class="plugin-modal__close"
+              class="side-modal__close"
               type="button"
               aria-label="关闭"
               @click="emit('update:open', false)"
@@ -66,3 +66,7 @@ const emit = defineEmits<{
     </Transition>
   </Teleport>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

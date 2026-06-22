@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
 import type { SpaceApp } from '@/stores/app-list'
-import { publishHistoryItems } from '../share/orchestration-data'
+import { publishHistoryItems } from '../../share/constants'
 import { Button, Drawer, Tag } from 'antdv-next'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -60,3 +60,7 @@ defineProps<{
     </section>
   </Drawer>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

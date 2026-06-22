@@ -1,0 +1,108 @@
+@use '../../share/panel';
+
+.preview-header {
+  border-bottom: 0;
+}
+
+.preview-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chat-preview {
+  flex: 1;
+  min-height: 0;
+  padding: 1.75rem 1.5rem;
+  overflow-y: auto;
+}
+
+.chat-preview__prompts {
+  margin-top: var(--space-3);
+  padding-left: calc(1.75rem + var(--space-3));
+}
+
+:global(.chat-avatar) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--color-white);
+  font-size: 0.75rem;
+  border-radius: 50%;
+}
+
+:global(.chat-avatar--user) {
+  background: var(--color-border);
+}
+
+:global(.chat-avatar--assistant) {
+  background: var(--color-success);
+}
+
+:global(.chat-message-footer) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+:global(.chat-message-footer__actions) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+:global(.chat-message-footer__button) {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+:global(.chat-message-footer__button:hover),
+:global(.chat-message-footer__button:focus-visible) {
+  color: var(--color-primary);
+  outline: 0;
+}
+
+:global(.chat-message-item:hover .chat-message-footer__actions),
+:global(.chat-message-item:focus-within .chat-message-footer__actions),
+:global(.chat-message-footer:hover .chat-message-footer__actions),
+:global(.chat-message-footer:focus-within .chat-message-footer__actions) {
+  opacity: 1;
+}
+
+.chat-composer {
+  padding: 0 4rem 1.25rem;
+}
+
+.chat-composer p {
+  margin: 0.75rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .chat-preview {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+
+  .chat-composer {
+    padding-right: var(--space-4);
+    padding-left: var(--space-4);
+  }
+}

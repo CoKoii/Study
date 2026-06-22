@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import type { SpaceApp } from '@/stores/app-list'
 import { useAppListStore } from '@/stores/app-list'
-import AppEditWorkspace from './components/AppEditWorkspace.vue'
-import LongMemoryModal from './components/LongMemoryModal.vue'
-import OrchestrationTopbar from './components/OrchestrationTopbar.vue'
-import PublishHistoryDrawer from './components/PublishHistoryDrawer.vue'
-import type { OrchestrationTab } from './share/orchestration-data'
+import AppEditWorkspace from './components/AppEditWorkspace/index.vue'
+import LongMemoryModal from './components/LongMemoryModal/index.vue'
+import OrchestrationTopbar from './components/OrchestrationTopbar/index.vue'
+import PublishHistoryDrawer from './components/PublishHistoryDrawer/index.vue'
+import type { OrchestrationTab } from './share/types'
 import { Modal } from 'antdv-next'
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-const PublishConfig = defineAsyncComponent(() => import('./components/PublishConfig.vue'))
-const StatsAnalysis = defineAsyncComponent(() => import('./components/StatsAnalysis.vue'))
+const PublishConfig = defineAsyncComponent(() => import('./components/PublishConfig/index.vue'))
+const StatsAnalysis = defineAsyncComponent(() => import('./components/StatsAnalysis/index.vue'))
 
 const route = useRoute()
 const router = useRouter()

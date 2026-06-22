@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import type { PluginMarketItem } from '../share/orchestration-data'
-import { pluginCategories, pluginSources } from '../share/orchestration-data'
+import { pluginCategories, pluginSources } from '../../share/constants'
+import type { PluginCategory, PluginMarketItem, PluginSource } from '../../share/types'
 import { Button } from 'antdv-next'
 
 defineProps<{
-  category: string
+  category: PluginCategory
   groups: Array<{ provider: string; items: PluginMarketItem[] }>
   isPluginAdded: (pluginKey: string) => boolean
   open: boolean
-  source: 'custom' | 'builtin'
+  source: PluginSource
   sourceLabel: string
 }>()
 
 const emit = defineEmits<{
   'add-plugin': [plugin: PluginMarketItem]
-  'update:category': [category: string]
+  'update:category': [category: PluginCategory]
   'update:open': [open: boolean]
-  'update:source': [source: 'custom' | 'builtin']
+  'update:source': [source: PluginSource]
 }>()
 </script>
 
@@ -74,7 +74,7 @@ const emit = defineEmits<{
             <div class="plugin-modal__header">
               <h3>{{ sourceLabel }}</h3>
               <button
-                class="plugin-modal__close"
+                class="side-modal__close"
                 type="button"
                 aria-label="关闭"
                 @click="emit('update:open', false)"
@@ -115,3 +115,7 @@ const emit = defineEmits<{
     </Transition>
   </Teleport>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

@@ -1,0 +1,18 @@
+.side-modal__close {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.side-modal__close:hover,
+.side-modal__close:focus-visible {
+  color: var(--color-primary);
+  background: var(--color-bg-soft);
+  outline: 0;
+}

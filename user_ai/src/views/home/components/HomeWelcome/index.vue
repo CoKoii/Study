@@ -4,10 +4,6 @@ import { h } from 'vue'
 
 import AppIcon from '@/components/AppIcon/index.vue'
 
-const bubbleStyles = {
-  content: { background: '#fff' },
-}
-
 const promptStyles = {
   itemContent: { fontWeight: 400 },
 } satisfies NonNullable<PromptsProps['styles']>
@@ -44,11 +40,7 @@ const prompts: PromptsProps['items'] = [
         <span>慕小课</span>
       </div>
 
-      <Bubble
-        class="home-welcome__bubble"
-        variant="filled"
-        :styles="bubbleStyles"
-      >
+      <Bubble class="home-welcome__bubble" variant="filled">
         <template #message>
           <h3>你好，欢迎来到慕课LLMOps</h3>
           <p>

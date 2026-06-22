@@ -68,6 +68,10 @@
   margin-left: var(--bot-content-offset);
 }
 
+.home-welcome__bubble :deep(.ant-bubble-content) {
+  background: var(--color-bg-panel);
+}
+
 .home-welcome__suggestions {
   width: fit-content;
   max-width: 100%;

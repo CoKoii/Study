@@ -1,38 +1,13 @@
-export interface CapabilityItem {
-  description: string
-  icon: string
-  key: string
-  title: string
-  tone: string
-}
-
-export interface PluginMarketItem extends CapabilityItem {
-  category: string
-  provider: string
-  source: 'custom' | 'builtin'
-}
-
-export interface RelationItem {
-  icon: string
-  key: string
-  title: string
-  tone: string
-}
-
-export interface SettingSection {
-  description?: string
-  enabled?: boolean
-  title: string
-  type?: 'textarea'
-}
-
-export type OrchestrationTab = 'edit' | 'publish' | 'stats'
-
-export interface PublishHistoryItem {
-  current?: boolean
-  key: string
-  publishedAt: string
-}
+import type {
+  CapabilityItem,
+  PluginCategory,
+  PluginMarketItem,
+  PluginSource,
+  PublishChannel,
+  PublishHistoryItem,
+  RelationItem,
+  SettingSection,
+} from './types'
 
 export const defaultModelSettings = {
   contextMessages: 10,
@@ -98,6 +73,37 @@ export const publishActions = [
   },
 ]
 
+export const publishChannels: PublishChannel[] = [
+  {
+    key: 'web',
+    title: '网页版',
+    description: '可通过访问PC网页立即开始对话。',
+    icon: 'lucide:panel-top',
+    tone: '#e0f2fe',
+    status: 'configured',
+    action: 'visit',
+    link: 'https://www.llmops-imooc.com/web-app/WNFEKnzu',
+  },
+  {
+    key: 'wechat',
+    title: '微信公众号（订阅号、服务号）',
+    description: '接入微信公众号，自动回复用户消息，助力高效私域运营',
+    icon: 'lucide:messages-square',
+    tone: '#dcfce7',
+    status: 'unconfigured',
+    action: 'configure',
+  },
+  {
+    key: 'feishu',
+    title: '飞书（Bot群聊机器人）',
+    description: '在飞书中直接 @Bot 对话，提高工作生产力',
+    icon: 'lucide:send',
+    tone: '#e0f2fe',
+    status: 'unconfigured',
+    action: 'configure',
+  },
+]
+
 export const initialCapabilities: CapabilityItem[] = [
   {
     key: 'img-understand',
@@ -115,12 +121,12 @@ export const initialCapabilities: CapabilityItem[] = [
   },
 ]
 
-export const pluginSources = [
+export const pluginSources: Array<{ icon: string; key: PluginSource; label: string }> = [
   { key: 'custom', label: '自定义插件', icon: 'lucide:package' },
   { key: 'builtin', label: '内置', icon: 'lucide:blocks' },
-] as const
+]
 
-export const pluginCategories = [
+export const pluginCategories: Array<{ icon: string; key: PluginCategory; label: string }> = [
   { key: 'all', label: '全部', icon: 'lucide:layout-grid' },
   { key: 'search', label: '搜索', icon: 'lucide:search' },
   { key: 'weather', label: '天气', icon: 'lucide:cloud-sun' },

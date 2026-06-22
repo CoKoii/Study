@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import { defaultModelSettings, modelOptions, modelSettingGroups } from '../share/orchestration-data'
+import { defaultModelSettings, modelOptions, modelSettingGroups } from '../../share/constants'
 import { Button, InputNumber, Popover, Select, Slider } from 'antdv-next'
 import { computed, ref } from 'vue'
 
@@ -110,3 +110,7 @@ const selectedModelLabel = computed(
     </div>
   </section>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

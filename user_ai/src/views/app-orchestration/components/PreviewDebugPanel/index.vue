@@ -6,7 +6,7 @@ import { Bubble, Prompts } from 'ant-design-x-vue'
 import { Button } from 'antdv-next'
 import type { VNode } from 'vue'
 import { computed, h, ref } from 'vue'
-import { quickPrompts } from '../share/orchestration-data'
+import { quickPrompts } from '../../share/constants'
 
 interface PreviewMessage {
   content: string
@@ -24,34 +24,14 @@ const emit = defineEmits<{
   'open-long-memory': []
 }>()
 
-const avatarStyle = {
-  alignItems: 'center',
-  borderRadius: '50%',
-  color: '#fff',
-  display: 'inline-flex',
-  fontSize: '12px',
-  height: '28px',
-  justifyContent: 'center',
-  width: '28px',
-}
 const userAvatar = h(
   'span',
-  {
-    style: {
-      ...avatarStyle,
-      background: '#d1d5db',
-    },
-  },
+  { class: 'chat-avatar chat-avatar--user' },
   '慕',
 )
 const assistantAvatar = h(
   'span',
-  {
-    style: {
-      ...avatarStyle,
-      background: '#0f766e',
-    },
-  },
+  { class: 'chat-avatar chat-avatar--assistant' },
   h(AppIcon, { icon: 'lucide:bot', size: '16' }),
 )
 const promptsVisible = ref(true)
@@ -206,3 +186,7 @@ function submitPrompt(info: Parameters<NonNullable<PromptsProps['onItemClick']>>
     </footer>
   </section>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

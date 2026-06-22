@@ -21,3 +21,7 @@ const content = defineModel<string>('content', { required: true })
     />
   </Modal>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

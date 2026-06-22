@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
-import type { CapabilityItem, PluginMarketItem } from '../share/orchestration-data'
+import type {
+  CapabilityItem,
+  PluginCategory,
+  PluginMarketItem,
+  PluginSource,
+  RelationMode,
+} from '../../share/types'
 import {
   initialCapabilities,
   knowledgeItems,
@@ -8,9 +14,11 @@ import {
   pluginSources,
   settingSections,
   workflowItems,
-} from '../share/orchestration-data'
-import PluginPickerModal from './PluginPickerModal.vue'
-import RelationPickerModal from './RelationPickerModal.vue'
+} from '../../share/constants'
+import CapabilityItemCard from '../CapabilityItem/index.vue'
+import PluginPickerModal from '../PluginPickerModal/index.vue'
+import RelationPickerModal from '../RelationPickerModal/index.vue'
+import RelationItemCard from '../RelationItem/index.vue'
 import { Button, Input, Switch, TextArea } from 'antdv-next'
 import { computed, ref } from 'vue'
 
@@ -18,9 +26,9 @@ const openingText = ref('')
 const openingQuestion = ref('')
 const pluginModalOpen = ref(false)
 const relationModalOpen = ref(false)
-const relationMode = ref<'knowledge' | 'workflow'>('knowledge')
-const selectedPluginSource = ref<'custom' | 'builtin'>('builtin')
-const selectedPluginCategory = ref('all')
+const relationMode = ref<RelationMode>('knowledge')
+const selectedPluginSource = ref<PluginSource>('builtin')
+const selectedPluginCategory = ref<PluginCategory>('all')
 const selectedKnowledgeKeys = ref<string[]>([])
 const selectedWorkflowKeys = ref<string[]>([])
 const linkedKnowledgeKeys = ref<string[]>([])
@@ -102,7 +110,7 @@ function removePlugin(pluginKey: string) {
   capabilities.value = capabilities.value.filter((capability) => capability.key !== pluginKey)
 }
 
-function openRelationModal(mode: 'knowledge' | 'workflow') {
+function openRelationModal(mode: RelationMode) {
   relationMode.value = mode
 
   if (mode === 'knowledge') {
@@ -130,7 +138,7 @@ function confirmRelationSelection() {
   relationModalOpen.value = false
 }
 
-function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
+function removeRelationItem(mode: RelationMode, key: string) {
   if (mode === 'knowledge') {
     linkedKnowledgeKeys.value = removeKey(linkedKnowledgeKeys.value, key)
     selectedKnowledgeKeys.value = removeKey(selectedKnowledgeKeys.value, key)
@@ -169,33 +177,12 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
         </div>
 
         <div class="capability-list">
-          <article v-for="capability in capabilities" :key="capability.key" class="capability-item">
-            <div class="capability-item__icon" :style="{ background: capability.tone }">
-              <AppIcon :icon="capability.icon" size="22" />
-            </div>
-            <div>
-              <h4>{{ capability.title }}</h4>
-              <p>{{ capability.description }}</p>
-            </div>
-            <div class="capability-item__actions">
-              <Button type="text" shape="circle" size="small" aria-label="插件设置">
-                <template #icon>
-                  <AppIcon icon="lucide:settings" size="15" />
-                </template>
-              </Button>
-              <Button
-                type="text"
-                shape="circle"
-                size="small"
-                aria-label="删除插件"
-                @click="removePlugin(capability.key)"
-              >
-                <template #icon>
-                  <AppIcon icon="lucide:trash-2" size="15" />
-                </template>
-              </Button>
-            </div>
-          </article>
+          <CapabilityItemCard
+            v-for="capability in capabilities"
+            :key="capability.key"
+            :item="capability"
+            @remove="removePlugin"
+          />
         </div>
       </section>
 
@@ -221,23 +208,13 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
           工作流支持通过可视化的方式，对插件、大语言模型、代码块等功能进行组合，从而实现复杂、稳定的业务流程编排。
         </p>
         <div v-if="linkedWorkflowItems.length" class="relation-list">
-          <article v-for="item in linkedWorkflowItems" :key="item.key" class="relation-item">
-            <div class="relation-item__icon" :style="{ background: item.tone }">
-              <AppIcon :icon="item.icon" size="18" />
-            </div>
-            <span>{{ item.title }}</span>
-            <Button
-              type="text"
-              shape="circle"
-              size="small"
-              aria-label="移除工作流"
-              @click="removeRelationItem('workflow', item.key)"
-            >
-              <template #icon>
-                <AppIcon icon="lucide:trash-2" size="14" />
-              </template>
-            </Button>
-          </article>
+          <RelationItemCard
+            v-for="item in linkedWorkflowItems"
+            :key="item.key"
+            :item="item"
+            remove-label="移除工作流"
+            @remove="removeRelationItem('workflow', $event)"
+          />
         </div>
       </section>
 
@@ -263,23 +240,13 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
           引用文本类型的数据，实现知识问答，应用最多支持关联 5 个知识库。
         </p>
         <div v-if="linkedKnowledgeItems.length" class="relation-list">
-          <article v-for="item in linkedKnowledgeItems" :key="item.key" class="relation-item">
-            <div class="relation-item__icon" :style="{ background: item.tone }">
-              <AppIcon :icon="item.icon" size="18" />
-            </div>
-            <span>{{ item.title }}</span>
-            <Button
-              type="text"
-              shape="circle"
-              size="small"
-              aria-label="移除知识库"
-              @click="removeRelationItem('knowledge', item.key)"
-            >
-              <template #icon>
-                <AppIcon icon="lucide:trash-2" size="14" />
-              </template>
-            </Button>
-          </article>
+          <RelationItemCard
+            v-for="item in linkedKnowledgeItems"
+            :key="item.key"
+            :item="item"
+            remove-label="移除知识库"
+            @remove="removeRelationItem('knowledge', $event)"
+          />
         </div>
       </section>
 
@@ -345,3 +312,7 @@ function removeRelationItem(mode: 'knowledge' | 'workflow', key: string) {
     @confirm="confirmRelationSelection"
   />
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

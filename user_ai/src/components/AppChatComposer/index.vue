@@ -94,7 +94,6 @@ const handlePasteFile = (_firstFile: File, files: FileList) => {
     :allow-speech="true"
     :auto-size="{ minRows: 1, maxRows: 6 }"
     :placeholder="placeholder"
-    :style="{ background: '#fff' }"
     @paste-file="handlePasteFile"
     @submit="handleSubmit"
   >
@@ -129,3 +128,7 @@ const handlePasteFile = (_firstFile: File, files: FileList) => {
     </template>
   </Sender>
 </template>
+
+<style scoped lang="scss">
+@use './index.scss';
+</style>

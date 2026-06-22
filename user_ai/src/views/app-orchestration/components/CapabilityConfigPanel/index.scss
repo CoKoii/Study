@@ -1,0 +1,73 @@
+@use '../../share/panel';
+
+.app-orchestration__config-scroll {
+  height: calc(100vh - 8.5rem);
+  padding: 0 1.25rem 2rem;
+  overflow-y: auto;
+}
+
+.config-section {
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.config-section__head,
+.config-section__head > div {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.config-section__head {
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.config-section__head > div {
+  gap: var(--space-2);
+}
+
+.config-section__head h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.config-section__description,
+.config-section__label {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.35rem;
+}
+
+.config-section__description {
+  margin: 0.5rem 0 0;
+}
+
+.capability-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.relation-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.config-section__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0.75rem 0 0.5rem;
+}
+
+@media (max-width: 1180px) {
+  .app-orchestration__config-scroll {
+    height: auto;
+    max-height: none;
+  }
+}
