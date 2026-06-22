@@ -12,6 +12,7 @@ const props = defineProps<{
 const router = useRouter()
 
 const emit = defineEmits<{
+  open: [app: SpaceApp]
   edit: [app: SpaceApp]
   delete: [app: SpaceApp]
 }>()
@@ -22,11 +23,16 @@ const actions: MenuItemType[] = [
 ]
 
 const isImageIcon = computed(() => props.app.icon.startsWith('data:'))
-const isOrchestrationApp = computed(() => props.app.kind === 'app')
+const isClickable = computed(() => props.app.kind === 'app' || props.app.kind === 'plugin')
 const statusText = computed(() => (props.app.status === 'published' ? '已发布' : '草稿'))
 
-function openOrchestration() {
-  if (!isOrchestrationApp.value) {
+function openCard() {
+  if (props.app.kind === 'plugin') {
+    emit('open', props.app)
+    return
+  }
+
+  if (props.app.kind !== 'app') {
     return
   }
 
@@ -48,12 +54,12 @@ function handleActionClick(event: { key: string | number }) {
 <template>
   <article
     class="space-app-card"
-    :class="{ 'is-clickable': isOrchestrationApp }"
-    :tabindex="isOrchestrationApp ? 0 : undefined"
-    :role="isOrchestrationApp ? 'button' : undefined"
-    @click="openOrchestration"
-    @keydown.enter.prevent="openOrchestration"
-    @keydown.space.prevent="openOrchestration"
+    :class="{ 'is-clickable': isClickable }"
+    :tabindex="isClickable ? 0 : undefined"
+    :role="isClickable ? 'button' : undefined"
+    @click="openCard"
+    @keydown.enter.prevent="openCard"
+    @keydown.space.prevent="openCard"
   >
     <div class="space-app-card__head">
       <div
