@@ -7,7 +7,7 @@ import { useAppListStore } from '@/stores/app-list'
 import type { SpaceApp, SpaceAppForm } from '@/stores/app-list'
 import { getSpaceResourceByRouteName, spaceResources } from '@/views/personal-space/share/resources'
 import type { FormInstance } from 'antdv-next'
-import { Button, Drawer, Input, message, Modal, TextArea, Upload } from 'antdv-next'
+import { Button, Drawer, Form, FormItem, Input, message, Modal, TextArea, Upload } from 'antdv-next'
 import { storeToRefs } from 'pinia'
 import { computed, reactive, ref, shallowRef, toRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -28,8 +28,7 @@ const pluginForm = reactive({
   icon: '',
   name: '',
   schema: '',
-  headerKey: '',
-  headerValue: '',
+  headers: [{ id: crypto.randomUUID(), key: '', value: '' }],
 })
 const query = ref('')
 const activeResource = computed(() => getSpaceResourceByRouteName(route.name))
@@ -115,8 +114,7 @@ function openPluginCreator(app?: SpaceApp) {
   pluginForm.icon = app?.icon ?? ''
   pluginForm.name = app?.name ?? ''
   pluginForm.schema = ''
-  pluginForm.headerKey = ''
-  pluginForm.headerValue = ''
+  pluginForm.headers = [{ id: crypto.randomUUID(), key: '', value: '' }]
   pluginIconLoading.value = false
   pluginCreatorOpen.value = true
 }
@@ -127,9 +125,24 @@ function closePluginCreator() {
   pluginForm.icon = ''
   pluginForm.name = ''
   pluginForm.schema = ''
-  pluginForm.headerKey = ''
-  pluginForm.headerValue = ''
+  pluginForm.headers = [{ id: crypto.randomUUID(), key: '', value: '' }]
   pluginIconLoading.value = false
+}
+
+function addPluginHeader() {
+  pluginForm.headers.push({ id: crypto.randomUUID(), key: '', value: '' })
+}
+
+function removePluginHeader(headerId: string) {
+  pluginForm.headers = pluginForm.headers.filter((header) => header.id !== headerId)
+
+  if (!pluginForm.headers.length) {
+    addPluginHeader()
+  }
+}
+
+function submitPluginForm() {
+  pluginFormRef.value?.submit()
 }
 
 function handleSubmitApp(form: SpaceAppForm) {
@@ -328,10 +341,18 @@ watch(
       cancel-text="取消"
       wrap-class-name="plugin-creator-modal"
       destroy-on-hidden
-      @ok="savePlugin"
+      @ok="submitPluginForm"
       @cancel="closePluginCreator"
     >
-      <section class="plugin-creator">
+      <Form
+        ref="pluginFormRef"
+        class="plugin-creator"
+        layout="vertical"
+        name="plugin_creator"
+        :model="pluginForm"
+        clear-on-destroy
+        @finish="savePlugin"
+      >
         <div class="plugin-creator__cover">
           <Upload
             name="plugin-icon"
@@ -359,18 +380,24 @@ watch(
           </Upload>
         </div>
 
-        <label class="plugin-creator__field">
-          <span>插件名称 *</span>
+        <FormItem
+          label="插件名称"
+          name="name"
+          :rules="[{ required: true, whitespace: true, message: '插件名称不能为空' }]"
+        >
           <Input
             v-model:value="pluginForm.name"
             placeholder="请输入插件名称，请确保名称含义清晰"
             show-count
             :maxlength="60"
           />
-        </label>
+        </FormItem>
 
-        <label class="plugin-creator__field">
-          <span>OpenAPI Schema *</span>
+        <FormItem
+          label="OpenAPI Schema"
+          name="schema"
+          :rules="[{ required: true, whitespace: true, message: 'OpenAPI Schema不能为空' }]"
+        >
           <TextArea
             v-model:value="pluginForm.schema"
             placeholder="在此处输入您的 OpenAPI Schema"
@@ -378,7 +405,7 @@ watch(
             :maxlength="600"
             :auto-size="{ minRows: 4, maxRows: 4 }"
           />
-        </label>
+        </FormItem>
 
         <section class="plugin-creator__tools">
           <h3>可用工具</h3>
@@ -406,24 +433,34 @@ watch(
               <span>Value</span>
               <span>操作</span>
             </div>
-            <div class="plugin-creator__table-row">
-              <Input v-model:value="pluginForm.headerKey" placeholder="请输入请求头键名" />
-              <Input v-model:value="pluginForm.headerValue" placeholder="请输入请求头键值内容" />
-              <Button type="text" shape="circle" size="small" aria-label="删除 Header">
+            <div
+              v-for="header in pluginForm.headers"
+              :key="header.id"
+              class="plugin-creator__table-row"
+            >
+              <Input v-model:value="header.key" placeholder="请输入请求头键名" />
+              <Input v-model:value="header.value" placeholder="请输入请求头键值内容" />
+              <Button
+                type="text"
+                shape="circle"
+                size="small"
+                aria-label="删除 Header"
+                @click="removePluginHeader(header.id)"
+              >
                 <template #icon>
                   <AppIcon icon="lucide:trash-2" size="14" />
                 </template>
               </Button>
             </div>
           </div>
-          <Button class="plugin-creator__add-header" size="small">
+          <Button class="plugin-creator__add-header" @click="addPluginHeader">
             <template #icon>
               <AppIcon icon="lucide:plus" size="14" />
             </template>
             新增参数
           </Button>
         </section>
-      </section>
+      </Form>
     </Modal>
   </section>
 </template>
