@@ -195,6 +195,7 @@ function deleteApp(app: SpaceApp) {
   Modal.confirm({
     title: `删除${activeResource.value.title}「${app.name}」？`,
     content: activeResource.value.deleteWarning,
+    centered: true,
     okText: '删除',
     okType: 'danger',
     cancelText: '取消',
