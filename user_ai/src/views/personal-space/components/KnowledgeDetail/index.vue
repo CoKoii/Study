@@ -293,7 +293,6 @@ watch(
         </template>
       </Table>
     </section>
-    <div class="knowledge-detail__loaded">数据已加载完成</div>
 
     <Transition name="knowledge-detail-panel">
       <aside v-if="recallDrawerOpen" class="knowledge-detail__drawer">

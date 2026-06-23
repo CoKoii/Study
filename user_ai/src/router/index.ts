@@ -110,7 +110,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'app-market',
         name: 'app-market',
-        redirect: '/',
+        component: () => import('@/views/marketplace/index.vue'),
         meta: {
           pageTransition: 'workspace-fade',
           sidebar: {
@@ -124,7 +124,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'plugin-market',
         name: 'plugin-market',
-        redirect: '/',
+        component: () => import('@/views/marketplace/index.vue'),
         meta: {
           pageTransition: 'workspace-fade',
           sidebar: {
@@ -138,7 +138,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'open-api',
         name: 'open-api',
-        redirect: '/',
+        component: () => import('@/views/open-api/index.vue'),
         meta: {
           pageTransition: 'workspace-fade',
           sidebar: {
