@@ -23,6 +23,22 @@ export interface SpaceAppForm {
   description: string
 }
 
+export interface KnowledgeDocument {
+  id: string
+  knowledgeId: string
+  name: string
+  wordCount: string
+  recallCount: number
+  updatedAt: string
+  status: 'enabled' | 'disabled'
+  format: 'doc' | 'docx' | 'md' | 'pdf' | 'txt'
+}
+
+export interface KnowledgeDocumentFile {
+  name: string
+  size?: number
+}
+
 const appFixtures: SpaceApp[] = [
   {
     id: 'app-customer-service',
@@ -202,8 +218,8 @@ const appFixtures: SpaceApp[] = [
   },
   {
     id: 'knowledge-product-manual',
-    name: '产品手册知识库',
-    description: '沉淀产品功能说明、配置指南和常见问题，供客服与售前助手检索引用。',
+    name: '春课LLMOps知识库',
+    description: '沉淀 LLMOps 项目课程、代码库和 API 文档内容，支持应用精准检索引用。',
     icon: 'lucide:book-open',
     accent: '#16a34a',
     updatedAt: '2024-06-18 11:42',
@@ -235,8 +251,122 @@ const appFixtures: SpaceApp[] = [
   },
 ]
 
+const llmopsDocumentTemplates = {
+  api: {
+    name: 'LLMOps 项目API文档.md',
+    wordCount: '95.1k',
+    recallCount: 154,
+    updatedAt: '2024-01-07 12:18:04',
+    status: 'enabled',
+    format: 'md',
+  },
+  codebase: {
+    name: '春课LLMOps代码库.txt',
+    wordCount: '12.5k',
+    recallCount: 13,
+    updatedAt: '2024-05-14 14:35:27',
+    status: 'disabled',
+    format: 'txt',
+  },
+  prompt: {
+    name: 'LLMOps 项目提示词.md',
+    wordCount: '4.7k',
+    recallCount: 18,
+    updatedAt: '2024-06-11 23:31:47',
+    status: 'disabled',
+    format: 'md',
+  },
+  readme: {
+    name: 'Readme.md',
+    wordCount: '1.7k',
+    recallCount: 12,
+    updatedAt: '2024-01-08 13:20:10',
+    status: 'enabled',
+    format: 'md',
+  },
+  retrieval: {
+    name: '课程Prompt提示词.txt',
+    wordCount: '2.1k',
+    recallCount: 0,
+    updatedAt: '2024-04-07 09:22:00',
+    status: 'enabled',
+    format: 'txt',
+  },
+  toolCall: {
+    name: '基于工具调用的智能体设计与实现.md',
+    wordCount: '14.8k',
+    recallCount: 42,
+    updatedAt: '2024-02-01 21:16:25',
+    status: 'enabled',
+    format: 'md',
+  },
+} satisfies Record<string, Omit<KnowledgeDocument, 'id' | 'knowledgeId'>>
+
+const llmopsDocumentOrder = [
+  'prompt',
+  'retrieval',
+  'prompt',
+  'retrieval',
+  'readme',
+  'codebase',
+  'api',
+  'toolCall',
+  'prompt',
+  'retrieval',
+  'readme',
+  'codebase',
+  'api',
+  'toolCall',
+  'api',
+  'toolCall',
+  'prompt',
+  'retrieval',
+  'readme',
+  'codebase',
+  'api',
+] as const
+
+const knowledgeDocumentFixtures: KnowledgeDocument[] = [
+  ...llmopsDocumentOrder.map((templateKey, index) => ({
+    ...llmopsDocumentTemplates[templateKey],
+    id: `doc-llmops-${index + 1}`,
+    knowledgeId: 'knowledge-product-manual',
+  })),
+  {
+    id: 'doc-hr-policy',
+    knowledgeId: 'knowledge-policy-center',
+    name: '员工手册与考勤制度.pdf',
+    wordCount: '18.4k',
+    recallCount: 36,
+    updatedAt: '2024-05-22 10:12:30',
+    status: 'enabled',
+    format: 'pdf',
+  },
+  {
+    id: 'doc-finance-policy',
+    knowledgeId: 'knowledge-policy-center',
+    name: '费用报销与采购规范.md',
+    wordCount: '9.8k',
+    recallCount: 27,
+    updatedAt: '2024-05-17 17:45:12',
+    status: 'enabled',
+    format: 'md',
+  },
+  {
+    id: 'doc-course-outline',
+    knowledgeId: 'knowledge-course-content',
+    name: 'AI 应用开发训练营讲义.md',
+    wordCount: '21.6k',
+    recallCount: 63,
+    updatedAt: '2024-06-02 14:08:51',
+    status: 'enabled',
+    format: 'md',
+  },
+]
+
 export const useAppListStore = defineStore('app-list', () => {
   const appItems = ref<SpaceApp[]>([...appFixtures])
+  const knowledgeDocuments = ref<KnowledgeDocument[]>([...knowledgeDocumentFixtures])
 
   function findAppIndex(id: string) {
     return appItems.value.findIndex((item) => item.id === id)
@@ -289,12 +419,72 @@ export const useAppListStore = defineStore('app-list', () => {
     return true
   }
 
+  function findAppById(id: string) {
+    return appItems.value.find((item) => item.id === id)
+  }
+
+  function getKnowledgeDocuments(knowledgeId: string) {
+    return knowledgeDocuments.value.filter((item) => item.knowledgeId === knowledgeId)
+  }
+
+  function addKnowledgeDocuments(knowledgeId: string, files: KnowledgeDocumentFile[]) {
+    const documents = files.map((file) => createKnowledgeDocument(knowledgeId, file))
+    knowledgeDocuments.value.unshift(...documents)
+  }
+
+  function updateKnowledgeDocumentStatus(id: string, status: KnowledgeDocument['status']) {
+    const targetIndex = knowledgeDocuments.value.findIndex((item) => item.id === id)
+    const targetItem = knowledgeDocuments.value[targetIndex]
+
+    if (!targetItem) {
+      return false
+    }
+
+    knowledgeDocuments.value[targetIndex] = {
+      ...targetItem,
+      status,
+    }
+    return true
+  }
+
+  function updateKnowledgeDocumentName(id: string, name: string) {
+    const targetIndex = knowledgeDocuments.value.findIndex((item) => item.id === id)
+    const targetItem = knowledgeDocuments.value[targetIndex]
+
+    if (!targetItem) {
+      return false
+    }
+
+    knowledgeDocuments.value[targetIndex] = {
+      ...targetItem,
+      name,
+    }
+    return true
+  }
+
+  function deleteKnowledgeDocument(id: string) {
+    const targetIndex = knowledgeDocuments.value.findIndex((item) => item.id === id)
+
+    if (targetIndex < 0) {
+      return false
+    }
+
+    knowledgeDocuments.value.splice(targetIndex, 1)
+    return true
+  }
+
   return {
     appItems,
+    addKnowledgeDocuments,
     createApp,
     deleteApp,
+    deleteKnowledgeDocument,
+    findAppById,
+    getKnowledgeDocuments,
     updateApp,
     updateAppStatus,
+    updateKnowledgeDocumentName,
+    updateKnowledgeDocumentStatus,
   }
 })
 
@@ -323,7 +513,41 @@ function createSpaceApp(form: SpaceAppForm, kind: SpaceResourceKind): SpaceApp {
   }
 }
 
-function formatUpdatedAt() {
+function createKnowledgeDocument(
+  knowledgeId: string,
+  file: KnowledgeDocumentFile,
+): KnowledgeDocument {
+  return {
+    id: crypto.randomUUID(),
+    knowledgeId,
+    name: file.name,
+    wordCount: formatFileSize(file.size),
+    recallCount: 0,
+    updatedAt: formatUpdatedAt(true),
+    status: 'enabled',
+    format: getDocumentFormat(file.name),
+  }
+}
+
+function getDocumentFormat(fileName: string): KnowledgeDocument['format'] {
+  const extension = fileName.split('.').pop()?.toLowerCase()
+
+  if (extension === 'doc' || extension === 'docx' || extension === 'md' || extension === 'pdf') {
+    return extension
+  }
+
+  return 'txt'
+}
+
+function formatFileSize(size = 0) {
+  if (!size) {
+    return '0k'
+  }
+
+  return `${Math.max(0.1, size / 1024).toFixed(1)}k`
+}
+
+function formatUpdatedAt(includeSeconds = false) {
   return new Date().toLocaleString('zh-CN', {
     hour12: false,
     year: 'numeric',
@@ -331,5 +555,6 @@ function formatUpdatedAt() {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    ...(includeSeconds ? { second: '2-digit' as const } : {}),
   })
 }

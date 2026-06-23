@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import WorkspaceTopbar from '@/components/WorkspaceTopbar/index.vue'
 import type { SpaceApp } from '@/stores/app-list'
 import { publishActions } from '../../share/constants'
 import type { OrchestrationTab } from '../../share/types'
@@ -23,48 +24,35 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <header class="app-orchestration__topbar">
-    <div class="app-orchestration__app">
-      <button
-        class="app-orchestration__back"
-        type="button"
-        aria-label="返回应用列表"
-        @click="emit('back')"
-      >
-        <span aria-hidden="true"></span>
-      </button>
+  <WorkspaceTopbar
+    :accent="app?.accent"
+    :icon="app?.icon"
+    :is-image-icon="isImageIcon"
+    :title="appName"
+    back-label="返回应用列表"
+    @back="emit('back')"
+  >
+    <template #title-extra>
+      <AppIcon icon="lucide:copy" size="14" />
+    </template>
 
-      <div
-        class="app-orchestration__logo"
-        :class="{ 'has-image': isImageIcon }"
-        :style="{ backgroundColor: app?.accent }"
-      >
-        <img v-if="isImageIcon" :src="app?.icon" alt="" :draggable="false" />
-        <AppIcon v-else :icon="app?.icon ?? 'lucide:bot'" size="22" />
-      </div>
+    <template #meta>
+      <AppIcon icon="lucide:user" size="13" />
+      <span>个人空间</span>
+      <AppIcon icon="lucide:clock-3" size="13" />
+      <span>{{ statusText }}</span>
+      <Tag color="processing">已自动保存 23:18:15</Tag>
+    </template>
 
-      <div class="app-orchestration__identity">
-        <div>
-          <h1>{{ appName }}</h1>
-          <AppIcon icon="lucide:copy" size="14" />
-        </div>
-        <p>
-          <AppIcon icon="lucide:user" size="13" />
-          <span>个人空间</span>
-          <AppIcon icon="lucide:clock-3" size="13" />
-          <span>{{ statusText }}</span>
-          <Tag color="processing">已自动保存 23:18:15</Tag>
-        </p>
-      </div>
-    </div>
+    <template #center>
+      <Tabs v-model:active-key="activeTab" class="app-orchestration__tabs" centered>
+        <TabPane key="edit" tab="编辑" />
+        <TabPane key="publish" tab="发布配置" />
+        <TabPane key="stats" tab="统计分析" />
+      </Tabs>
+    </template>
 
-    <Tabs v-model:active-key="activeTab" class="app-orchestration__tabs" centered>
-      <TabPane key="edit" tab="编辑" />
-      <TabPane key="publish" tab="发布配置" />
-      <TabPane key="stats" tab="统计分析" />
-    </Tabs>
-
-    <div v-if="activeTab === 'edit'" class="app-orchestration__actions">
+    <template v-if="activeTab === 'edit'" #actions>
       <Button shape="circle" aria-label="发布历史" @click="emit('open-publish-history')">
         <template #icon>
           <AppIcon icon="lucide:history" size="18" />
@@ -84,8 +72,8 @@ const emit = defineEmits<{
           </Button>
         </Dropdown>
       </div>
-    </div>
-  </header>
+    </template>
+  </WorkspaceTopbar>
 </template>
 
 <style scoped lang="scss">

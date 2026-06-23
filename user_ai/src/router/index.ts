@@ -3,11 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import { appResource } from '@/views/personal-space/share/resources'
 
-const AppLayout = () => import('@/components/AppLayout/index.vue')
-const Home = () => import('@/views/home/index.vue')
-const PersonalSpace = () => import('@/views/personal-space/index.vue')
-const AppOrchestration = () => import('@/views/app-orchestration/index.vue')
-
 declare module 'vue-router' {
   interface RouteMeta {
     workspaceKey?: string
@@ -23,12 +18,12 @@ declare module 'vue-router' {
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: AppLayout,
+    component: () => import('@/components/AppLayout/index.vue'),
     children: [
       {
         path: '',
         name: 'home',
-        component: Home,
+        component: () => import('@/views/home/index.vue'),
         meta: {
           sidebar: {
             activeIcon: 'material-symbols:home-rounded',
@@ -54,7 +49,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'personal-space/apps',
         name: 'personal-space-apps',
-        component: PersonalSpace,
+        component: () => import('@/views/personal-space/index.vue'),
         meta: {
           workspaceKey: 'personal-space',
         },
@@ -62,7 +57,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'personal-space/plugins',
         name: 'personal-space-plugins',
-        component: PersonalSpace,
+        component: () => import('@/views/personal-space/index.vue'),
         meta: {
           workspaceKey: 'personal-space',
         },
@@ -70,7 +65,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'personal-space/workflows',
         name: 'personal-space-workflows',
-        component: PersonalSpace,
+        component: () => import('@/views/personal-space/index.vue'),
         meta: {
           workspaceKey: 'personal-space',
         },
@@ -78,9 +73,25 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'personal-space/knowledge',
         name: 'personal-space-knowledge',
-        component: PersonalSpace,
+        component: () => import('@/views/personal-space/index.vue'),
         meta: {
           workspaceKey: 'personal-space',
+        },
+      },
+      {
+        path: 'personal-space/knowledge/:knowledgeId',
+        name: 'personal-space-knowledge-detail',
+        component: () => import('@/views/personal-space/components/KnowledgeDetail/index.vue'),
+        meta: {
+          workspaceKey: 'personal-space-detail',
+        },
+      },
+      {
+        path: 'personal-space/knowledge/:knowledgeId/add-file',
+        name: 'personal-space-knowledge-add-file',
+        component: () => import('@/views/personal-space/components/KnowledgeAddFile/index.vue'),
+        meta: {
+          workspaceKey: 'personal-space-detail',
         },
       },
       {
@@ -127,7 +138,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/apps/:appId/orchestration',
     name: 'app-orchestration',
-    component: AppOrchestration,
+    component: () => import('@/views/app-orchestration/index.vue'),
   },
 ]
 

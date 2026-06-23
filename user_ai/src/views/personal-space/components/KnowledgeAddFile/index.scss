@@ -1,0 +1,307 @@
+.knowledge-add-file {
+  position: relative;
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg-sidebar);
+}
+
+.knowledge-add-file__header {
+  display: flex;
+  align-items: center;
+  height: 4.5rem;
+  padding: 0 2rem;
+  gap: var(--space-2);
+}
+
+.knowledge-add-file__item button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.knowledge-add-file__item button:hover,
+.knowledge-add-file__item button:focus-visible {
+  color: var(--color-primary);
+  outline: 0;
+}
+
+.knowledge-add-file__header h1 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.knowledge-add-file__steps {
+  width: min(42rem, calc(100% - 4rem));
+  margin: 0 auto 2.5rem;
+}
+
+.knowledge-add-file__main {
+  width: min(66.25rem, calc(100% - 4rem));
+  margin: 0 auto;
+}
+
+.knowledge-add-file__drop {
+  display: grid;
+  min-height: 10rem;
+  place-items: center;
+  align-content: center;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+.knowledge-add-file__drop span {
+  margin-top: var(--space-2);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.knowledge-add-file__drop p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.knowledge-add-file__list {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: 1.25rem;
+}
+
+.knowledge-add-file__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2rem;
+  padding: 0 var(--space-3);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  background: var(--color-bg-soft);
+}
+
+.knowledge-add-file__item span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-2);
+  overflow: hidden;
+  color: var(--color-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-add-file__item button {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+}
+
+.knowledge-add-file__segment {
+  display: grid;
+  gap: 1rem;
+}
+
+.knowledge-add-file__segment-card {
+  display: grid;
+  width: 100%;
+  min-height: 5rem;
+  padding: 1.25rem 1.5rem;
+  color: var(--color-text-muted);
+  text-align: left;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.knowledge-add-file__segment-card.is-active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.knowledge-add-file__segment-card > strong,
+.knowledge-add-file__segment-card--custom > button > strong {
+  color: var(--color-text-strong);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.knowledge-add-file__segment-card > span,
+.knowledge-add-file__segment-card--custom > button > span {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.knowledge-add-file__segment-card--custom {
+  padding: 0;
+  cursor: default;
+}
+
+.knowledge-add-file__segment-card--custom > button {
+  display: grid;
+  width: 100%;
+  padding: 1.25rem 1.5rem 1rem;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.knowledge-add-file__segment-form {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1.5rem 1.25rem;
+}
+
+.knowledge-add-file__field,
+.knowledge-add-file__checks {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.knowledge-add-file__field > span,
+.knowledge-add-file__checks > span {
+  color: var(--color-text-strong);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+}
+
+.knowledge-add-file__segment-form b {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.knowledge-add-file__check {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.knowledge-add-file__processing {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.knowledge-add-file__processing h2 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+}
+
+.knowledge-add-file__process-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.knowledge-add-file__process-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  padding: 0 var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.knowledge-add-file__process-info {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-2);
+}
+
+.knowledge-add-file__process-info > svg {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+}
+
+.knowledge-add-file__process-info div {
+  display: grid;
+  min-width: 0;
+}
+
+.knowledge-add-file__process-info strong {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.knowledge-add-file__process-state {
+  flex: 0 0 auto;
+  margin-left: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.knowledge-add-file__footer {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.knowledge-add-file__hint {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.knowledge-add-file__next {
+  min-width: 5rem;
+}
+
+@media (max-width: 760px) {
+  .knowledge-add-file {
+    height: auto;
+    min-height: 100%;
+    overflow: auto;
+  }
+
+  .knowledge-add-file__header {
+    padding: 0 var(--space-4);
+  }
+
+  .knowledge-add-file__steps,
+  .knowledge-add-file__main {
+    width: calc(100% - 2rem);
+  }
+
+  .knowledge-add-file__footer {
+    position: sticky;
+    right: auto;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-4);
+    background: var(--color-bg-sidebar);
+  }
+}

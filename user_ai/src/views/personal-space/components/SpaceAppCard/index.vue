@@ -23,12 +23,19 @@ const actions: MenuItemType[] = [
 ]
 
 const isImageIcon = computed(() => props.app.icon.startsWith('data:'))
-const isClickable = computed(() => props.app.kind === 'app' || props.app.kind === 'plugin')
+const isClickable = computed(() =>
+  ['app', 'plugin', 'knowledge'].includes(props.app.kind),
+)
 const statusText = computed(() => (props.app.status === 'published' ? '已发布' : '草稿'))
 
 function openCard() {
   if (props.app.kind === 'plugin') {
     emit('open', props.app)
+    return
+  }
+
+  if (props.app.kind === 'knowledge') {
+    router.push({ name: 'personal-space-knowledge-detail', params: { knowledgeId: props.app.id } })
     return
   }
 
