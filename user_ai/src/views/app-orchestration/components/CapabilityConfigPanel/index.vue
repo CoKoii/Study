@@ -16,10 +16,11 @@ import {
   workflowItems,
 } from '../../share/constants'
 import CapabilityItemCard from '../CapabilityItem/index.vue'
+import ConfigSection from '../ConfigSection/index.vue'
 import PluginPickerModal from '../PluginPickerModal/index.vue'
 import RelationPickerModal from '../RelationPickerModal/index.vue'
 import RelationItemCard from '../RelationItem/index.vue'
-import { Button, Input, Switch, TextArea } from 'antdv-next'
+import { Input, Switch, TextArea } from 'antdv-next'
 import { computed, ref } from 'vue'
 
 const openingText = ref('')
@@ -151,31 +152,13 @@ function removeRelationItem(mode: RelationMode, key: string) {
 </script>
 
 <template>
-  <section class="app-orchestration__config">
+  <section class="app-orchestration__config orchestration-workspace-panel">
     <div class="orchestration-panel__header">
       <h2>应用能力</h2>
     </div>
 
     <div class="app-orchestration__config-scroll">
-      <section class="config-section">
-        <div class="config-section__head">
-          <div>
-            <AppIcon icon="lucide:chevron-down" size="16" />
-            <h3>扩展插件</h3>
-          </div>
-          <Button
-            type="text"
-            shape="circle"
-            size="small"
-            aria-label="添加扩展插件"
-            @click="pluginModalOpen = true"
-          >
-            <template #icon>
-              <AppIcon icon="lucide:plus" size="16" />
-            </template>
-          </Button>
-        </div>
-
+      <ConfigSection title="扩展插件" action-label="添加扩展插件" @action="pluginModalOpen = true">
         <div class="capability-list">
           <CapabilityItemCard
             v-for="capability in capabilities"
@@ -184,26 +167,13 @@ function removeRelationItem(mode: RelationMode, key: string) {
             @remove="removePlugin"
           />
         </div>
-      </section>
+      </ConfigSection>
 
-      <section class="config-section">
-        <div class="config-section__head">
-          <div>
-            <AppIcon icon="lucide:chevron-down" size="16" />
-            <h3>工作流组件</h3>
-          </div>
-          <Button
-            type="text"
-            shape="circle"
-            size="small"
-            aria-label="添加工作流"
-            @click="openRelationModal('workflow')"
-          >
-            <template #icon>
-              <AppIcon icon="lucide:plus" size="16" />
-            </template>
-          </Button>
-        </div>
+      <ConfigSection
+        title="工作流组件"
+        action-label="添加工作流"
+        @action="openRelationModal('workflow')"
+      >
         <p class="config-section__description">
           工作流支持通过可视化的方式，对插件、大语言模型、代码块等功能进行组合，从而实现复杂、稳定的业务流程编排。
         </p>
@@ -216,26 +186,13 @@ function removeRelationItem(mode: RelationMode, key: string) {
             @remove="removeRelationItem('workflow', $event)"
           />
         </div>
-      </section>
+      </ConfigSection>
 
-      <section class="config-section">
-        <div class="config-section__head">
-          <div>
-            <AppIcon icon="lucide:chevron-down" size="16" />
-            <h3>知识库</h3>
-          </div>
-          <Button
-            type="text"
-            shape="circle"
-            size="small"
-            aria-label="添加知识库"
-            @click="openRelationModal('knowledge')"
-          >
-            <template #icon>
-              <AppIcon icon="lucide:plus" size="16" />
-            </template>
-          </Button>
-        </div>
+      <ConfigSection
+        title="知识库"
+        action-label="添加知识库"
+        @action="openRelationModal('knowledge')"
+      >
         <p class="config-section__description">
           引用文本类型的数据，实现知识问答，应用最多支持关联 5 个知识库。
         </p>
@@ -248,21 +205,17 @@ function removeRelationItem(mode: RelationMode, key: string) {
             @remove="removeRelationItem('knowledge', $event)"
           />
         </div>
-      </section>
+      </ConfigSection>
 
-      <section v-for="section in settingSections" :key="section.title" class="config-section">
-        <div class="config-section__head">
-          <div>
-            <AppIcon icon="lucide:chevron-down" size="16" />
-            <h3>{{ section.title }}</h3>
-          </div>
+      <ConfigSection v-for="section in settingSections" :key="section.title" :title="section.title">
+        <template #actions>
           <Switch
             v-if="section.enabled !== undefined"
             :checked="section.enabled"
             checked-children="开启"
             un-checked-children="关闭"
           />
-        </div>
+        </template>
 
         <template v-if="section.type === 'textarea'">
           <label class="config-section__label">
@@ -288,7 +241,7 @@ function removeRelationItem(mode: RelationMode, key: string) {
         <p v-else-if="section.description" class="config-section__description">
           {{ section.description }}
         </p>
-      </section>
+      </ConfigSection>
     </div>
   </section>
 

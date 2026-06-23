@@ -17,7 +17,7 @@ const selectedModelLabel = computed(
 </script>
 
 <template>
-  <section class="app-orchestration__prompt">
+  <section class="app-orchestration__prompt orchestration-workspace-panel">
     <div class="orchestration-panel__header">
       <div class="app-orchestration__title-row">
         <h2>应用编排</h2>

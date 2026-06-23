@@ -1,3 +1,9 @@
+.orchestration-workspace-panel {
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-bg-panel);
+}
+
 .orchestration-panel__header {
   display: flex;
   align-items: center;

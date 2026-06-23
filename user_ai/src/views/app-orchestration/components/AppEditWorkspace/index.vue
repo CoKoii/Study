@@ -20,7 +20,3 @@ const emit = defineEmits<{
     <PreviewDebugPanel :app-name="appName" @open-long-memory="emit('open-long-memory')" />
   </section>
 </template>
-
-<style scoped lang="scss">
-@use './index.scss';
-</style>

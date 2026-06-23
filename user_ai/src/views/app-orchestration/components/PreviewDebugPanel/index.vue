@@ -149,7 +149,7 @@ function submitPrompt(info: Parameters<NonNullable<PromptsProps['onItemClick']>>
 </script>
 
 <template>
-  <section class="app-orchestration__preview">
+  <section class="app-orchestration__preview orchestration-workspace-panel">
     <div class="orchestration-panel__header preview-header">
       <h2>预览与调试</h2>
       <div class="preview-header__actions">
