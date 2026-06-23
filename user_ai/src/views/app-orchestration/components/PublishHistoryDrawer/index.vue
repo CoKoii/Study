@@ -18,7 +18,7 @@ defineProps<{
     v-model:open="open"
     title="发布历史"
     placement="right"
-    :width="420"
+    :size="420"
     :closable="{ placement: 'end' }"
   >
     <section class="publish-history">

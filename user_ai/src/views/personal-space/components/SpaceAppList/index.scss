@@ -293,7 +293,7 @@
   gap: var(--space-2);
 }
 
-.plugin-creator :global(.ant-form-item) {
+.plugin-creator :deep(.ant-form-item) {
   margin-bottom: 0;
 }
 

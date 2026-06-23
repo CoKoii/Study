@@ -283,7 +283,7 @@ watch(
       title="工具详情"
       placement="right"
       root-class="plugin-detail-drawer"
-      :width="360"
+      :size="360"
       :closable="{ placement: 'end' }"
       destroy-on-hidden
       @update:open="(open) => !open && (pluginDetail = null)"
