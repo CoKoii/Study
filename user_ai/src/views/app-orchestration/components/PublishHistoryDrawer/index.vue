@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import { isImageIcon } from '@/shared/icon'
 import type { SpaceApp } from '@/stores/app-list'
 import { publishHistoryItems } from '../../share/constants'
 import { Button, Drawer, Tag } from 'antdv-next'
@@ -9,7 +10,6 @@ const open = defineModel<boolean>('open', { required: true })
 defineProps<{
   app?: SpaceApp
   appName: string
-  isImageIcon: boolean
 }>()
 </script>
 
@@ -25,10 +25,10 @@ defineProps<{
       <div class="publish-history__app">
         <div
           class="publish-history__icon"
-          :class="{ 'has-image': isImageIcon }"
+          :class="{ 'has-image': isImageIcon(app?.icon) }"
           :style="{ backgroundColor: app?.accent }"
         >
-          <img v-if="isImageIcon" :src="app?.icon" alt="" :draggable="false" />
+          <img v-if="isImageIcon(app?.icon)" :src="app?.icon" alt="" :draggable="false" />
           <AppIcon v-else :icon="app?.icon ?? 'lucide:bot'" size="22" />
         </div>
         <div>

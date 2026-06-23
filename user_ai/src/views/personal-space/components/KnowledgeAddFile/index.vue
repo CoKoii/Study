@@ -108,12 +108,32 @@ function goNextStep() {
     return
   }
 
+  if (currentStep.value === 1 && segmentMode.value === 'custom' && !validateCustomSegment()) {
+    return
+  }
+
   if (currentStep.value < stepItems.length - 1) {
     currentStep.value += 1
     return
   }
 
   submitFiles()
+}
+
+function validateCustomSegment() {
+  const maxLength = Number(segmentMaxLength.value)
+
+  if (!segmentSeparators.value.trim()) {
+    message.warning('请输入分段标识符')
+    return false
+  }
+
+  if (!Number.isInteger(maxLength) || maxLength < 100 || maxLength > 1000) {
+    message.warning('分段最大长度需为 100 - 1000 的整数')
+    return false
+  }
+
+  return true
 }
 
 function submitFiles() {

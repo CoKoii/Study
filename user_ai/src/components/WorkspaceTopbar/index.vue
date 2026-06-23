@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
 import WorkspaceBackButton from '@/components/WorkspaceBackButton/index.vue'
+import { isImageIcon as getIsImageIcon } from '@/shared/icon'
 
 withDefaults(
   defineProps<{
@@ -9,7 +10,6 @@ withDefaults(
     bordered?: boolean
     fallbackIcon?: string
     icon?: string
-    isImageIcon?: boolean
     title: string
   }>(),
   {
@@ -18,7 +18,6 @@ withDefaults(
     bordered: true,
     fallbackIcon: 'lucide:bot',
     icon: undefined,
-    isImageIcon: false,
   },
 )
 
@@ -34,10 +33,10 @@ const emit = defineEmits<{
 
       <div
         class="workspace-topbar__logo"
-        :class="{ 'has-image': isImageIcon }"
+        :class="{ 'has-image': getIsImageIcon(icon) }"
         :style="{ backgroundColor: accent }"
       >
-        <img v-if="isImageIcon" :src="icon" alt="" :draggable="false" />
+        <img v-if="getIsImageIcon(icon)" :src="icon" alt="" :draggable="false" />
         <AppIcon v-else :icon="icon ?? fallbackIcon" size="22" />
       </div>
 

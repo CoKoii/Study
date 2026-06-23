@@ -1,3 +1,26 @@
+.side-modal-enter-active,
+.side-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.side-modal-enter-active .side-modal-panel,
+.side-modal-leave-active .side-modal-panel {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.side-modal-enter-from,
+.side-modal-leave-to {
+  opacity: 0;
+}
+
+.side-modal-enter-from .side-modal-panel,
+.side-modal-leave-to .side-modal-panel {
+  opacity: 0;
+  transform: translateX(1rem);
+}
+
 .side-modal__close {
   display: grid;
   width: 2rem;

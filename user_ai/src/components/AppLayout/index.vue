@@ -13,7 +13,7 @@ import AppSidebar from '@/components/AppSidebar/index.vue'
     <AppSidebar />
     <section class="app-layout__workspace">
       <RouterView v-slot="{ Component, route }">
-        <Transition name="route-fade" mode="out-in" appear>
+        <Transition :name="route.meta.pageTransition ?? 'workspace-fade'" mode="out-in" appear>
           <component :is="Component" :key="route.meta.workspaceKey ?? route.fullPath" />
         </Transition>
       </RouterView>

@@ -1,28 +1,5 @@
 @use '../../share/side-modal';
 
-.side-modal-enter-active,
-.side-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.side-modal-enter-active .relation-modal,
-.side-modal-leave-active .relation-modal {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.side-modal-enter-from,
-.side-modal-leave-to {
-  opacity: 0;
-}
-
-.side-modal-enter-from .relation-modal,
-.side-modal-leave-to .relation-modal {
-  opacity: 0;
-  transform: translateX(1rem);
-}
-
 .relation-modal-mask {
   position: fixed;
   z-index: 1000;
@@ -37,7 +14,7 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   width: 25rem;
-  height: calc(100vh - 2rem);
+  height: calc(100dvh - 2rem);
   overflow: hidden;
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border-light);

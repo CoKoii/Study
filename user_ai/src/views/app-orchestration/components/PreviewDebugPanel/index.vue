@@ -3,7 +3,7 @@ import AppChatComposer from '@/components/AppChatComposer/index.vue'
 import AppIcon from '@/components/AppIcon/index.vue'
 import type { BubbleListProps, PromptsProps } from 'ant-design-x-vue'
 import { Bubble, Prompts } from 'ant-design-x-vue'
-import { Button } from 'antdv-next'
+import { Button, message } from 'antdv-next'
 import type { VNode } from 'vue'
 import { computed, h, ref } from 'vue'
 import { quickPrompts } from '../../share/constants'
@@ -133,11 +133,18 @@ function deletePreviewMessage(key: string) {
   promptsVisible.value = false
 }
 
-function copyPreviewMessage(key: string) {
+async function copyPreviewMessage(key: string) {
   const content = previewMessages.value.find((message) => message.key === key)?.content
 
-  if (typeof content === 'string') {
-    void navigator.clipboard?.writeText(content)
+  if (typeof content !== 'string') {
+    return
+  }
+
+  try {
+    await navigator.clipboard?.writeText(content)
+    message.success('已复制')
+  } catch {
+    message.warning('复制失败，请手动复制')
   }
 }
 

@@ -1,6 +1,6 @@
 .workspace-topbar {
   display: grid;
-  grid-template-columns: minmax(18rem, 1fr) auto minmax(18rem, 1fr);
+  grid-template-columns: minmax(16rem, 1fr) auto minmax(16rem, 1fr);
   align-items: center;
   height: 4.5rem;
   padding: 0 1.5rem;
@@ -110,5 +110,6 @@
   .workspace-topbar__actions {
     grid-column: 1 / -1;
     justify-content: stretch;
+    flex-wrap: wrap;
   }
 }

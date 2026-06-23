@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import { isImageIcon } from '@/shared/icon'
 import { useAppIconUpload } from '@/views/personal-space/components/CreateAppModal/share/use-app-icon-upload'
 import type { SpaceApp, SpaceAppForm } from '@/stores/app-list'
 import { getSpaceResourceByKind } from '@/views/personal-space/share/resources'
@@ -36,7 +37,7 @@ const resource = computed(() => getSpaceResourceByKind(props.resourceKind))
 const modalTitle = computed(
   () => `${props.mode === 'edit' ? '编辑' : '创建'} ${resource.value.modal.name}`,
 )
-const hasImageIcon = computed(() => /^(blob:|data:image\/|https?:\/\/)/.test(formModel.icon))
+const hasImageIcon = computed(() => isImageIcon(formModel.icon))
 
 function resetForm() {
   formModel.icon = ''

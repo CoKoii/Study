@@ -1,28 +1,5 @@
 @use '../../share/side-modal';
 
-.side-modal-enter-active,
-.side-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.side-modal-enter-active .plugin-modal,
-.side-modal-leave-active .plugin-modal {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.side-modal-enter-from,
-.side-modal-leave-to {
-  opacity: 0;
-}
-
-.side-modal-enter-from .plugin-modal,
-.side-modal-leave-to .plugin-modal {
-  opacity: 0;
-  transform: translateX(1rem);
-}
-
 .plugin-modal-mask {
   position: fixed;
   z-index: 1000;
@@ -38,7 +15,7 @@
   grid-template-columns: 12.5rem 28rem;
   width: 40.5rem;
   max-width: calc(100vw - 3rem);
-  height: calc(100vh - 2.5rem);
+  height: calc(100dvh - 2.5rem);
   overflow: hidden;
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border-light);

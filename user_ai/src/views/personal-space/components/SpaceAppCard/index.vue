@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import { isImageIcon } from '@/shared/icon'
 import type { SpaceApp } from '@/stores/app-list'
 import type { MenuItemType } from 'antdv-next'
 import { Dropdown } from 'antdv-next'
@@ -22,7 +23,7 @@ const actions: MenuItemType[] = [
   { key: 'delete', label: '删除', danger: true },
 ]
 
-const isImageIcon = computed(() => props.app.icon.startsWith('data:'))
+const hasImageIcon = computed(() => isImageIcon(props.app.icon))
 const isClickable = computed(() =>
   ['app', 'plugin', 'knowledge'].includes(props.app.kind),
 )
@@ -71,10 +72,10 @@ function handleActionClick(event: { key: string | number }) {
     <div class="space-app-card__head">
       <div
         class="space-app-card__icon"
-        :class="{ 'has-image': isImageIcon }"
+        :class="{ 'has-image': hasImageIcon }"
         :style="{ backgroundColor: app.accent }"
       >
-        <img v-if="isImageIcon" :src="app.icon" alt="" :draggable="false" />
+        <img v-if="hasImageIcon" :src="app.icon" alt="" :draggable="false" />
         <AppIcon v-else :icon="app.icon" size="22" />
       </div>
 

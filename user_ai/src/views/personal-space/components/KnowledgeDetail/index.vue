@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
 import WorkspaceTopbar from '@/components/WorkspaceTopbar/index.vue'
+import { formatCount } from '@/shared/format'
 import { useAppListStore } from '@/stores/app-list'
 import type { KnowledgeDocument } from '@/stores/app-list'
 import type { MenuItemType, TableProps } from 'antdv-next'
@@ -23,6 +24,9 @@ const knowledge = computed(() => {
   return item?.kind === 'knowledge' ? item : null
 })
 const documents = computed(() => appListStore.getKnowledgeDocuments(knowledgeId.value))
+const totalRecallCount = computed(() =>
+  documents.value.reduce((total, item) => total + item.recallCount, 0),
+)
 const filteredDocuments = computed(() => {
   const query = keyword.value.trim().toLowerCase()
 
@@ -32,7 +36,11 @@ const filteredDocuments = computed(() => {
 
   return documents.value.filter((item) => item.name.toLowerCase().includes(query))
 })
-const detailMeta = ['2 文档', '69,141 字符', '3 关联应用']
+const detailMeta = computed(() => [
+  formatCount(documents.value.length, '文档'),
+  formatCount(totalRecallCount.value, '次召回'),
+  '3 关联应用',
+])
 
 const documentActions: MenuItemType[] = [
   { key: 'rename', label: '重命名' },
@@ -185,7 +193,6 @@ watch(
       :accent="knowledge.accent"
       :bordered="false"
       :icon="knowledge.icon"
-      :is-image-icon="knowledge.icon.startsWith('data:')"
       :title="`知识库 / ${knowledge.name}`"
       back-label="返回知识库列表"
       fallback-icon="lucide:book-open"

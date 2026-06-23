@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/AppIcon/index.vue'
+import { isImageIcon } from '@/shared/icon'
 import CreateAppModal from '@/views/personal-space/components/CreateAppModal/index.vue'
 import { useAppIconUpload } from '@/views/personal-space/components/CreateAppModal/share/use-app-icon-upload'
 import SpaceAppCard from '@/views/personal-space/components/SpaceAppCard/index.vue'
@@ -30,13 +31,14 @@ const pluginForm = reactive({
   schema: '',
   headers: [{ id: crypto.randomUUID(), key: '', value: '' }],
 })
+const createPluginHeader = () => ({ id: crypto.randomUUID(), key: '', value: '' })
 const query = ref('')
 const activeResource = computed(() => getSpaceResourceByRouteName(route.name))
 const isPluginResource = computed(() => activeResource.value.kind === 'plugin')
 const pluginModalTitle = computed(() =>
   pluginModalMode.value === 'edit' ? '编辑插件' : '新建插件',
 )
-const hasPluginImageIcon = computed(() => /^(blob:|data:image\/|https?:\/\/)/.test(pluginForm.icon))
+const hasPluginImageIcon = computed(() => isImageIcon(pluginForm.icon))
 const modalOpen = computed({
   get: () => modalMode.value !== null,
   set: (open) => {
@@ -108,29 +110,30 @@ function closeModal() {
   editingApp.value = null
 }
 
-function openPluginCreator(app?: SpaceApp) {
-  pluginModalMode.value = app ? 'edit' : 'create'
-  editingApp.value = app ?? null
+function resetPluginForm(app?: SpaceApp) {
   pluginForm.icon = app?.icon ?? ''
   pluginForm.name = app?.name ?? ''
   pluginForm.schema = ''
-  pluginForm.headers = [{ id: crypto.randomUUID(), key: '', value: '' }]
+  pluginForm.headers = [createPluginHeader()]
   pluginIconLoading.value = false
+  pluginFormRef.value?.clearValidate()
+}
+
+function openPluginCreator(app?: SpaceApp) {
+  pluginModalMode.value = app ? 'edit' : 'create'
+  editingApp.value = app ?? null
+  resetPluginForm(app)
   pluginCreatorOpen.value = true
 }
 
 function closePluginCreator() {
   pluginCreatorOpen.value = false
   editingApp.value = null
-  pluginForm.icon = ''
-  pluginForm.name = ''
-  pluginForm.schema = ''
-  pluginForm.headers = [{ id: crypto.randomUUID(), key: '', value: '' }]
-  pluginIconLoading.value = false
+  resetPluginForm()
 }
 
 function addPluginHeader() {
-  pluginForm.headers.push({ id: crypto.randomUUID(), key: '', value: '' })
+  pluginForm.headers.push(createPluginHeader())
 }
 
 function removePluginHeader(headerId: string) {
@@ -187,6 +190,7 @@ function savePlugin() {
 
 function handleUpdateApp(form: SpaceAppForm) {
   if (editingApp.value && appListStore.updateApp(editingApp.value.id, form)) {
+    closeModal()
     message.success('保存成功')
   }
 }
@@ -251,7 +255,7 @@ watch(
       </label>
     </div>
 
-    <Transition name="route-fade" mode="out-in" appear>
+    <Transition name="resource-switch" mode="out-in" appear>
       <div :key="activeResource.kind" class="space-app-list__content">
         <div v-if="filteredItems.length" class="space-app-list__grid">
           <SpaceAppCard
@@ -293,11 +297,11 @@ watch(
         <div class="plugin-detail__summary">
           <div
             class="plugin-detail__icon"
-            :class="{ 'has-image': pluginDetail.icon.startsWith('data:') }"
+            :class="{ 'has-image': isImageIcon(pluginDetail.icon) }"
             :style="{ backgroundColor: pluginDetail.accent }"
           >
             <img
-              v-if="pluginDetail.icon.startsWith('data:')"
+              v-if="isImageIcon(pluginDetail.icon)"
               :src="pluginDetail.icon"
               alt=""
               :draggable="false"

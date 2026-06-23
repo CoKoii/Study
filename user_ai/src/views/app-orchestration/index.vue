@@ -34,7 +34,6 @@ const currentApp = computed<SpaceApp | undefined>(() => {
   )
 })
 
-const isImageIcon = computed(() => currentApp.value?.icon.startsWith('data:') ?? false)
 const appName = computed(() => currentApp.value?.name ?? '聊天机器人')
 const appDescription = computed(
   () => currentApp.value?.description ?? '配置 AI 应用的人设、能力和调试对话。',
@@ -83,7 +82,6 @@ function confirmUnpublish() {
       v-model:active-tab="activeTab"
       :app="currentApp"
       :app-name="appName"
-      :is-image-icon="isImageIcon"
       :status-text="statusText"
       @back="goBack"
       @open-publish-history="publishHistoryOpen = true"
@@ -91,28 +89,30 @@ function confirmUnpublish() {
       @update-publish="updatePublish"
     />
 
-    <AppEditWorkspace
-      v-if="activeTab === 'edit'"
-      :app-name="appName"
-      :app-description="appDescription"
-      @open-long-memory="longMemoryOpen = true"
-    />
+    <Transition name="orchestration-tab" mode="out-in">
+      <AppEditWorkspace
+        v-if="activeTab === 'edit'"
+        :key="activeTab"
+        :app-name="appName"
+        :app-description="appDescription"
+        @open-long-memory="longMemoryOpen = true"
+      />
 
-    <PublishConfig v-else-if="activeTab === 'publish'" />
+      <PublishConfig v-else-if="activeTab === 'publish'" :key="activeTab" />
 
-    <StatsAnalysis v-else-if="activeTab === 'stats'" />
+      <StatsAnalysis v-else-if="activeTab === 'stats'" :key="activeTab" />
+    </Transition>
 
     <PublishHistoryDrawer
       v-model:open="publishHistoryOpen"
       :app="currentApp"
       :app-name="appName"
-      :is-image-icon="isImageIcon"
     />
 
     <LongMemoryModal v-model:open="longMemoryOpen" v-model:content="longMemoryContent" />
   </main>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 @use './index.scss';
 </style>

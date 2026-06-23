@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import AppIcon from '@/components/AppIcon/index.vue'
+
 withDefaults(
   defineProps<{
     label?: string
@@ -15,7 +17,7 @@ const emit = defineEmits<{
 
 <template>
   <button class="workspace-back-button" type="button" :aria-label="label" @click="emit('click')">
-    <span aria-hidden="true"></span>
+    <AppIcon icon="lucide:chevron-left" size="22" />
   </button>
 </template>
 

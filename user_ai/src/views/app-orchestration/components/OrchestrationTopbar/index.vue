@@ -11,7 +11,6 @@ const activeTab = defineModel<OrchestrationTab>('activeTab', { required: true })
 defineProps<{
   app?: SpaceApp
   appName: string
-  isImageIcon: boolean
   statusText: string
 }>()
 
@@ -27,7 +26,6 @@ const emit = defineEmits<{
   <WorkspaceTopbar
     :accent="app?.accent"
     :icon="app?.icon"
-    :is-image-icon="isImageIcon"
     :title="appName"
     back-label="返回应用列表"
     @back="emit('back')"

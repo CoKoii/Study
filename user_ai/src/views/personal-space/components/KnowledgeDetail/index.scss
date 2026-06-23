@@ -1,7 +1,7 @@
 .knowledge-detail {
   position: relative;
   min-width: 0;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: var(--color-bg-sidebar);
 }
@@ -90,7 +90,7 @@
 
 .knowledge-detail__panel {
   min-width: 0;
-  height: calc(100vh - 10.75rem);
+  height: calc(100dvh - 10.75rem);
   margin: 1rem 1.5rem 0;
   overflow: hidden;
 }
@@ -287,6 +287,10 @@
   .knowledge-detail__toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .knowledge-detail__toolbar {
+    height: auto;
   }
 
   .knowledge-detail__actions :deep(.ant-btn),

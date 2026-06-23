@@ -22,7 +22,7 @@ const emit = defineEmits<{
   <Teleport to="body">
     <Transition name="side-modal">
       <div v-if="open" class="relation-modal-mask" @click.self="emit('update:open', false)">
-        <div class="relation-modal" role="dialog" aria-modal="true">
+        <div class="relation-modal side-modal-panel" role="dialog" aria-modal="true">
           <header class="relation-modal__header">
             <h2>{{ title }}</h2>
             <button

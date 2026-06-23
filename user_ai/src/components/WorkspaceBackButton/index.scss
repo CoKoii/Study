@@ -1,40 +1,22 @@
 .workspace-back-button {
-  position: relative;
-  display: block;
-  width: 1.25rem;
-  height: 1.5rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
   flex: 0 0 auto;
   color: var(--color-text-strong);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease;
 }
 
 .workspace-back-button:hover,
 .workspace-back-button:focus-visible {
   color: var(--color-primary);
-  background: transparent;
+  background: var(--color-bg-soft);
   outline: 0;
-}
-
-.workspace-back-button span::before,
-.workspace-back-button span::after {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 0.625rem;
-  height: 0.125rem;
-  background: currentColor;
-  border-radius: var(--radius-pill);
-  content: '';
-  transform-origin: left center;
-}
-
-.workspace-back-button span::before {
-  transform: rotate(45deg);
-}
-
-.workspace-back-button span::after {
-  transform: rotate(-45deg);
 }

@@ -2,7 +2,7 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   min-width: 0;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background:
     url('@/assets/home/hero-bg.png') left top / 100% min(42.5rem, 66vh) no-repeat,

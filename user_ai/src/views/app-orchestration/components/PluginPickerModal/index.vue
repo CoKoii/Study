@@ -26,7 +26,7 @@ const emit = defineEmits<{
     <Transition name="side-modal">
       <div v-if="open" class="plugin-modal-mask" @click.self="emit('update:open', false)">
         <div
-          class="plugin-modal"
+          class="plugin-modal side-modal-panel"
           role="dialog"
           aria-modal="true"
           aria-labelledby="pluginModalTitle"

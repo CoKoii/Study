@@ -1,6 +1,6 @@
 .space-app-list {
   min-width: 0;
-  height: 100vh;
+  height: 100dvh;
   padding: 1.5rem;
   overflow-y: auto;
   background: var(--color-bg-sidebar);
@@ -127,13 +127,13 @@
   min-width: 0;
 }
 
-.route-fade-enter-active,
-.route-fade-leave-active {
+.resource-switch-enter-active,
+.resource-switch-leave-active {
   transition: opacity 0.22s ease;
 }
 
-.route-fade-enter-from,
-.route-fade-leave-to {
+.resource-switch-enter-from,
+.resource-switch-leave-to {
   opacity: 0;
 }
 
