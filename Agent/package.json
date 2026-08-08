@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "dev": "node langchain/overview/index.js"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.20.0",
+      "onFail": "download"
+    }
+  },
+  "dependencies": {
+    "@langchain/openai": "^1.5.6",
+    "dotenv": "^17.4.2",
+    "langchain": "^1.5.5",
+    "zod": "^4.4.3"
+  },
+  "type": "module"
+}
