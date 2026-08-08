@@ -1,6 +1,5 @@
 import { createAgent, tool } from "langchain";
 import { ChatOpenAI } from "@langchain/openai";
-import "dotenv/config";
 import * as z from "zod";
 
 const getWeather = tool((input) => `${input.city}的天气永远是晴天！`, {
@@ -15,6 +14,7 @@ const model = new ChatOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   configuration: { baseURL: process.env.OPENAI_API_BASE_URL },
 });
+
 const agent = createAgent({
   model,
   tools: [getWeather],
@@ -22,8 +22,6 @@ const agent = createAgent({
 
 console.log(
   await agent.invoke({
-    messages: [
-      { role: "user", content: "旧金山的天气怎么样？" },
-    ],
+    messages: [{ role: "user", content: "旧金山的天气怎么样？" }],
   }),
 );
