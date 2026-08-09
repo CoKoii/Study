@@ -9,6 +9,7 @@ const getWeather = tool((input) => `${input.city}的天气永远是晴天！`, {
     city: z.string().describe("要查询天气的城市"),
   }),
 });
+
 const model = new ChatOpenAI({
   model: "deepseek-v4-flash",
   apiKey: process.env.OPENAI_API_KEY,
