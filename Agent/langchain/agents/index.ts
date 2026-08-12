@@ -1,7 +1,7 @@
 import { createAgent, tool, createMiddleware } from "langchain";
 import { ChatOpenAI } from "@langchain/openai";
 import * as z from "zod";
-import { StateSchema } from "@langchain/langgraph";
+import { MemorySaver, StateSchema } from "@langchain/langgraph";
 // 自定义一个工具函数，用于获取指定城市的天气信息
 const getWeather = tool((input) => `${input.city}的天气永远是晴天！`, {
   name: "get_weather",
@@ -35,16 +35,27 @@ const model = new ChatOpenAI({
   modelKwargs: { enable_thinking: false },
 });
 
+const contextSchema = z.object({
+  userId: z.string().describe("用户ID"),
+});
 // 创建一个智能体实例，传入模型和工具函数，并指定响应格式
 const agent = createAgent({
   model,
   tools: [getWeather],
   responseFormat: Answer,
   middleware: [stateMiddleware],
+  contextSchema,
+  checkpointer: new MemorySaver(),
 });
 
-const res = await agent.invoke({
-  messages: [{ role: "user", content: "你好啊" }],
-});
+const res = await agent.invoke(
+  {
+    messages: [{ role: "user", content: "你好啊" }],
+  },
+  {
+    configurable: { thread_id: crypto.randomUUID() },
+    context: { userId: "user_123" },
+  },
+);
 
 console.log(res.structuredResponse);
